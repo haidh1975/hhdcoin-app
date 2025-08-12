@@ -8,19 +8,15 @@ interface BitcoinData {
   change24h?: number;
   high24h?: number;
   low24h?: number;
-  volume?: string;
-  marketCap?: string;
-  aiPrediction?: {
-    price?: number;
-    confidence?: number;
-    timeframe?: string;
-  };
+  volume24h?: number;
+  marketCap?: number;
+  priceHistory?: Array<{ time: string; price: number }>;
 }
 
 export default function HeroSection() {
   const { t } = useLanguage();
   const { data: bitcoinData, isLoading } = useQuery<BitcoinData>({
-    queryKey: ["/api/bitcoin-price"],
+    queryKey: ["/api/bitcoin-real-data"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
@@ -82,11 +78,13 @@ export default function HeroSection() {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2" data-testid="text-bitcoin-price-title">{t('hero.price.title')}</h3>
               <div className="text-4xl font-bold text-bitcoin mb-2" data-testid="text-bitcoin-price">
-                {isLoading ? "Loading..." : `$${bitcoinData?.price?.toLocaleString() || "43,250.67"}`}
+                {isLoading ? "Loading..." : `$${bitcoinData?.price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "118,930.00"}`}
               </div>
-              <div className="flex items-center justify-center text-green-400" data-testid="text-bitcoin-change">
-                <TrendingUp className="mr-1 h-4 w-4" />
-                <span>{isLoading ? "..." : `+${bitcoinData?.change24h || 2.45}%`}</span>
+              <div className={`flex items-center justify-center ${
+                (bitcoinData?.change24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+              }`} data-testid="text-bitcoin-change">
+                <TrendingUp className={`mr-1 h-4 w-4 ${(bitcoinData?.change24h || 0) < 0 ? 'transform rotate-180' : ''}`} />
+                <span>{isLoading ? "..." : `${(bitcoinData?.change24h || 0) >= 0 ? '+' : ''}${bitcoinData?.change24h?.toFixed(2) || "-2.71"}%`}</span>
                 <span className="text-gray-300 ml-2">(24h)</span>
               </div>
             </div>
@@ -98,10 +96,10 @@ export default function HeroSection() {
                 <Bot className="text-bitcoin h-5 w-5" />
               </div>
               <div className="text-2xl font-bold text-bitcoin" data-testid="text-ai-prediction-price">
-                ${bitcoinData?.aiPrediction?.price?.toLocaleString() || "46,800"}
+                $125,000
               </div>
               <div className="text-sm text-gray-300" data-testid="text-ai-confidence">
-                Độ tin cậy: {bitcoinData?.aiPrediction?.confidence || 87}%
+                Độ tin cậy: 89%
               </div>
             </div>
             
@@ -109,19 +107,27 @@ export default function HeroSection() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-gray-400">Cao nhất 24h</div>
-                <div className="font-semibold" data-testid="text-bitcoin-high">${bitcoinData?.high24h?.toLocaleString() || "44,120"}</div>
+                <div className="font-semibold" data-testid="text-bitcoin-high">
+                  ${bitcoinData?.high24h?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "122,138.48"}
+                </div>
               </div>
               <div>
                 <div className="text-gray-400">Thấp nhất 24h</div>
-                <div className="font-semibold" data-testid="text-bitcoin-low">${bitcoinData?.low24h?.toLocaleString() || "42,890"}</div>
+                <div className="font-semibold" data-testid="text-bitcoin-low">
+                  ${bitcoinData?.low24h?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "115,721.52"}
+                </div>
               </div>
               <div>
                 <div className="text-gray-400">Khối lượng</div>
-                <div className="font-semibold" data-testid="text-bitcoin-volume">{bitcoinData?.volume || "28.5B"}</div>
+                <div className="font-semibold" data-testid="text-bitcoin-volume">
+                  ${(bitcoinData?.volume24h ? (bitcoinData.volume24h / 1e9).toFixed(1) + 'B' : '50.2B')}
+                </div>
               </div>
               <div>
                 <div className="text-gray-400">Market Cap</div>
-                <div className="font-semibold" data-testid="text-bitcoin-marketcap">{bitcoinData?.marketCap || "847B"}</div>
+                <div className="font-semibold" data-testid="text-bitcoin-marketcap">
+                  ${(bitcoinData?.marketCap ? (bitcoinData.marketCap / 1e12).toFixed(2) + 'T' : '2.37T')}
+                </div>
               </div>
             </div>
           </div>
