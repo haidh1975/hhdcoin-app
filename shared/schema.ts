@@ -34,6 +34,8 @@ export const investors = pgTable("investors", {
   fullName: text("full_name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
+  facebookUrl: text("facebook_url"),
+  zaloPhone: text("zalo_phone"),
   investmentAmount: decimal("investment_amount", { precision: 15, scale: 2 }).notNull(),
   bitcoinCode: text("bitcoin_code").notNull(),
   investmentDate: timestamp("investment_date").defaultNow(),
@@ -82,6 +84,13 @@ export const insertInvestmentPackageSchema = createInsertSchema(investmentPackag
 export const insertInvestorSchema = createInsertSchema(investors).omit({
   id: true,
   investmentDate: true,
+  currentValue: true,
+  profitLoss: true,
+  profitLossPercentage: true,
+  packageId: true,
+}).extend({
+  facebookUrl: z.string().optional().or(z.literal("")),
+  zaloPhone: z.string().optional().or(z.literal("")),
 });
 
 export const insertCommunityMemberSchema = createInsertSchema(communityMembers).omit({

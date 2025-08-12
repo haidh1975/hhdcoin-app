@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, UserPlus, Search, Filter, Star, Trophy, Calendar, MapPin, Briefcase, Mail, Phone, Edit, Trash2 } from "lucide-react";
+import { Users, UserPlus, Search, Filter, Star, Trophy, Calendar, MapPin, Briefcase, Mail, Phone, Edit, Trash2, MessageCircle } from "lucide-react";
+import { SiFacebook } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -286,6 +287,49 @@ export default function Community() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-dark-slate">Thông tin mạng xã hội</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2 flex items-center">
+                          <SiFacebook className="mr-2 h-4 w-4 text-blue-600" />
+                          Facebook URL
+                        </label>
+                        <Input 
+                          placeholder="https://facebook.com/username" 
+                          data-testid="input-facebook-link" 
+                          onChange={(e) => {
+                            const currentLinks = form.getValues("socialLinks") || [];
+                            const newLinks = currentLinks.filter(link => !link.includes("facebook.com"));
+                            if (e.target.value) {
+                              newLinks.push(e.target.value);
+                            }
+                            form.setValue("socialLinks", newLinks);
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 flex items-center">
+                          <MessageCircle className="mr-2 h-4 w-4 text-blue-500" />
+                          Zalo (Số điện thoại)
+                        </label>
+                        <Input 
+                          placeholder="0987654321" 
+                          data-testid="input-zalo-link" 
+                          onChange={(e) => {
+                            const currentLinks = form.getValues("socialLinks") || [];
+                            const newLinks = currentLinks.filter(link => !link.includes("zalo.me"));
+                            if (e.target.value) {
+                              newLinks.push(`https://zalo.me/${e.target.value}`);
+                            }
+                            form.setValue("socialLinks", newLinks);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="flex justify-end space-x-4">
                     <Button 

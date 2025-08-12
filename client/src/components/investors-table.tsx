@@ -1,16 +1,65 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Users, TrendingUp, TrendingDown, DollarSign, UserPlus, ExternalLink, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { Investor } from "@shared/schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertInvestorSchema, type Investor } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+import { SiFacebook } from "react-icons/si";
 
 export default function InvestorsTable() {
   const { t } = useLanguage();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: investors, isLoading } = useQuery<Investor[]>({
     queryKey: ["/api/investors"],
+  });
+
+  const addInvestorMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertInvestorSchema>) => {
+      return await apiRequest("/api/investors", "POST", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/investors"] });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Thành công",
+        description: "Nhà đầu tư mới đã được thêm vào hệ thống!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi thêm nhà đầu tư",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const form = useForm<z.infer<typeof insertInvestorSchema>>({
+    resolver: zodResolver(insertInvestorSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      facebookUrl: "",
+      zaloPhone: "",
+      investmentAmount: "",
+      bitcoinCode: "",
+      status: "active",
+    },
   });
 
   const formatCurrency = (amount: string | null) => {
@@ -71,8 +120,198 @@ export default function InvestorsTable() {
   const totalProfit = investors?.reduce((sum, investor) => 
     sum + parseFloat(investor.profitLoss || "0"), 0) || 0;
 
+  const onSubmit = async (values: z.infer<typeof insertInvestorSchema>) => {
+    addInvestorMutation.mutate(values);
+  };
+
+  const generateBitcoinCode = () => {
+    const prefix = "BTC";
+    const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, "0");
+    return `${prefix}${randomNum}`;
+  };
+
   return (
     <div data-testid="investors-table">
+      {/* Header with Add Investor Button */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-3xl font-bold text-dark-slate">Danh sách nhà đầu tư</h2>
+          <p className="text-gray-600">Quản lý thông tin các nhà đầu tư Bitcoin</p>
+        </div>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              className="bg-bitcoin text-white hover:bg-bitcoin-light"
+              data-testid="button-add-investor"
+            >
+              <UserPlus className="mr-2 h-5 w-5" />
+              Thêm nhà đầu tư
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Thêm nhà đầu tư mới</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Họ và tên *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nguyễn Văn A" {...field} data-testid="input-investor-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email *</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="email@example.com" {...field} data-testid="input-investor-email" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Số điện thoại *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="0987654321" {...field} data-testid="input-investor-phone" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="investmentAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Số tiền đầu tư (VNĐ) *</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="50000000" {...field} data-testid="input-investment-amount" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-dark-slate">Thông tin liên hệ mạng xã hội</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="facebookUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center">
+                            <SiFacebook className="mr-2 h-4 w-4 text-blue-600" />
+                            Facebook URL
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="https://facebook.com/username" 
+                              {...field}
+                              value={field.value || ""}
+                              data-testid="input-facebook-url" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="zaloPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center">
+                            <MessageCircle className="mr-2 h-4 w-4 text-blue-500" />
+                            Zalo (Số điện thoại)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="0987654321" 
+                              {...field}
+                              value={field.value || ""}
+                              data-testid="input-zalo-phone" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="bitcoinCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mã Bitcoin *</FormLabel>
+                      <FormControl>
+                        <div className="flex gap-2">
+                          <Input 
+                            placeholder="BTC123456" 
+                            {...field} 
+                            data-testid="input-bitcoin-code" 
+                          />
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            onClick={() => field.onChange(generateBitcoinCode())}
+                            data-testid="button-generate-code"
+                          >
+                            Tạo mã
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsAddDialogOpen(false)}
+                    data-testid="button-cancel-investor"
+                  >
+                    Hủy
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-bitcoin text-white"
+                    disabled={addInvestorMutation.isPending}
+                    data-testid="button-submit-investor"
+                  >
+                    {addInvestorMutation.isPending ? "Đang thêm..." : "Thêm nhà đầu tư"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
       <div className="space-y-8">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -123,7 +362,7 @@ export default function InvestorsTable() {
                   <TableRow>
                     <TableHead>{t('investors.table.name')}</TableHead>
                     <TableHead>{t('investors.table.email')}</TableHead>
-                    <TableHead>{t('investors.table.phone')}</TableHead>
+                    <TableHead>Liên hệ</TableHead>
                     <TableHead>{t('investors.table.amount')}</TableHead>
                     <TableHead>{t('investors.table.time')}</TableHead>
                     <TableHead>{t('investors.table.bitcoin')}</TableHead>
@@ -141,8 +380,34 @@ export default function InvestorsTable() {
                       <TableCell data-testid={`text-email-${investor.id}`}>
                         {investor.email}
                       </TableCell>
-                      <TableCell data-testid={`text-phone-${investor.id}`}>
-                        {investor.phone}
+                      <TableCell data-testid={`text-contact-${investor.id}`}>
+                        <div className="flex flex-col gap-1">
+                          <div className="text-sm">{investor.phone}</div>
+                          <div className="flex gap-2">
+                            {investor.facebookUrl && (
+                              <a 
+                                href={investor.facebookUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800"
+                                title="Facebook"
+                              >
+                                <SiFacebook className="h-4 w-4" />
+                              </a>
+                            )}
+                            {investor.zaloPhone && (
+                              <a 
+                                href={`https://zalo.me/${investor.zaloPhone}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:text-blue-700"
+                                title="Zalo"
+                              >
+                                <MessageCircle className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className="font-semibold text-bitcoin" data-testid={`text-investment-${investor.id}`}>
                         {formatCurrency(investor.investmentAmount)}

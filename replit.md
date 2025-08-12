@@ -2,7 +2,15 @@
 
 ## Overview
 
-HHDcoin is a Vietnamese Bitcoin investment platform that combines AI-powered market analysis with modern web technologies. The application provides real-time Bitcoin price tracking, investment package management, market analysis, and community features. It's built as a full-stack web application with a React frontend and Express backend, targeting Vietnamese users interested in cryptocurrency investment.
+HHDcoin is a Vietnamese Bitcoin investment platform that combines AI-powered market analysis with modern web technologies. The application provides real-time Bitcoin price tracking, investment package management, market analysis, community features, and social media integration. It's built as a full-stack web application with a React frontend and Express backend, targeting Vietnamese users interested in cryptocurrency investment.
+
+## Recent Changes (August 12, 2025)
+
+- **Community System**: Implemented comprehensive community member management with database schema, API endpoints, and full CRUD operations
+- **Social Media Integration**: Added Facebook and Zalo links to both investor registration and community member forms
+- **Enhanced Forms**: Updated investor and community member forms with social media contact information
+- **Navigation Updates**: Added community page link to main navigation menu
+- **Data Structure**: Extended investor schema to include Facebook URL and Zalo phone number fields
 
 ## User Preferences
 
