@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Shield, Bot, Clock, TrendingUp, Play, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BitcoinData {
   price?: number;
@@ -17,6 +18,7 @@ interface BitcoinData {
 }
 
 export default function HeroSection() {
+  const { t } = useLanguage();
   const { data: bitcoinData, isLoading } = useQuery<BitcoinData>({
     queryKey: ["/api/bitcoin-price"],
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -35,11 +37,10 @@ export default function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight" data-testid="text-hero-title">
-              Đầu tư Bitcoin <span className="text-bitcoin">Thông minh</span> với AI
+              {t('hero.title')} <span className="text-bitcoin">{t('hero.title.highlight')}</span> {t('hero.title.suffix')}
             </h1>
             <p className="text-xl text-gray-300 mb-8 leading-relaxed" data-testid="text-hero-description">
-              Nền tảng đầu tư Bitcoin hàng đầu Việt Nam với công nghệ AI dự báo, 
-              phân tích chuyên sâu và cập nhật real-time 24/7.
+              {t('hero.description')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -49,7 +50,7 @@ export default function HeroSection() {
                 data-testid="button-start-investing"
               >
                 <BarChart3 className="mr-2 h-5 w-5" />
-                Bắt đầu đầu tư
+                {t('hero.cta.invest')}
               </Button>
               <Button 
                 variant="outline"
@@ -57,29 +58,29 @@ export default function HeroSection() {
                 data-testid="button-demo-ai"
               >
                 <Play className="mr-2 h-5 w-5" />
-                Xem demo AI
+                {t('hero.cta.demo')}
               </Button>
             </div>
             
             <div className="flex flex-wrap gap-6 text-sm">
               <div className="flex items-center" data-testid="feature-security">
                 <Shield className="text-green-400 mr-2 h-5 w-5" />
-                <span>Bảo mật tuyệt đối</span>
+                <span>{t('hero.feature.security')}</span>
               </div>
               <div className="flex items-center" data-testid="feature-ai">
                 <Bot className="text-bitcoin mr-2 h-5 w-5" />
-                <span>AI dự báo chính xác</span>
+                <span>{t('hero.feature.ai')}</span>
               </div>
               <div className="flex items-center" data-testid="feature-realtime">
                 <Clock className="text-blue-400 mr-2 h-5 w-5" />
-                <span>Cập nhật 24/7</span>
+                <span>{t('hero.feature.realtime')}</span>
               </div>
             </div>
           </div>
           
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6" data-testid="card-bitcoin-price">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold mb-2" data-testid="text-bitcoin-price-title">Giá Bitcoin hiện tại</h3>
+              <h3 className="text-2xl font-bold mb-2" data-testid="text-bitcoin-price-title">{t('hero.price.title')}</h3>
               <div className="text-4xl font-bold text-bitcoin mb-2" data-testid="text-bitcoin-price">
                 {isLoading ? "Loading..." : `$${bitcoinData?.price?.toLocaleString() || "43,250.67"}`}
               </div>

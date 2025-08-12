@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { SiBitcoin } from "react-icons/si";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
@@ -33,52 +35,74 @@ export default function Navigation() {
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-home"
             >
-              Trang chủ
+              {t('nav.home')}
             </button>
             <button 
               onClick={() => scrollToSection("investment")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-investment"
             >
-              Đầu tư
+              {t('nav.investment')}
             </button>
             <button 
               onClick={() => scrollToSection("news")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-news"
             >
-              Tin tức
+              {t('nav.news')}
             </button>
             <button 
               onClick={() => scrollToSection("analysis")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-analysis"
             >
-              Phân tích
+              {t('nav.analysis')}
             </button>
             <button 
               onClick={() => scrollToSection("community")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-community"
             >
-              Cộng đồng
+              {t('nav.community')}
             </button>
             <button 
               onClick={() => scrollToSection("contact")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-contact"
             >
-              Liên hệ
+              {t('nav.contact')}
             </button>
           </div>
           
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-2" data-testid="language-switcher">
-              <span className="text-sm text-gray-600">VI</span>
-              <div className="w-8 h-5 bg-gray-300 rounded-full p-1 cursor-pointer">
-                <div className="w-3 h-3 bg-white rounded-full shadow transform transition-transform"></div>
+              <span 
+                className={`text-sm cursor-pointer transition-colors ${
+                  language === 'vi' ? 'text-bitcoin font-semibold' : 'text-gray-600 hover:text-bitcoin'
+                }`}
+                onClick={() => setLanguage('vi')}
+              >
+                VI
+              </span>
+              <div 
+                className="w-8 h-5 bg-gray-300 rounded-full p-1 cursor-pointer relative"
+                onClick={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+                data-testid="language-toggle"
+              >
+                <div 
+                  className={`w-3 h-3 bg-white rounded-full shadow transform transition-transform ${
+                    language === 'en' ? 'translate-x-3' : ''
+                  }`}
+                ></div>
               </div>
-              <span className="text-sm text-gray-400">EN</span>
+              <span 
+                className={`text-sm cursor-pointer transition-colors ${
+                  language === 'en' ? 'text-bitcoin font-semibold' : 'text-gray-600 hover:text-bitcoin'
+                }`}
+                onClick={() => setLanguage('en')}
+              >
+                EN
+              </span>
             </div>
             <button 
               className="md:hidden text-dark-slate"
@@ -99,43 +123,66 @@ export default function Navigation() {
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-home"
               >
-                Trang chủ
+                {t('nav.home')}
               </button>
               <button 
                 onClick={() => scrollToSection("investment")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-investment"
               >
-                Đầu tư
+                {t('nav.investment')}
               </button>
               <button 
                 onClick={() => scrollToSection("news")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-news"
               >
-                Tin tức
+                {t('nav.news')}
               </button>
               <button 
                 onClick={() => scrollToSection("analysis")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-analysis"
               >
-                Phân tích
+                {t('nav.analysis')}
               </button>
               <button 
                 onClick={() => scrollToSection("community")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-community"
               >
-                Cộng đồng
+                {t('nav.community')}
               </button>
               <button 
                 onClick={() => scrollToSection("contact")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-contact"
               >
-                Liên hệ
+                {t('nav.contact')}
               </button>
+              
+              {/* Mobile Language Switcher */}
+              <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">
+                <span className="text-sm text-gray-600">Language:</span>
+                <button
+                  onClick={() => setLanguage('vi')}
+                  className={`px-2 py-1 text-sm rounded ${
+                    language === 'vi' ? 'bg-bitcoin text-white' : 'text-gray-600 hover:text-bitcoin'
+                  }`}
+                  data-testid="mobile-lang-vi"
+                >
+                  VI
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-2 py-1 text-sm rounded ${
+                    language === 'en' ? 'bg-bitcoin text-white' : 'text-gray-600 hover:text-bitcoin'
+                  }`}
+                  data-testid="mobile-lang-en"
+                >
+                  EN
+                </button>
+              </div>
             </div>
           </div>
         )}
