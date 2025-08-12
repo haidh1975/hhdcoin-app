@@ -18,29 +18,15 @@ export default function InvestmentPackages() {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-gray-50" data-testid="section-investment-packages-loading">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="text-lg">Đang tải gói đầu tư...</div>
-          </div>
-        </div>
-      </section>
+      <div className="text-center py-8" data-testid="investment-packages-loading">
+        <div className="text-lg">Đang tải gói đầu tư...</div>
+      </div>
     );
   }
 
   return (
-    <section className="py-20 bg-gray-50" data-testid="section-investment-packages">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-packages-title">
-            Gói đầu tư HHDcoin
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-packages-description">
-            Chọn gói đầu tư phù hợp với mục tiêu tài chính của bạn
-          </p>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    <div data-testid="investment-packages">
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {packages?.map((pkg: InvestmentPackage, index: number) => (
             <Card 
               key={pkg.id} 
@@ -103,8 +89,7 @@ export default function InvestmentPackages() {
               </CardContent>
             </Card>
           ))}
-        </div>
       </div>
-    </section>
+    </div>
   );
 }

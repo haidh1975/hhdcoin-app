@@ -72,17 +72,8 @@ export default function InvestorsTable() {
     sum + parseFloat(investor.profitLoss || "0"), 0) || 0;
 
   return (
-    <section id="investors" className="py-16 bg-gray-50" data-testid="section-investors">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-investors-title">
-            {t('investors.title')}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-investors-description">
-            {t('investors.description')}
-          </p>
-        </div>
-
+    <div data-testid="investors-table">
+      <div className="space-y-8">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card data-testid="card-total-investors">
@@ -189,6 +180,6 @@ export default function InvestorsTable() {
           </CardContent>
         </Card>
       </div>
-    </section>
+    </div>
   );
 }

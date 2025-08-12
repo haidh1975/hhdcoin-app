@@ -52,6 +52,12 @@ const translations = {
     'calc.ai.confidence': 'Độ tin cậy: 89%',
     'calc.cta': 'Bắt đầu đầu tư ngay',
     
+    // Investment Section
+    'investment.title': 'Đầu tư Bitcoin thông minh',
+    'investment.description': 'Khám phá các gói đầu tư và theo dõi hiệu quả của cộng đồng nhà đầu tư',
+    'investment.tabs.packages': 'Gói đầu tư',
+    'investment.tabs.investors': 'Nhà đầu tư',
+    
     // Investment Packages
     'packages.title': 'Gói đầu tư HHDcoin',
     'packages.description': 'Chọn gói đầu tư phù hợp với mục tiêu tài chính của bạn',
@@ -118,6 +124,12 @@ const translations = {
     'calc.ai.trend': 'Strong Upward Trend',
     'calc.ai.confidence': 'Confidence: 89%',
     'calc.cta': 'Start Investing Now',
+    
+    // Investment Section
+    'investment.title': 'Smart Bitcoin Investment',
+    'investment.description': 'Explore investment packages and track the performance of our investor community',
+    'investment.tabs.packages': 'Investment Packages',
+    'investment.tabs.investors': 'Investors',
     
     // Investment Packages
     'packages.title': 'HHDcoin Investment Packages',
