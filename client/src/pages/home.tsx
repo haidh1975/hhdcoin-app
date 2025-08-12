@@ -2,6 +2,7 @@ import Navigation from "@/components/navigation";
 import HeroSection from "@/components/hero-section";
 import InvestmentCalculator from "@/components/investment-calculator";
 import InvestmentPackages from "@/components/investment-packages";
+import InvestorsTable from "@/components/investors-table";
 import FeaturesSection from "@/components/features-section";
 import NewsAnalysis from "@/components/news-analysis";
 import MarketAnalysis from "@/components/market-analysis";
@@ -16,6 +17,7 @@ export default function Home() {
       <HeroSection />
       <InvestmentCalculator />
       <InvestmentPackages />
+      <InvestorsTable />
       <FeaturesSection />
       <NewsAnalysis />
       <MarketAnalysis />

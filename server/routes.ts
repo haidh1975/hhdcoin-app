@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactMessageSchema } from "@shared/schema";
+import { insertContactMessageSchema, insertInvestorSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -26,6 +26,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(400).json({ message: "Dữ liệu không hợp lệ", errors: error.errors });
       } else {
         res.status(500).json({ message: "Có lỗi xảy ra khi gửi tin nhắn" });
+      }
+    }
+  });
+
+  // Get investors
+  app.get("/api/investors", async (req, res) => {
+    try {
+      const investors = await storage.getInvestors();
+      res.json(investors);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch investors" });
+    }
+  });
+
+  // Create new investor
+  app.post("/api/investors", async (req, res) => {
+    try {
+      const validatedData = insertInvestorSchema.parse(req.body);
+      const investor = await storage.createInvestor(validatedData);
+      res.json({ success: true, investor });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Dữ liệu không hợp lệ", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Có lỗi xảy ra khi tạo thông tin nhà đầu tư" });
       }
     }
   });

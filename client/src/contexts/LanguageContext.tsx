@@ -16,6 +16,7 @@ const translations = {
     // Navigation
     'nav.home': 'Trang chủ',
     'nav.investment': 'Đầu tư',
+    'nav.investors': 'Nhà đầu tư',
     'nav.news': 'Tin tức',
     'nav.analysis': 'Phân tích',
     'nav.community': 'Cộng đồng',
@@ -69,6 +70,10 @@ const translations = {
     'contact.form.send': 'Gửi tin nhắn',
     'contact.form.sending': 'Đang gửi...',
     
+    // Investors
+    'investors.title': 'Bảng thông tin nhà đầu tư',
+    'investors.description': 'Theo dõi hiệu quả đầu tư và thành tích của các nhà đầu tư trên nền tảng HHDcoin',
+    
     // Common
     'common.loading': 'Đang tải...',
     'common.read_more': 'Đọc tiếp',
@@ -78,6 +83,7 @@ const translations = {
     // Navigation
     'nav.home': 'Home',
     'nav.investment': 'Investment',
+    'nav.investors': 'Investors',
     'nav.news': 'News',
     'nav.analysis': 'Analysis',
     'nav.community': 'Community',
@@ -130,6 +136,10 @@ const translations = {
     'contact.form.message': 'Message',
     'contact.form.send': 'Send Message',
     'contact.form.sending': 'Sending...',
+    
+    // Investors
+    'investors.title': 'Investor Information Table',
+    'investors.description': 'Track investment performance and achievements of investors on the HHDcoin platform',
     
     // Common
     'common.loading': 'Loading...',

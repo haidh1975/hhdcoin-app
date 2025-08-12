@@ -45,6 +45,13 @@ export default function Navigation() {
               {t('nav.investment')}
             </button>
             <button 
+              onClick={() => scrollToSection("investors")} 
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-investors"
+            >
+              {t('nav.investors')}
+            </button>
+            <button 
               onClick={() => scrollToSection("news")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-news"
@@ -131,6 +138,13 @@ export default function Navigation() {
                 data-testid="nav-link-mobile-investment"
               >
                 {t('nav.investment')}
+              </button>
+              <button 
+                onClick={() => scrollToSection("investors")} 
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-investors"
+              >
+                {t('nav.investors')}
               </button>
               <button 
                 onClick={() => scrollToSection("news")} 
