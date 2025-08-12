@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { SiBitcoin } from "react-icons/si";
+import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
+  const [location] = useLocation();
 
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
@@ -19,7 +21,7 @@ export default function Navigation() {
     <header className="bg-white shadow-lg sticky top-0 z-50" data-testid="header-navigation">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3" data-testid="logo-section">
+          <Link href="/" className="flex items-center space-x-3" data-testid="logo-section">
             <div className="w-10 h-10 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-full flex items-center justify-center">
               <SiBitcoin className="text-white text-xl" />
             </div>
@@ -27,30 +29,30 @@ export default function Navigation() {
               <h1 className="text-2xl font-bold text-dark-slate">HHDcoin</h1>
               <p className="text-xs text-gray-500">Bitcoin Investment Platform</p>
             </div>
-          </div>
+          </Link>
           
           <div className="hidden md:flex items-center space-x-8" data-testid="nav-menu-desktop">
-            <button 
-              onClick={() => scrollToSection("home")} 
+            <Link 
+              href="/"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-home"
             >
               {t('nav.home')}
-            </button>
-            <button 
-              onClick={() => scrollToSection("investment")} 
+            </Link>
+            <Link 
+              href="/#investment"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-investment"
             >
               {t('nav.investment')}
-            </button>
-            <button 
-              onClick={() => scrollToSection("investors")} 
+            </Link>
+            <Link 
+              href="/investors"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-investors"
             >
               {t('nav.investors')}
-            </button>
+            </Link>
             <button 
               onClick={() => scrollToSection("news")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
@@ -125,27 +127,30 @@ export default function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-gray-200" data-testid="nav-menu-mobile">
             <div className="flex flex-col space-y-4 pt-4">
-              <button 
-                onClick={() => scrollToSection("home")} 
+              <Link
+                href="/"
+                onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-home"
               >
                 {t('nav.home')}
-              </button>
-              <button 
-                onClick={() => scrollToSection("investment")} 
+              </Link>
+              <Link
+                href="/#investment"
+                onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-investment"
               >
                 {t('nav.investment')}
-              </button>
-              <button 
-                onClick={() => scrollToSection("investors")} 
+              </Link>
+              <Link
+                href="/investors"
+                onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-investors"
               >
                 {t('nav.investors')}
-              </button>
+              </Link>
               <button 
                 onClick={() => scrollToSection("news")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
