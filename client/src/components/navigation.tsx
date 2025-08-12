@@ -80,6 +80,13 @@ export default function Navigation() {
               {t('nav.community')}
             </Link>
             <Link
+              href="/admin"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-admin"
+            >
+              Quản lý
+            </Link>
+            <Link
               href="/investors"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-investors"
