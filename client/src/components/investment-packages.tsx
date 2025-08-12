@@ -31,11 +31,11 @@ export default function InvestmentPackages() {
             <Card 
               key={pkg.id} 
               className={`relative shadow-lg hover:shadow-xl transition-shadow ${
-                pkg.recommended ? 'transform scale-105 border-2 border-bitcoin' : ''
+                (pkg.recommended === 1) ? 'transform scale-105 border-2 border-bitcoin' : ''
               }`}
               data-testid={`card-package-${pkg.id}`}
             >
-              {pkg.recommended && (
+              {(pkg.recommended === 1) && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-bitcoin px-4 py-2 rounded-full text-sm font-bold border-2 border-bitcoin">
                   <Star className="inline mr-1 h-4 w-4" />
                   PHỔ BIẾN NHẤT
@@ -43,16 +43,16 @@ export default function InvestmentPackages() {
               )}
               
               <CardContent className={`p-8 text-center ${
-                pkg.recommended ? 'bg-gradient-to-br from-bitcoin to-bitcoin-light text-white' : 'bg-white'
+                (pkg.recommended === 1) ? 'bg-gradient-to-br from-bitcoin to-bitcoin-light text-white' : 'bg-white'
               }`}>
                 <div className="mb-6">
-                  <h3 className={`text-2xl font-bold mb-2 ${pkg.recommended ? 'text-white' : 'text-dark-slate'}`} data-testid={`text-package-name-${pkg.id}`}>
+                  <h3 className={`text-2xl font-bold mb-2 ${(pkg.recommended === 1) ? 'text-white' : 'text-dark-slate'}`} data-testid={`text-package-name-${pkg.id}`}>
                     {pkg.name}
                   </h3>
-                  <div className={`text-4xl font-bold mb-2 ${pkg.recommended ? 'text-white' : 'text-bitcoin'}`} data-testid={`text-package-rate-${pkg.id}`}>
+                  <div className={`text-4xl font-bold mb-2 ${(pkg.recommended === 1) ? 'text-white' : 'text-bitcoin'}`} data-testid={`text-package-rate-${pkg.id}`}>
                     {pkg.minRate}-{pkg.maxRate}%
                   </div>
-                  <div className={`${pkg.recommended ? 'opacity-90' : 'text-gray-600'}`}>
+                  <div className={`${(pkg.recommended === 1) ? 'opacity-90' : 'text-gray-600'}`}>
                     Lợi nhuận/năm
                   </div>
                 </div>
@@ -60,8 +60,8 @@ export default function InvestmentPackages() {
                 <div className="space-y-4 mb-8 text-left">
                   {pkg.features.map((feature: string, featureIndex: number) => (
                     <div key={featureIndex} className="flex items-center" data-testid={`feature-${pkg.id}-${featureIndex}`}>
-                      <Check className={`mr-3 h-5 w-5 ${pkg.recommended ? 'text-white' : 'text-green-500'}`} />
-                      <span className={pkg.recommended ? 'text-white' : 'text-gray-700'}>{feature}</span>
+                      <Check className={`mr-3 h-5 w-5 ${(pkg.recommended === 1) ? 'text-white' : 'text-green-500'}`} />
+                      <span className={(pkg.recommended === 1) ? 'text-white' : 'text-gray-700'}>{feature}</span>
                     </div>
                   ))}
                   
@@ -76,9 +76,9 @@ export default function InvestmentPackages() {
                 
                 <Button 
                   onClick={scrollToContact}
-                  variant={pkg.recommended ? "secondary" : "outline"}
+                  variant={(pkg.recommended === 1) ? "secondary" : "outline"}
                   className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                    pkg.recommended 
+                    (pkg.recommended === 1)
                       ? 'bg-white text-bitcoin hover:bg-gray-50' 
                       : 'border-2 border-bitcoin text-bitcoin hover:bg-bitcoin hover:text-white'
                   }`}
