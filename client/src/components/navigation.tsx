@@ -51,6 +51,22 @@ export default function Navigation() {
               {t('nav.home')}
             </Link>
             
+            <Link 
+              href="/analysis"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-analysis"
+            >
+              Phân tích
+            </Link>
+            
+            <Link 
+              href="/news"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-news"
+            >
+              Tin tức
+            </Link>
+            
             {/* Investment Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center text-dark-slate hover:text-bitcoin transition-colors font-medium">
@@ -178,12 +194,28 @@ export default function Navigation() {
                 {t('nav.home')}
               </Link>
               <Link
-                href="/#investment"
+                href="/analysis"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-analysis"
+              >
+                Phân tích
+              </Link>
+              <Link
+                href="/news"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-news"
+              >
+                Tin tức
+              </Link>
+              <Link
+                href="/investment-packages"
                 onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-packages"
               >
-                {t('nav.packages')}
+                Gói đầu tư
               </Link>
               <Link
                 href="/investors"
@@ -191,22 +223,8 @@ export default function Navigation() {
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-investment"
               >
-                {t('nav.investment')}
+                Nhà đầu tư
               </Link>
-              <button 
-                onClick={() => scrollToSection("news")} 
-                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
-                data-testid="nav-link-mobile-news"
-              >
-                {t('nav.news')}
-              </button>
-              <button 
-                onClick={() => scrollToSection("analysis")} 
-                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
-                data-testid="nav-link-mobile-analysis"
-              >
-                {t('nav.analysis')}
-              </button>
               <Link
                 href="/community"
                 onClick={() => setIsMenuOpen(false)}

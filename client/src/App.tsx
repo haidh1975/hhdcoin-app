@@ -11,6 +11,8 @@ import Community from "@/pages/community";
 import Admin from "@/pages/admin";
 import InvestmentPackages from "@/pages/investment-packages";
 import AuthManagement from "@/pages/auth";
+import Analysis from "@/pages/analysis";
+import News from "@/pages/news";
 
 function Router() {
   return (
@@ -21,6 +23,8 @@ function Router() {
       <Route path="/community" component={Community} />
       <Route path="/admin" component={Admin} />
       <Route path="/auth" component={AuthManagement} />
+      <Route path="/analysis" component={Analysis} />
+      <Route path="/news" component={News} />
       <Route component={NotFound} />
     </Switch>
   );
