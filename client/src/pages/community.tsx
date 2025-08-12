@@ -47,10 +47,7 @@ export default function Community() {
 
   const addMemberMutation = useMutation({
     mutationFn: async (data: z.infer<typeof insertCommunityMemberSchema>) => {
-      return await apiRequest("/api/community-members", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("/api/community-members", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/community-members"] });
@@ -71,9 +68,7 @@ export default function Community() {
 
   const deleteMemberMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/community-members/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/community-members/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/community-members"] });
@@ -106,6 +101,8 @@ export default function Community() {
       isActive: true,
       memberLevel: "Bronze",
       points: 0,
+      socialLinks: [],
+      totalInvestment: "",
     },
   });
 
@@ -113,8 +110,8 @@ export default function Community() {
     const matchesSearch = member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.location?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesExperience = !experienceFilter || member.experienceLevel === experienceFilter;
-    const matchesLevel = !memberLevelFilter || member.memberLevel === memberLevelFilter;
+    const matchesExperience = !experienceFilter || experienceFilter === "all" || member.experienceLevel === experienceFilter;
+    const matchesLevel = !memberLevelFilter || memberLevelFilter === "all" || member.memberLevel === memberLevelFilter;
     
     return matchesSearch && matchesExperience && matchesLevel;
   });
@@ -222,7 +219,7 @@ export default function Community() {
                         <FormItem>
                           <FormLabel>Địa điểm</FormLabel>
                           <FormControl>
-                            <Input placeholder="Hà Nội" {...field} data-testid="input-location" />
+                            <Input placeholder="Hà Nội" {...field} value={field.value || ""} data-testid="input-location" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -237,7 +234,7 @@ export default function Community() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Mức độ kinh nghiệm</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value || "beginner"}>
                             <FormControl>
                               <SelectTrigger data-testid="select-experience-level">
                                 <SelectValue placeholder="Chọn mức độ" />
@@ -261,7 +258,7 @@ export default function Community() {
                         <FormItem>
                           <FormLabel>Nghề nghiệp</FormLabel>
                           <FormControl>
-                            <Input placeholder="Kỹ sư phần mềm" {...field} data-testid="input-occupation" />
+                            <Input placeholder="Kỹ sư phần mềm" {...field} value={field.value || ""} data-testid="input-occupation" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -280,6 +277,7 @@ export default function Community() {
                             placeholder="Chia sẻ về kinh nghiệm đầu tư và mục tiêu của bạn..."
                             className="min-h-[100px]"
                             {...field}
+                            value={field.value || ""}
                             data-testid="textarea-bio"
                           />
                         </FormControl>
@@ -373,7 +371,7 @@ export default function Community() {
                 <SelectValue placeholder="Mức độ kinh nghiệm" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả</SelectItem>
+                <SelectItem value="all">Tất cả</SelectItem>
                 <SelectItem value="beginner">Người mới</SelectItem>
                 <SelectItem value="intermediate">Trung cấp</SelectItem>
                 <SelectItem value="advanced">Nâng cao</SelectItem>
@@ -385,7 +383,7 @@ export default function Community() {
                 <SelectValue placeholder="Cấp độ thành viên" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả</SelectItem>
+                <SelectItem value="all">Tất cả</SelectItem>
                 <SelectItem value="Bronze">Bronze</SelectItem>
                 <SelectItem value="Silver">Silver</SelectItem>
                 <SelectItem value="Gold">Gold</SelectItem>
@@ -396,8 +394,8 @@ export default function Community() {
               variant="outline" 
               onClick={() => {
                 setSearchTerm("");
-                setExperienceFilter("");
-                setMemberLevelFilter("");
+                setExperienceFilter("all");
+                setMemberLevelFilter("all");
               }}
               data-testid="button-clear-filters"
             >
