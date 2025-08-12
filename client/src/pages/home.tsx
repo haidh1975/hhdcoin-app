@@ -1,6 +1,7 @@
 import Navigation from "@/components/navigation";
 import HeroSection from "@/components/hero-section";
 import InvestmentCalculator from "@/components/investment-calculator";
+import BitcoinChart from "@/components/bitcoin-chart";
 import InvestmentSection from "@/components/investment-section";
 import FeaturesSection from "@/components/features-section";
 import NewsAnalysis from "@/components/news-analysis";
@@ -15,6 +16,7 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <InvestmentCalculator />
+      <BitcoinChart />
       <InvestmentSection />
       <FeaturesSection />
       <NewsAnalysis />
