@@ -182,7 +182,7 @@ export default function Admin() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Gói đề xuất</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder="Chọn trạng thái" />
