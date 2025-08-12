@@ -15,8 +15,8 @@ const translations = {
   vi: {
     // Navigation
     'nav.home': 'Trang chủ',
+    'nav.packages': 'Gói đầu tư',
     'nav.investment': 'Đầu tư',
-    'nav.investors': 'Nhà đầu tư',
     'nav.news': 'Tin tức',
     'nav.analysis': 'Phân tích',
     'nav.community': 'Cộng đồng',
@@ -88,8 +88,8 @@ const translations = {
   en: {
     // Navigation
     'nav.home': 'Home',
+    'nav.packages': 'Investment Packages',
     'nav.investment': 'Investment',
-    'nav.investors': 'Investors',
     'nav.news': 'News',
     'nav.analysis': 'Analysis',
     'nav.community': 'Community',

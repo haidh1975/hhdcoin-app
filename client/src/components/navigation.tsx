@@ -42,16 +42,16 @@ export default function Navigation() {
             <Link 
               href="/#investment"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-investment"
+              data-testid="nav-link-packages"
             >
-              {t('nav.investment')}
+              {t('nav.packages')}
             </Link>
             <Link 
               href="/investors"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-investors"
+              data-testid="nav-link-investment"
             >
-              {t('nav.investors')}
+              {t('nav.investment')}
             </Link>
             <button 
               onClick={() => scrollToSection("news")} 
@@ -139,17 +139,17 @@ export default function Navigation() {
                 href="/#investment"
                 onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
-                data-testid="nav-link-mobile-investment"
+                data-testid="nav-link-mobile-packages"
               >
-                {t('nav.investment')}
+                {t('nav.packages')}
               </Link>
               <Link
                 href="/investors"
                 onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
-                data-testid="nav-link-mobile-investors"
+                data-testid="nav-link-mobile-investment"
               >
-                {t('nav.investors')}
+                {t('nav.investment')}
               </Link>
               <button 
                 onClick={() => scrollToSection("news")} 
