@@ -33,10 +33,10 @@ export default function FeaturesSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-features-title">
-            Tại sao chọn HHDcoin?
+            Tại sao chọn <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span>?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-features-description">
-            Những điểm khác biệt vượt trội giúp HHDcoin dẫn đầu thị trường đầu tư Bitcoin Việt Nam
+            Những điểm khác biệt vượt trội giúp <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span> dẫn đầu thị trường đầu tư Bitcoin Việt Nam
           </p>
         </div>
         

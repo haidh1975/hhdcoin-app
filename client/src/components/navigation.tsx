@@ -26,7 +26,12 @@ export default function Navigation() {
               <SiBitcoin className="text-white text-xl" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-dark-slate">HHDcoin</h1>
+              <h1 className="text-2xl font-bold">
+                <span className="text-gray-400">H</span>
+                <span className="text-blue-600">H</span>
+                <span className="text-black">D</span>
+                <span className="text-bitcoin">coin</span>
+              </h1>
               <p className="text-xs text-gray-500">Bitcoin Investment Platform</p>
             </div>
           </Link>

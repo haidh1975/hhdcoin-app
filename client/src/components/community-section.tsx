@@ -48,7 +48,7 @@ export default function CommunitySection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-community-title">
-            Cộng đồng HHDcoin
+            Cộng đồng <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-community-description">
             Kết nối với hàng nghìn nhà đầu tư Bitcoin, chia sẻ kinh nghiệm và học hỏi từ các chuyên gia

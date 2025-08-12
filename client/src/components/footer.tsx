@@ -56,13 +56,18 @@ export default function Footer() {
                 <SiBitcoin className="text-white text-2xl" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold" data-testid="text-company-name">HHDcoin</h3>
+                <h3 className="text-2xl font-bold" data-testid="text-company-name">
+                  <span className="text-gray-400">H</span>
+                  <span className="text-blue-600">H</span>
+                  <span className="text-black">D</span>
+                  <span className="text-bitcoin">coin</span>
+                </h3>
                 <p className="text-gray-400 text-sm">Bitcoin Investment Platform</p>
               </div>
             </div>
             
             <p className="text-gray-300 mb-6 leading-relaxed" data-testid="text-company-description">
-              HHDcoin là nền tảng đầu tư Bitcoin hàng đầu Việt Nam, cung cấp công nghệ AI dự báo tiên tiến, 
+              <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span> là nền tảng đầu tư Bitcoin hàng đầu Việt Nam, cung cấp công nghệ AI dự báo tiên tiến, 
               phân tích thị trường chuyên sâu và dịch vụ tư vấn đầu tư chuyên nghiệp.
             </p>
             
