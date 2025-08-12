@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function NewsAnalysis() {
   const featuredArticle = {
-    title: "Bitcoin vượt mốc $44K: Tín hiệu tăng trưởng mạnh hay bẫy bull trap?",
-    excerpt: "Phân tích kỹ thuật cho thấy Bitcoin đã phá vỡ ngưỡng kháng cự quan trọng tại $43,500. AI dự báo của HHDcoin chỉ ra khả năng tiếp tục tăng trưởng trong 7 ngày tới với độ tin cậy 87%...",
+    title: "🚀 Bitcoin chính thức vượt mốc $150K: Kỷ lục lịch sử mới!",
+    excerpt: "Lần đầu tiên trong lịch sử, Bitcoin đã phá vỡ ngưỡng tâm lý $150,000, đánh dấu cột mốc quan trọng cho thị trường crypto. AI dự báo của HHDcoin đã chính xác dự đoán sự kiện này với độ tin cậy 94%. Các chuyên gia nhận định đây là bước ngoặt quan trọng trong việc Bitcoin trở thành tài sản dự trữ toàn cầu...",
     category: "Phân tích chuyên sâu",
     time: "2 giờ trước",
     image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400"
@@ -13,30 +13,30 @@ export default function NewsAnalysis() {
 
   const newsItems = [
     {
-      title: "ETF Bitcoin tiếp tục thu hút dòng vốn khủng",
-      time: "1 giờ trước",
-      status: "Tích cực",
-      statusColor: "text-green-500",
+      title: "💰 BlackRock ETF đạt $100 tỷ AUM sau khi Bitcoin vượt $150K",
+      time: "30 phút trước",
+      status: "Nóng hổi",
+      statusColor: "text-red-500",
       image: "https://images.unsplash.com/photo-1640340434855-6084b1f4901c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100"
     },
     {
-      title: "Fed có thể cắt giảm lãi suất sớm hơn dự kiến",
-      time: "3 giờ trước",
-      status: "Quan trọng",
+      title: "🏛️ El Salvador công bố mua thêm 1000 BTC tại mức $150K",
+      time: "1 giờ trước",
+      status: "Chính phủ",
       statusColor: "text-bitcoin",
       image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100"
     },
     {
-      title: "Công nghệ Lightning Network đạt kỷ lục mới",
-      time: "5 giờ trước",
+      title: "⚡ Lightning Network xử lý 10M giao dịch/ngày",
+      time: "2 giờ trước",
       status: "Công nghệ",
       statusColor: "text-blue-500",
       image: "https://images.unsplash.com/photo-1639322537228-f710d846310a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100"
     },
     {
-      title: "Thị trường châu Á phản ứng tích cực với Bitcoin",
-      time: "8 giờ trước",
-      status: "Thị trường",
+      title: "🌏 Nhật Bản xem xét Bitcoin làm tài sản dự trữ",
+      time: "4 giờ trước",
+      status: "Quốc gia",
       statusColor: "text-green-500",
       image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100"
     }
