@@ -67,7 +67,7 @@ export const communityMembers = pgTable("community_members", {
   points: integer("points").default(0),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
+export const insertRealtUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
 });
@@ -99,7 +99,30 @@ export const insertCommunityMemberSchema = createInsertSchema(communityMembers).
   lastActive: true,
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
+// User Management Table for Auth System
+export const authUsers = pgTable("auth_users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  role: varchar("role", { length: 20 }).notNull().default("member"), // admin, member
+  fullName: varchar("full_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 100 }),
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, inactive
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAuthUserSchema = createInsertSchema(authUsers).omit({
+  id: true,
+  lastLogin: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type AuthUser = typeof authUsers.$inferSelect;
+export type InsertAuthUser = z.infer<typeof insertAuthUserSchema>;
+export type InsertUser = z.infer<typeof insertRealtUserSchema>;
 export type User = typeof users.$inferSelect;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;

@@ -1,6 +1,8 @@
 import { 
   type User, 
   type InsertUser, 
+  type AuthUser,
+  type InsertAuthUser,
   type ContactMessage, 
   type InsertContactMessage,
   type InvestmentPackage,
@@ -16,6 +18,15 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // Auth user management
+  getAuthUsers(): Promise<AuthUser[]>;
+  getAuthUser(id: string): Promise<AuthUser | undefined>;
+  getAuthUserByUsername(username: string): Promise<AuthUser | undefined>;
+  createAuthUser(user: InsertAuthUser): Promise<AuthUser>;
+  updateAuthUser(id: string, user: Partial<AuthUser>): Promise<AuthUser | undefined>;
+  deleteAuthUser(id: string): Promise<boolean>;
+  
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   getInvestmentPackages(): Promise<InvestmentPackage[]>;
   getInvestors(): Promise<Investor[]>;
@@ -29,6 +40,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private authUsers: Map<string, AuthUser>;
   private contactMessages: Map<string, ContactMessage>;
   private investmentPackages: Map<string, InvestmentPackage>;
   private investors: Map<string, Investor>;
@@ -36,15 +48,17 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.authUsers = new Map();
     this.contactMessages = new Map();
     this.investmentPackages = new Map();
     this.investors = new Map();
     this.communityMembers = new Map();
     
-    // Initialize investment packages, sample investors, and community members
+    // Initialize data
     this.initializeInvestmentPackages();
     this.initializeSampleInvestors();
     this.initializeSampleCommunityMembers();
+    this.initializeSampleAuthUsers();
   }
 
   private initializeInvestmentPackages() {
@@ -350,6 +364,98 @@ export class MemStorage implements IStorage {
 
   async deleteCommunityMember(id: string): Promise<boolean> {
     return this.communityMembers.delete(id);
+  }
+
+  // Auth User Methods
+  private initializeSampleAuthUsers() {
+    const sampleAuthUsers: AuthUser[] = [
+      {
+        id: randomUUID(),
+        username: "admin",
+        password: "admin123", // In real app, this would be hashed
+        role: "admin",
+        fullName: "Administrator",
+        email: "admin@hhdcoin.net",
+        status: "active",
+        lastLogin: new Date("2025-08-10T09:00:00Z"),
+        createdAt: new Date("2025-01-01T00:00:00Z"),
+        updatedAt: new Date("2025-08-10T09:00:00Z"),
+      },
+      {
+        id: randomUUID(),
+        username: "member1",
+        password: "member123",
+        role: "member",
+        fullName: "Nguyễn Văn A",
+        email: "member1@gmail.com",
+        status: "active",
+        lastLogin: new Date("2025-08-11T14:30:00Z"),
+        createdAt: new Date("2025-02-15T00:00:00Z"),
+        updatedAt: new Date("2025-08-11T14:30:00Z"),
+      },
+      {
+        id: randomUUID(),
+        username: "manager",
+        password: "manager123",
+        role: "admin",
+        fullName: "Trần Thị B",
+        email: "manager@hhdcoin.net",
+        status: "active",
+        lastLogin: null,
+        createdAt: new Date("2025-03-01T00:00:00Z"),
+        updatedAt: new Date("2025-03-01T00:00:00Z"),
+      }
+    ];
+
+    sampleAuthUsers.forEach(user => {
+      this.authUsers.set(user.id, user);
+    });
+  }
+
+  async getAuthUsers(): Promise<AuthUser[]> {
+    return Array.from(this.authUsers.values()).sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async getAuthUser(id: string): Promise<AuthUser | undefined> {
+    return this.authUsers.get(id);
+  }
+
+  async getAuthUserByUsername(username: string): Promise<AuthUser | undefined> {
+    return Array.from(this.authUsers.values()).find(
+      (user) => user.username === username,
+    );
+  }
+
+  async createAuthUser(insertUser: InsertAuthUser): Promise<AuthUser> {
+    const id = randomUUID();
+    const user: AuthUser = { 
+      ...insertUser, 
+      id,
+      lastLogin: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.authUsers.set(id, user);
+    return user;
+  }
+
+  async updateAuthUser(id: string, updates: Partial<AuthUser>): Promise<AuthUser | undefined> {
+    const existing = this.authUsers.get(id);
+    if (!existing) return undefined;
+    
+    const updated = { 
+      ...existing, 
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.authUsers.set(id, updated);
+    return updated;
+  }
+
+  async deleteAuthUser(id: string): Promise<boolean> {
+    return this.authUsers.delete(id);
   }
 }
 

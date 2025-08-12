@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown, Package, UserCheck, Users, BarChart3, Settings } from "lucide-react";
 import { SiBitcoin } from "react-icons/si";
 import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,20 +50,29 @@ export default function Navigation() {
             >
               {t('nav.home')}
             </Link>
-            <Link 
-              href="/#investment"
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-packages"
-            >
-              {t('nav.packages')}
-            </Link>
-            <Link 
-              href="/investors"
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-investment"
-            >
-              {t('nav.investment')}
-            </Link>
+            
+            {/* Investment Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                Đầu tư
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/investment-packages" className="flex items-center">
+                    <Package className="mr-2 h-4 w-4" />
+                    Gói đầu tư
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/investors" className="flex items-center">
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Nhà đầu tư
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <button 
               onClick={() => scrollToSection("news")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
@@ -79,20 +94,28 @@ export default function Navigation() {
             >
               {t('nav.community')}
             </Link>
-            <Link
-              href="/admin"
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-admin"
-            >
-              Quản lý
-            </Link>
-            <Link
-              href="/investors"
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-investors"
-            >
-              Nhà đầu tư
-            </Link>
+            
+            {/* Management Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                Quản lý
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin" className="flex items-center">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/auth" className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    User & Pass
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <button 
               onClick={() => scrollToSection("contact")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"

@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { 
   insertContactMessageSchema, 
   insertInvestorSchema, 
-  insertCommunityMemberSchema 
+  insertCommunityMemberSchema,
+  insertAuthUserSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -255,6 +256,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Thành viên đã được xóa thành công" });
     } catch (error) {
       res.status(500).json({ message: "Có lỗi xảy ra khi xóa thành viên" });
+    }
+  });
+
+  // Auth Users Management Routes
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getAuthUsers();
+      // Don't send passwords in the response
+      const safeUsers = users.map(user => {
+        const { password, ...safeUser } = user;
+        return safeUser;
+      });
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/users", async (req, res) => {
+    try {
+      const validatedData = insertAuthUserSchema.parse(req.body);
+      const user = await storage.createAuthUser(validatedData);
+      const { password, ...safeUser } = user;
+      res.json({ success: true, user: safeUser });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Dữ liệu không hợp lệ", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Có lỗi xảy ra khi tạo tài khoản" });
+      }
+    }
+  });
+
+  app.patch("/api/users/:id", async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const updates = req.body;
+      
+      // Remove empty password field to avoid updating with empty string
+      if (updates.password === "") {
+        delete updates.password;
+      }
+      
+      const updatedUser = await storage.updateAuthUser(userId, updates);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Không tìm thấy tài khoản" });
+      }
+      
+      const { password, ...safeUser } = updatedUser;
+      res.json({ success: true, user: safeUser });
+    } catch (error) {
+      res.status(500).json({ message: "Có lỗi xảy ra khi cập nhật tài khoản" });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const success = await storage.deleteAuthUser(userId);
+      if (!success) {
+        return res.status(404).json({ message: "Không tìm thấy tài khoản" });
+      }
+      res.json({ success: true, message: "Tài khoản đã được xóa" });
+    } catch (error) {
+      res.status(500).json({ message: "Có lỗi xảy ra khi xóa tài khoản" });
     }
   });
 
