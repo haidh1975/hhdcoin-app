@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -44,6 +44,27 @@ export const investors = pgTable("investors", {
   packageId: varchar("package_id").references(() => investmentPackages.id),
 });
 
+export const communityMembers = pgTable("community_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone").notNull(),
+  avatar: text("avatar"),
+  bio: text("bio"),
+  interests: text("interests").array(),
+  experienceLevel: text("experience_level").notNull().default("beginner"), // beginner, intermediate, advanced, expert
+  investmentFocus: text("investment_focus").array(), // Bitcoin, Ethereum, DeFi, NFT, etc.
+  joinDate: timestamp("join_date").defaultNow(),
+  lastActive: timestamp("last_active").defaultNow(),
+  isActive: boolean("is_active").default(true),
+  socialLinks: text("social_links").array(),
+  location: text("location"),
+  occupation: text("occupation"),
+  totalInvestment: decimal("total_investment", { precision: 15, scale: 0 }),
+  memberLevel: text("member_level").notNull().default("Bronze"), // Bronze, Silver, Gold, Diamond
+  points: integer("points").default(0),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -63,6 +84,12 @@ export const insertInvestorSchema = createInsertSchema(investors).omit({
   investmentDate: true,
 });
 
+export const insertCommunityMemberSchema = createInsertSchema(communityMembers).omit({
+  id: true,
+  joinDate: true,
+  lastActive: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type ContactMessage = typeof contactMessages.$inferSelect;
@@ -71,3 +98,5 @@ export type InvestmentPackage = typeof investmentPackages.$inferSelect;
 export type InsertInvestmentPackage = z.infer<typeof insertInvestmentPackageSchema>;
 export type Investor = typeof investors.$inferSelect;
 export type InsertInvestor = z.infer<typeof insertInvestorSchema>;
+export type CommunityMember = typeof communityMembers.$inferSelect;
+export type InsertCommunityMember = z.infer<typeof insertCommunityMemberSchema>;

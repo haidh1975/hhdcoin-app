@@ -6,7 +6,9 @@ import {
   type InvestmentPackage,
   type InsertInvestmentPackage,
   type Investor,
-  type InsertInvestor
+  type InsertInvestor,
+  type CommunityMember,
+  type InsertCommunityMember
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -19,6 +21,10 @@ export interface IStorage {
   getInvestors(): Promise<Investor[]>;
   createInvestor(investor: InsertInvestor): Promise<Investor>;
   updateInvestor(id: string, investor: Partial<Investor>): Promise<Investor | undefined>;
+  getCommunityMembers(): Promise<CommunityMember[]>;
+  createCommunityMember(member: InsertCommunityMember): Promise<CommunityMember>;
+  updateCommunityMember(id: string, member: Partial<CommunityMember>): Promise<CommunityMember | undefined>;
+  deleteCommunityMember(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -26,16 +32,19 @@ export class MemStorage implements IStorage {
   private contactMessages: Map<string, ContactMessage>;
   private investmentPackages: Map<string, InvestmentPackage>;
   private investors: Map<string, Investor>;
+  private communityMembers: Map<string, CommunityMember>;
 
   constructor() {
     this.users = new Map();
     this.contactMessages = new Map();
     this.investmentPackages = new Map();
     this.investors = new Map();
+    this.communityMembers = new Map();
     
-    // Initialize investment packages and sample investors
+    // Initialize investment packages, sample investors, and community members
     this.initializeInvestmentPackages();
     this.initializeSampleInvestors();
+    this.initializeSampleCommunityMembers();
   }
 
   private initializeInvestmentPackages() {
@@ -228,6 +237,109 @@ export class MemStorage implements IStorage {
     const updated = { ...existing, ...updates };
     this.investors.set(id, updated);
     return updated;
+  }
+
+  private initializeSampleCommunityMembers() {
+    const sampleMembers: CommunityMember[] = [
+      {
+        id: randomUUID(),
+        fullName: "Nguyễn Văn An",
+        email: "nguyenvanan@gmail.com",
+        phone: "0987654321",
+        avatar: null,
+        bio: "Nhà đầu tư Bitcoin với 5 năm kinh nghiệm. Chuyên về phân tích kỹ thuật và DCA.",
+        interests: ["Bitcoin", "Blockchain", "DeFi", "Trading"],
+        experienceLevel: "advanced",
+        investmentFocus: ["Bitcoin", "Ethereum"],
+        joinDate: new Date("2023-01-15"),
+        lastActive: new Date(),
+        isActive: true,
+        socialLinks: ["https://facebook.com/nguyenvanan", "https://twitter.com/nguyenvanan"],
+        location: "Hà Nội",
+        occupation: "Kỹ sư phần mềm",
+        totalInvestment: "500000000",
+        memberLevel: "Gold",
+        points: 2500,
+      },
+      {
+        id: randomUUID(),
+        fullName: "Trần Thị Bình",
+        email: "tranthibinh@yahoo.com",
+        phone: "0912345678",
+        avatar: null,
+        bio: "Người mới bắt đầu học về Bitcoin và crypto. Mong muốn học hỏi từ cộng đồng.",
+        interests: ["Bitcoin", "Đầu tư", "Tài chính cá nhân"],
+        experienceLevel: "beginner",
+        investmentFocus: ["Bitcoin"],
+        joinDate: new Date("2024-06-20"),
+        lastActive: new Date(),
+        isActive: true,
+        socialLinks: ["https://facebook.com/tranthibinh"],
+        location: "TP. Hồ Chí Minh",
+        occupation: "Giáo viên",
+        totalInvestment: "50000000",
+        memberLevel: "Bronze",
+        points: 150,
+      },
+      {
+        id: randomUUID(),
+        fullName: "Lê Minh Cường",
+        email: "leminhcuong@outlook.com",
+        phone: "0908765432",
+        avatar: null,
+        bio: "Trader chuyên nghiệp, chuyên về futures và options. Chia sẻ signals và chiến lược giao dịch.",
+        interests: ["Bitcoin", "Futures", "Options", "Technical Analysis"],
+        experienceLevel: "expert",
+        investmentFocus: ["Bitcoin", "Ethereum", "DeFi"],
+        joinDate: new Date("2022-08-10"),
+        lastActive: new Date(),
+        isActive: true,
+        socialLinks: ["https://twitter.com/leminhcuong", "https://t.me/leminhcuong"],
+        location: "Đà Nẵng",
+        occupation: "Trader",
+        totalInvestment: "2000000000",
+        memberLevel: "Diamond",
+        points: 8500,
+      }
+    ];
+
+    sampleMembers.forEach(member => {
+      this.communityMembers.set(member.id, member);
+    });
+  }
+
+  async getCommunityMembers(): Promise<CommunityMember[]> {
+    return Array.from(this.communityMembers.values()).sort((a, b) => 
+      new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime()
+    );
+  }
+
+  async createCommunityMember(insertMember: InsertCommunityMember): Promise<CommunityMember> {
+    const id = randomUUID();
+    const member: CommunityMember = { 
+      ...insertMember, 
+      id,
+      joinDate: new Date(),
+      lastActive: new Date(),
+      isActive: insertMember.isActive ?? true,
+      memberLevel: insertMember.memberLevel || "Bronze",
+      points: insertMember.points || 0,
+    };
+    this.communityMembers.set(id, member);
+    return member;
+  }
+
+  async updateCommunityMember(id: string, updates: Partial<CommunityMember>): Promise<CommunityMember | undefined> {
+    const existing = this.communityMembers.get(id);
+    if (!existing) return undefined;
+    
+    const updated = { ...existing, ...updates, lastActive: new Date() };
+    this.communityMembers.set(id, updated);
+    return updated;
+  }
+
+  async deleteCommunityMember(id: string): Promise<boolean> {
+    return this.communityMembers.delete(id);
   }
 }
 

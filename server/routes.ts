@@ -1,7 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactMessageSchema, insertInvestorSchema } from "@shared/schema";
+import { 
+  insertContactMessageSchema, 
+  insertInvestorSchema, 
+  insertCommunityMemberSchema 
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -196,6 +200,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating market analysis:", error);
       res.status(500).json({ error: "Failed to generate market analysis" });
+    }
+  });
+
+  // Community Members API Routes
+  app.get("/api/community-members", async (req, res) => {
+    try {
+      const members = await storage.getCommunityMembers();
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch community members" });
+    }
+  });
+
+  app.post("/api/community-members", async (req, res) => {
+    try {
+      const validatedData = insertCommunityMemberSchema.parse(req.body);
+      const member = await storage.createCommunityMember(validatedData);
+      res.json({ success: true, member });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Dữ liệu không hợp lệ", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Có lỗi xảy ra khi tạo thành viên mới" });
+      }
+    }
+  });
+
+  app.put("/api/community-members/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const member = await storage.updateCommunityMember(id, updates);
+      
+      if (!member) {
+        return res.status(404).json({ message: "Không tìm thấy thành viên" });
+      }
+      
+      res.json({ success: true, member });
+    } catch (error) {
+      res.status(500).json({ message: "Có lỗi xảy ra khi cập nhật thành viên" });
+    }
+  });
+
+  app.delete("/api/community-members/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCommunityMember(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Không tìm thấy thành viên" });
+      }
+      
+      res.json({ success: true, message: "Thành viên đã được xóa thành công" });
+    } catch (error) {
+      res.status(500).json({ message: "Có lỗi xảy ra khi xóa thành viên" });
     }
   });
 

@@ -72,13 +72,20 @@ export default function Navigation() {
             >
               {t('nav.analysis')}
             </button>
-            <button 
-              onClick={() => scrollToSection("community")} 
+            <Link
+              href="/community"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-community"
             >
               {t('nav.community')}
-            </button>
+            </Link>
+            <Link
+              href="/investors"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-investors"
+            >
+              Nhà đầu tư
+            </Link>
             <button 
               onClick={() => scrollToSection("contact")} 
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
@@ -170,13 +177,14 @@ export default function Navigation() {
               >
                 {t('nav.analysis')}
               </button>
-              <button 
-                onClick={() => scrollToSection("community")} 
+              <Link
+                href="/community"
+                onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-community"
               >
                 {t('nav.community')}
-              </button>
+              </Link>
               <button 
                 onClick={() => scrollToSection("contact")} 
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
