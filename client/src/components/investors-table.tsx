@@ -41,8 +41,8 @@ export default function InvestorsTable() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      active: { label: "Đang hoạt động", variant: "default" as const },
-      inactive: { label: "Tạm dừng", variant: "secondary" as const },
+      active: { label: t('investors.status.active'), variant: "default" as const },
+      inactive: { label: t('investors.status.inactive'), variant: "secondary" as const },
       completed: { label: "Hoàn thành", variant: "outline" as const }
     };
     
@@ -78,7 +78,7 @@ export default function InvestorsTable() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card data-testid="card-total-investors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tổng số nhà đầu tư</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('investors.stats.total')}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -88,7 +88,7 @@ export default function InvestorsTable() {
 
           <Card data-testid="card-total-investment">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tổng vốn đầu tư</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('investors.stats.investment')}</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -100,7 +100,7 @@ export default function InvestorsTable() {
 
           <Card data-testid="card-total-profit">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tổng lãi/lỗ</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('investors.stats.profit')}</CardTitle>
               {getProfitLossIcon(totalProfit.toString())}
             </CardHeader>
             <CardContent>
@@ -114,22 +114,22 @@ export default function InvestorsTable() {
         {/* Investors Table */}
         <Card data-testid="card-investors-table">
           <CardHeader>
-            <CardTitle>Danh sách nhà đầu tư</CardTitle>
+            <CardTitle>{t('investors.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Họ và tên</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Số điện thoại</TableHead>
-                    <TableHead>Số tiền đầu tư</TableHead>
-                    <TableHead>Thời gian</TableHead>
-                    <TableHead>Mã Bitcoin</TableHead>
-                    <TableHead>Giá trị hiện tại</TableHead>
-                    <TableHead>Lãi/Lỗ</TableHead>
-                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>{t('investors.table.name')}</TableHead>
+                    <TableHead>{t('investors.table.email')}</TableHead>
+                    <TableHead>{t('investors.table.phone')}</TableHead>
+                    <TableHead>{t('investors.table.amount')}</TableHead>
+                    <TableHead>{t('investors.table.time')}</TableHead>
+                    <TableHead>{t('investors.table.bitcoin')}</TableHead>
+                    <TableHead>{t('investors.table.currentValue')}</TableHead>
+                    <TableHead>{t('investors.table.profit')}</TableHead>
+                    <TableHead>{t('investors.table.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -79,6 +79,21 @@ const translations = {
     // Investors
     'investors.title': 'Bảng thông tin nhà đầu tư',
     'investors.description': 'Theo dõi hiệu quả đầu tư và thành tích của các nhà đầu tư trên nền tảng HHDcoin',
+    'investors.stats.total': 'Tổng nhà đầu tư',
+    'investors.stats.investment': 'Tổng đầu tư',
+    'investors.stats.profit': 'Tổng lợi nhuận',
+    'investors.table.name': 'Họ và tên',
+    'investors.table.email': 'Email',
+    'investors.table.phone': 'Số điện thoại',
+    'investors.table.amount': 'Số tiền đầu tư',
+    'investors.table.time': 'Thời gian',
+    'investors.table.bitcoin': 'Mã Bitcoin',
+    'investors.table.currentValue': 'Giá trị hiện tại',
+    'investors.table.profit': 'Lãi/Lỗ',
+    'investors.table.percentage': 'Phần trăm',
+    'investors.table.status': 'Trạng thái',
+    'investors.status.active': 'Hoạt động',
+    'investors.status.inactive': 'Không hoạt động',
     
     // Common
     'common.loading': 'Đang tải...',
@@ -152,6 +167,21 @@ const translations = {
     // Investors
     'investors.title': 'Investor Information Table',
     'investors.description': 'Track investment performance and achievements of investors on the HHDcoin platform',
+    'investors.stats.total': 'Total Investors',
+    'investors.stats.investment': 'Total Investment',
+    'investors.stats.profit': 'Total Profit',
+    'investors.table.name': 'Full Name',
+    'investors.table.email': 'Email',
+    'investors.table.phone': 'Phone',
+    'investors.table.amount': 'Investment Amount',
+    'investors.table.time': 'Time',
+    'investors.table.bitcoin': 'Bitcoin Code',
+    'investors.table.currentValue': 'Current Value',
+    'investors.table.profit': 'Profit/Loss',
+    'investors.table.percentage': 'Percentage',
+    'investors.table.status': 'Status',
+    'investors.status.active': 'Active',
+    'investors.status.inactive': 'Inactive',
     
     // Common
     'common.loading': 'Loading...',
