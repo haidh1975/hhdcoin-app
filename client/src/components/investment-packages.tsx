@@ -43,16 +43,16 @@ export default function InvestmentPackages() {
               )}
               
               <CardContent className={`p-8 text-center ${
-                (pkg.recommended === 1) ? 'bg-gradient-to-br from-bitcoin to-bitcoin-light text-white' : 'bg-white'
+                (pkg.recommended === 1) ? 'bg-gradient-to-br from-bitcoin to-bitcoin-light' : 'bg-white'
               }`}>
                 <div className="mb-6">
-                  <h3 className={`text-2xl font-bold mb-2 ${(pkg.recommended === 1) ? 'text-white' : 'text-dark-slate'}`} data-testid={`text-package-name-${pkg.id}`}>
+                  <h3 className={`text-2xl font-bold mb-2 ${(pkg.recommended === 1) ? 'text-black' : 'text-dark-slate'}`} data-testid={`text-package-name-${pkg.id}`}>
                     {pkg.name}
                   </h3>
-                  <div className={`text-4xl font-bold mb-2 ${(pkg.recommended === 1) ? 'text-white' : 'text-bitcoin'}`} data-testid={`text-package-rate-${pkg.id}`}>
+                  <div className={`text-4xl font-bold mb-2 ${(pkg.recommended === 1) ? 'text-black' : 'text-bitcoin'}`} data-testid={`text-package-rate-${pkg.id}`}>
                     {pkg.minRate}-{pkg.maxRate}%
                   </div>
-                  <div className={`${(pkg.recommended === 1) ? 'opacity-90' : 'text-gray-600'}`}>
+                  <div className={`${(pkg.recommended === 1) ? 'text-black opacity-80' : 'text-gray-600'}`}>
                     Lợi nhuận/năm
                   </div>
                 </div>
@@ -60,8 +60,8 @@ export default function InvestmentPackages() {
                 <div className="space-y-4 mb-8 text-left">
                   {pkg.features.map((feature: string, featureIndex: number) => (
                     <div key={featureIndex} className="flex items-center" data-testid={`feature-${pkg.id}-${featureIndex}`}>
-                      <Check className={`mr-3 h-5 w-5 ${(pkg.recommended === 1) ? 'text-white' : 'text-green-500'}`} />
-                      <span className={(pkg.recommended === 1) ? 'text-white' : 'text-gray-700'}>{feature}</span>
+                      <Check className={`mr-3 h-5 w-5 ${(pkg.recommended === 1) ? 'text-black' : 'text-green-500'}`} />
+                      <span className={(pkg.recommended === 1) ? 'text-black' : 'text-gray-700'}>{feature}</span>
                     </div>
                   ))}
                   
@@ -79,7 +79,7 @@ export default function InvestmentPackages() {
                   variant={(pkg.recommended === 1) ? "secondary" : "outline"}
                   className={`w-full py-3 rounded-lg font-semibold transition-colors ${
                     (pkg.recommended === 1)
-                      ? 'bg-white text-bitcoin hover:bg-gray-50' 
+                      ? 'bg-black text-yellow-400 hover:bg-gray-800' 
                       : 'border-2 border-bitcoin text-bitcoin hover:bg-bitcoin hover:text-white'
                   }`}
                   data-testid={`button-select-package-${pkg.id}`}
