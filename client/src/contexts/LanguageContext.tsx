@@ -15,15 +15,19 @@ const translations = {
   vi: {
     // Navigation
     'nav.home': 'Trang chủ',
-    'nav.packages': 'Gói đầu tư',
-    'nav.investment': 'Đầu tư',
+    'nav.account_management': 'Quản lý tài khoản',
     'nav.news': 'Tin tức',
     'nav.analysis': 'Phân tích',
     'nav.community': 'Cộng đồng',
+    'nav.investment_management': 'Quản lý đầu tư',
+    'nav.investment_utilities': 'Tiện ích đầu tư',
+    'nav.investment_guide': 'Hướng dẫn đầu tư',
     'nav.contact': 'Liên hệ',
+    'nav.packages': 'Gói đầu tư',
+    'nav.investment': 'Đầu tư',
     
     // Hero Section
-    'hero.title': 'Đầu tư Bitcoin',
+    'hero.title': 'Đầu tư Bitcoin Thông minh với AI',
     'hero.title.highlight': 'Thông minh',
     'hero.title.suffix': 'với AI',
     'hero.description': 'Nền tảng đầu tư Bitcoin hàng đầu Việt Nam với công nghệ AI dự báo, phân tích chuyên sâu và cập nhật real-time 24/7.',
@@ -103,18 +107,22 @@ const translations = {
   en: {
     // Navigation
     'nav.home': 'Home',
+    'nav.account_management': 'Account Management',
+    'nav.news': 'News',
+    'nav.analysis': 'Analytics',
+    'nav.community': 'Community',
+    'nav.investment_management': 'Investment Management',
+    'nav.investment_utilities': 'Investment Utilities',
+    'nav.investment_guide': 'Investment Guide',
+    'nav.contact': 'Contact',
     'nav.packages': 'Investment Packages',
     'nav.investment': 'Investment',
-    'nav.news': 'News',
-    'nav.analysis': 'Analysis',
-    'nav.community': 'Community',
-    'nav.contact': 'Contact',
     
     // Hero Section
-    'hero.title': 'Smart Bitcoin',
+    'hero.title': 'Smart Bitcoin Investing with AI',
     'hero.title.highlight': 'Investment',
     'hero.title.suffix': 'with AI',
-    'hero.description': 'Vietnam\'s leading Bitcoin investment platform with AI forecasting technology, in-depth analysis, and real-time updates 24/7.',
+    'hero.description': 'Vietnam\'s leading Bitcoin investment platform with AI-driven forecasting, in-depth analysis, and real-time updates 24/7.',
     'hero.cta.invest': 'Start Investing',
     'hero.cta.demo': 'View AI Demo',
     'hero.feature.security': 'Absolute Security',
