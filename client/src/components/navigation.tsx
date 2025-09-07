@@ -201,6 +201,14 @@ export default function Navigation() {
                 Nhà đầu tư
               </Link>
               <Link
+                href="/account-management"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-account-management"
+              >
+                {t('nav.account_management')}
+              </Link>
+              <Link
                 href="/community"
                 onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
@@ -208,13 +216,30 @@ export default function Navigation() {
               >
                 {t('nav.community')}
               </Link>
-              <button 
-                onClick={() => scrollToSection("contact")} 
+              <Link
+                href="/investment-utilities"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-investment-utilities"
+              >
+                {t('nav.investment_utilities')}
+              </Link>
+              <Link
+                href="/investment-guide"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-investment-guide"
+              >
+                {t('nav.investment_guide')}
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
                 data-testid="nav-link-mobile-contact"
               >
                 {t('nav.contact')}
-              </button>
+              </Link>
               
               {/* Mobile Language Switcher */}
               <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">

@@ -33,7 +33,7 @@ export default function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight" data-testid="text-hero-title">
-              {t('hero.title')} <span className="text-bitcoin">{t('hero.title.highlight')}</span> {t('hero.title.suffix')}
+              {t('hero.title')}
             </h1>
             <p className="text-xl text-gray-300 mb-8 leading-relaxed" data-testid="text-hero-description">
               {t('hero.description')}

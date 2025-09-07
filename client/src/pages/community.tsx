@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCommunityMemberSchema, type CommunityMember } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { z } from "zod";
 
 const memberLevelColors = {
@@ -33,6 +34,7 @@ const experienceLevelLabels = {
 };
 
 export default function Community() {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [experienceFilter, setExperienceFilter] = useState("");
   const [memberLevelFilter, setMemberLevelFilter] = useState("");
@@ -134,7 +136,7 @@ export default function Community() {
           <div>
             <h1 className="text-4xl font-bold text-dark-slate mb-4 flex items-center" data-testid="text-community-title">
               <Users className="mr-3 h-10 w-10 text-bitcoin" />
-              Cộng đồng HHDcoin
+              {t('community.join_title')}
             </h1>
             <p className="text-xl text-gray-600" data-testid="text-community-description">
               Kết nối với cộng đồng nhà đầu tư Bitcoin tại Việt Nam

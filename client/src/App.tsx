@@ -13,6 +13,10 @@ import InvestmentPackages from "@/pages/investment-packages";
 import AuthManagement from "@/pages/auth";
 import Analysis from "@/pages/analysis";
 import News from "@/pages/news";
+import InvestmentUtilities from "@/pages/investment-utilities";
+import InvestmentGuide from "@/pages/investment-guide";
+import Contact from "@/pages/contact";
+import AccountManagement from "@/pages/account-management";
 
 function Router() {
   return (
@@ -25,6 +29,10 @@ function Router() {
       <Route path="/auth" component={AuthManagement} />
       <Route path="/analysis" component={Analysis} />
       <Route path="/news" component={News} />
+      <Route path="/investment-utilities" component={InvestmentUtilities} />
+      <Route path="/investment-guide" component={InvestmentGuide} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/account-management" component={AccountManagement} />
       <Route component={NotFound} />
     </Switch>
   );

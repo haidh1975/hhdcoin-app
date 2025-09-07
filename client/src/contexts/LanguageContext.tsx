@@ -99,6 +99,50 @@ const translations = {
     'investors.status.active': 'Hoạt động',
     'investors.status.inactive': 'Không hoạt động',
     
+    // News Section
+    'news.bitcoin_surge': 'Bitcoin tăng giá mạnh: Giá BTC vượt mốc $125.000 lần đầu tiên trong năm 2025 nhờ lực mua từ các tổ chức lớn.',
+    'news.ai_prediction': 'AI dự báo xu hướng giảm nhẹ: Mô hình AI cho thấy xác suất điều chỉnh giá trong 3 ngày tới lên tới 63%.',
+    'news.mobile_app': 'HHDcoin ra mắt phiên bản app mobile: Ứng dụng đầu tư Bitcoin tích hợp AI đã có mặt trên iOS và Android.',
+    
+    // Analytics Page
+    'analytics.title': 'Phân tích',
+    'analytics.investment_chart': 'Biểu đồ đầu tư: AI sẽ phân tích xu hướng tăng trưởng, khuyến nghị đầu tư và rủi ro dựa trên dữ liệu mới nhất.',
+    'analytics.market_share': 'Biểu đồ thị phần: So sánh phần trăm đầu tư giữa các đồng coin và tổng danh mục của bạn.',
+    'analytics.interest_rate': 'Phân tích lãi suất: Tự động đánh giá hiệu suất theo lãi suất %/tháng.',
+    
+    // Community Page
+    'community.join_title': 'Đăng ký tham gia cộng đồng HHDcoin',
+    'community.form.full_name': 'Họ và tên',
+    'community.form.email': 'Email',
+    'community.form.phone': 'Số điện thoại',
+    'community.form.zalo': 'Liên hệ qua Zalo',
+    'community.form.submit': 'Gửi đăng ký',
+    
+    // Investment Utilities
+    'utilities.title': 'Tiện ích đầu tư thông minh',
+    'utilities.history': 'Lịch sử đầu tư: Xem chi tiết các khoản đầu tư trước đây, bao gồm thời gian, số tiền và lãi tích lũy.',
+    'utilities.pdf_contract': 'Tải hợp đồng PDF: Tải nhanh hợp đồng đầu tư có chữ ký điện tử với đầy đủ thông tin pháp lý.',
+    'utilities.withdrawal': 'Gửi yêu cầu rút vốn: Nộp yêu cầu rút vốn nhanh chóng, xử lý trong vòng 24h làm việc.',
+    'utilities.notifications': 'Thông báo & cảnh báo: Nhận thông báo qua email khi đến hạn hợp đồng, thay đổi trạng thái, hoặc cập nhật hệ thống.',
+    
+    // Investment Guide
+    'guide.title': 'Hướng dẫn đầu tư HHDcoin',
+    'guide.step1': '1. Tạo tài khoản: Truy cập trang Đăng ký và điền thông tin cá nhân để bắt đầu hành trình đầu tư.',
+    'guide.step2': '2. Nạp khoản đầu tư: Điền số tiền (VND), thời gian đầu tư (tháng) và hệ thống sẽ tính lãi suất %/tháng.',
+    'guide.step3': '3. Thanh toán & nhận hợp đồng: Bạn có thể chuyển khoản ngân hàng hoặc gửi USDT/BTC. Sau khi xác nhận, hợp đồng PDF sẽ được tạo tự động.',
+    'guide.step4': '4. Quản lý & theo dõi: Vào khu vực Quản lý tài khoản để xem lịch sử đầu tư, tải hợp đồng và gửi yêu cầu rút vốn.',
+    'guide.step5': '5. Chatbot AI hỗ trợ: Dùng chatbot để được hỗ trợ bất cứ lúc nào, 24/7, cả tiếng Việt và tiếng Anh.',
+    
+    // Contact Page
+    'contact.page_title': 'Liên hệ',
+    'contact.email': 'Email: haidh1975@gmail.com',
+    'contact.phone': 'Tel: +84 888151975',
+    'contact.address': 'Địa chỉ: Số 25, ngõ 155 đường Cầu Giấy, TP. Hà Nội',
+    'contact.facebook': 'Facebook: Zalo hỗ trợ HHDcoin',
+    
+    // Account Management
+    'account.title': 'Xem dữ liệu đầu tư',
+    
     // Common
     'common.loading': 'Đang tải...',
     'common.read_more': 'Đọc tiếp',
@@ -190,6 +234,50 @@ const translations = {
     'investors.table.status': 'Status',
     'investors.status.active': 'Active',
     'investors.status.inactive': 'Inactive',
+    
+    // News Section
+    'news.bitcoin_surge': 'Bitcoin Price Surges: BTC price surpassed the $125,000 mark for the first time in 2025 due to strong institutional buying.',
+    'news.ai_prediction': 'AI Predicts Minor Correction: The AI model indicates a 63% probability of a price correction over the next 3 days.',
+    'news.mobile_app': 'HHDcoin Launches Mobile App: The AI-integrated Bitcoin investment app is now available on iOS and Android.',
+    
+    // Analytics Page
+    'analytics.title': 'Analytics',
+    'analytics.investment_chart': 'Investment Chart: AI will analyze growth trends, investment recommendations, and risks based on the latest data.',
+    'analytics.market_share': 'Market Share Chart: Compare the investment percentage between different coins and your total portfolio.',
+    'analytics.interest_rate': 'Interest Rate Analysis: Automatically evaluate performance based on a monthly interest rate percentage.',
+    
+    // Community Page
+    'community.join_title': 'Join the HHDcoin Community',
+    'community.form.full_name': 'Full Name',
+    'community.form.email': 'Email',
+    'community.form.phone': 'Phone Number',
+    'community.form.zalo': 'Contact via Zalo',
+    'community.form.submit': 'Submit',
+    
+    // Investment Utilities
+    'utilities.title': 'Smart Investment Utilities',
+    'utilities.history': 'Investment History: View detailed past investments, including time, amount, and accumulated profit.',
+    'utilities.pdf_contract': 'Download PDF Contract: Quickly download investment contracts with electronic signatures and full legal information.',
+    'utilities.withdrawal': 'Submit Withdrawal Request: Submit your withdrawal request quickly; it will be processed within 24 working hours.',
+    'utilities.notifications': 'Notifications & Alerts: Receive email notifications when a contract expires, a status changes, or a system update occurs.',
+    
+    // Investment Guide
+    'guide.title': 'HHDcoin Investment Guide',
+    'guide.step1': '1. Create an Account: Go to the Register page and fill in your personal information to start your investment journey.',
+    'guide.step2': '2. Deposit Funds: Enter the amount (VND) and investment duration (months); the system will calculate the monthly interest rate.',
+    'guide.step3': '3. Make Payment & Receive Contract: You can transfer via bank or send USDT/BTC. After confirmation, a PDF contract will be automatically generated.',
+    'guide.step4': '4. Manage & Track: Access the Account Management area to view your investment history, download contracts, and submit withdrawal requests.',
+    'guide.step5': '5. AI Chatbot Support: Use our chatbot for 24/7 assistance in both Vietnamese and English.',
+    
+    // Contact Page
+    'contact.page_title': 'Contacts',
+    'contact.email': 'Email: haidh1975@gmail.com',
+    'contact.phone': 'Tel: +84 888151975',
+    'contact.address': 'Address: 25, lane 155 Cau Giay street, Hanoi city, Vietnam',
+    'contact.facebook': 'Facebook: HHDcoin Zalo Support',
+    
+    // Account Management
+    'account.title': 'View Investment Data',
     
     // Common
     'common.loading': 'Loading...',
