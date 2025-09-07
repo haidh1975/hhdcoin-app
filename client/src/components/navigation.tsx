@@ -3,6 +3,7 @@ import { Menu, X, ChevronDown, Package, UserCheck, Users, BarChart3, Settings } 
 import { SiBitcoin } from "react-icons/si";
 import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
+import logoPath from "@assets/ChatGPT Image 11_42_25 23 thg 8, 2025_1757214723752.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +29,11 @@ export default function Navigation() {
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3" data-testid="logo-section">
-            <div className="w-10 h-10 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-full flex items-center justify-center">
-              <SiBitcoin className="text-white text-xl" />
-            </div>
+            <img 
+              src={logoPath} 
+              alt="HHDcoin Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <div>
               <h1 className="text-2xl font-bold">
                 <span className="text-gray-400">H</span>

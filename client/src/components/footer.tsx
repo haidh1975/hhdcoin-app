@@ -1,5 +1,6 @@
 import { SiBitcoin, SiFacebook, SiTelegram, SiYoutube } from "react-icons/si";
 import { FaTwitter } from "react-icons/fa";
+import logoPath from "@assets/ChatGPT Image 11_42_25 23 thg 8, 2025_1757214723752.png";
 
 export default function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -52,14 +53,16 @@ export default function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-2" data-testid="footer-company-info">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-full flex items-center justify-center">
-                <SiBitcoin className="text-white text-2xl" />
-              </div>
+              <img 
+                src={logoPath} 
+                alt="HHDcoin Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <div>
                 <h3 className="text-2xl font-bold" data-testid="text-company-name">
                   <span className="text-gray-400">H</span>
                   <span className="text-blue-600">H</span>
-                  <span className="text-black">D</span>
+                  <span className="text-yellow-500">D</span>
                   <span className="text-bitcoin">coin</span>
                 </h3>
                 <p className="text-gray-400 text-sm">Bitcoin Investment Platform</p>
