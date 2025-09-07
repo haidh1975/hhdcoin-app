@@ -52,11 +52,11 @@ export default function Navigation() {
             </Link>
             
             <Link 
-              href="/analysis"
+              href="/account-management"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-analysis"
+              data-testid="nav-link-account-management"
             >
-              Phân tích
+              {t('nav.account_management')}
             </Link>
             
             <Link 
@@ -64,45 +64,17 @@ export default function Navigation() {
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-news"
             >
-              Tin tức
+              {t('nav.news')}
             </Link>
             
-            {/* Investment Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center text-dark-slate hover:text-bitcoin transition-colors font-medium">
-                Đầu tư
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link href="/investment-packages" className="flex items-center">
-                    <Package className="mr-2 h-4 w-4" />
-                    Gói đầu tư
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/investors" className="flex items-center">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Nhà đầu tư
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <button 
-              onClick={() => scrollToSection("news")} 
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-news"
-            >
-              {t('nav.news')}
-            </button>
-            <button 
-              onClick={() => scrollToSection("analysis")} 
+            <Link 
+              href="/analysis"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-analysis"
             >
               {t('nav.analysis')}
-            </button>
+            </Link>
+            
             <Link
               href="/community"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
@@ -111,34 +83,37 @@ export default function Navigation() {
               {t('nav.community')}
             </Link>
             
-            {/* Management Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center text-dark-slate hover:text-bitcoin transition-colors font-medium">
-                Quản lý
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin" className="flex items-center">
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/auth" className="flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
-                    User & Pass
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <button 
-              onClick={() => scrollToSection("contact")} 
+            <Link 
+              href="/investment-packages"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-investment-management"
+            >
+              {t('nav.investment_management')}
+            </Link>
+            
+            <Link 
+              href="/investment-utilities"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-investment-utilities"
+            >
+              {t('nav.investment_utilities')}
+            </Link>
+            
+            <Link 
+              href="/investment-guide"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-investment-guide"
+            >
+              {t('nav.investment_guide')}
+            </Link>
+            
+            <Link 
+              href="/contact"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-contact"
             >
               {t('nav.contact')}
-            </button>
+            </Link>
           </div>
           
           <div className="flex items-center space-x-4">
