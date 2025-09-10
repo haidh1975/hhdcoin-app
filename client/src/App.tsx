@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Investors from "@/pages/investors";
@@ -17,22 +19,44 @@ import InvestmentUtilities from "@/pages/investment-utilities";
 import InvestmentGuide from "@/pages/investment-guide";
 import Contact from "@/pages/contact";
 import AccountManagement from "@/pages/account-management";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
+import Dashboard from "@/pages/dashboard";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/dashboard">
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
       <Route path="/investment-packages" component={InvestmentPackages} />
       <Route path="/investors" component={Investors} />
       <Route path="/community" component={Community} />
-      <Route path="/admin" component={Admin} />
-      <Route path="/auth" component={AuthManagement} />
+      <Route path="/admin">
+        <ProtectedRoute requireAdmin>
+          <Admin />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/auth">
+        <ProtectedRoute requireAdmin>
+          <AuthManagement />
+        </ProtectedRoute>
+      </Route>
       <Route path="/analysis" component={Analysis} />
       <Route path="/news" component={News} />
       <Route path="/investment-utilities" component={InvestmentUtilities} />
       <Route path="/investment-guide" component={InvestmentGuide} />
       <Route path="/contact" component={Contact} />
-      <Route path="/account-management" component={AccountManagement} />
+      <Route path="/account-management">
+        <ProtectedRoute>
+          <AccountManagement />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -41,12 +65,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
