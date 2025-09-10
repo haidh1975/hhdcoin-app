@@ -13,6 +13,7 @@ import {
   type InsertCommunityMember
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { hashPassword } from "./auth";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -58,7 +59,11 @@ export class MemStorage implements IStorage {
     this.initializeInvestmentPackages();
     this.initializeSampleInvestors();
     this.initializeSampleCommunityMembers();
-    this.initializeSampleAuthUsers();
+    this.initData(); // Initialize async data
+  }
+
+  private async initData() {
+    await this.initializeSampleAuthUsers();
   }
 
   private initializeInvestmentPackages() {
@@ -381,12 +386,12 @@ export class MemStorage implements IStorage {
   }
 
   // Auth User Methods
-  private initializeSampleAuthUsers() {
+  private async initializeSampleAuthUsers() {
     const sampleAuthUsers: AuthUser[] = [
       {
         id: randomUUID(),
         username: "admin",
-        password: "admin123", // In real app, this would be hashed
+        password: await hashPassword("admin123"), // Now properly hashed
         role: "admin",
         fullName: "Administrator",
         email: "admin@hhdcoin.net",
@@ -398,7 +403,7 @@ export class MemStorage implements IStorage {
       {
         id: randomUUID(),
         username: "member1",
-        password: "member123",
+        password: await hashPassword("member123"),
         role: "member",
         fullName: "Nguyễn Văn A",
         email: "member1@gmail.com",
@@ -410,7 +415,7 @@ export class MemStorage implements IStorage {
       {
         id: randomUUID(),
         username: "manager",
-        password: "manager123",
+        password: await hashPassword("manager123"),
         role: "admin",
         fullName: "Trần Thị B",
         email: "manager@hhdcoin.net",
@@ -444,9 +449,14 @@ export class MemStorage implements IStorage {
 
   async createAuthUser(insertUser: InsertAuthUser): Promise<AuthUser> {
     const id = randomUUID();
+    
+    // Hash password for security
+    const hashedPassword = await hashPassword(insertUser.password);
+    
     const user: AuthUser = { 
       ...insertUser, 
       id,
+      password: hashedPassword,
       role: insertUser.role || "member",
       status: insertUser.status || "active",
       email: insertUser.email || null,
@@ -461,6 +471,11 @@ export class MemStorage implements IStorage {
   async updateAuthUser(id: string, updates: Partial<AuthUser>): Promise<AuthUser | undefined> {
     const existing = this.authUsers.get(id);
     if (!existing) return undefined;
+    
+    // Hash password if being updated
+    if (updates.password) {
+      updates.password = await hashPassword(updates.password);
+    }
     
     const updated = { 
       ...existing, 

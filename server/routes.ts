@@ -8,8 +8,133 @@ import {
   insertAuthUserSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { 
+  authenticateToken, 
+  requireAdmin, 
+  generateToken, 
+  verifyPassword, 
+  type AuthRequest 
+} from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication Routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ 
+          message: "Username và password là bắt buộc", 
+          code: "MISSING_CREDENTIALS" 
+        });
+      }
+
+      const user = await storage.getAuthUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Tài khoản không tồn tại", 
+          code: "USER_NOT_FOUND" 
+        });
+      }
+
+      if (user.status !== 'active') {
+        return res.status(401).json({ 
+          message: "Tài khoản đã bị vô hiệu hóa", 
+          code: "ACCOUNT_INACTIVE" 
+        });
+      }
+
+      const isPasswordValid = await verifyPassword(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ 
+          message: "Mật khẩu không chính xác", 
+          code: "INVALID_PASSWORD" 
+        });
+      }
+
+      // Update last login
+      await storage.updateAuthUser(user.id, { lastLogin: new Date() });
+
+      const token = generateToken(user);
+      const { password: _, ...safeUser } = user;
+
+      res.json({
+        success: true,
+        message: "Đăng nhập thành công!",
+        token,
+        user: safeUser
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ 
+        message: "Có lỗi xảy ra khi đăng nhập", 
+        code: "LOGIN_ERROR" 
+      });
+    }
+  });
+
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = insertAuthUserSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getAuthUserByUsername(validatedData.username);
+      if (existingUser) {
+        return res.status(400).json({ 
+          message: "Tài khoản đã tồn tại", 
+          code: "USER_EXISTS" 
+        });
+      }
+
+      const user = await storage.createAuthUser(validatedData);
+      const token = generateToken(user);
+      const { password: _, ...safeUser } = user;
+
+      res.json({
+        success: true,
+        message: "Đăng ký thành công!",
+        token,
+        user: safeUser
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ 
+          message: "Dữ liệu không hợp lệ", 
+          code: "VALIDATION_ERROR",
+          errors: error.errors 
+        });
+      } else {
+        console.error("Register error:", error);
+        res.status(500).json({ 
+          message: "Có lỗi xảy ra khi đăng ký", 
+          code: "REGISTER_ERROR" 
+        });
+      }
+    }
+  });
+
+  app.get("/api/auth/profile", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const { password: _, ...safeUser } = req.user;
+      res.json({ user: safeUser });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.post("/api/auth/logout", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      // In a real app, you might want to blacklist the token
+      res.json({ success: true, message: "Đăng xuất thành công!" });
+    } catch (error) {
+      res.status(500).json({ message: "Logout error" });
+    }
+  });
+
   // Get investment packages
   app.get("/api/investment-packages", async (req, res) => {
     try {
@@ -260,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth Users Management Routes
-  app.get("/api/users", async (req, res) => {
+  app.get("/api/users", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const users = await storage.getAuthUsers();
       // Don't send passwords in the response
@@ -274,7 +399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", async (req, res) => {
+  app.post("/api/users", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const validatedData = insertAuthUserSchema.parse(req.body);
       const user = await storage.createAuthUser(validatedData);
@@ -289,7 +414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/users/:id", async (req, res) => {
+  app.patch("/api/users/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const userId = req.params.id;
       const updates = req.body;
@@ -311,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/users/:id", async (req, res) => {
+  app.delete("/api/users/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const userId = req.params.id;
       const success = await storage.deleteAuthUser(userId);
