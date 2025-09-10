@@ -248,7 +248,13 @@ export class MemStorage implements IStorage {
       ...insertInvestor, 
       id,
       investmentDate: new Date(),
-      status: insertInvestor.status || "active"
+      status: insertInvestor.status || "active",
+      currentValue: null,
+      profitLoss: null,
+      profitLossPercentage: null,
+      packageId: null,
+      facebookUrl: insertInvestor.facebookUrl || null,
+      zaloPhone: insertInvestor.zaloPhone || null
     };
     this.investors.set(id, investor);
     return investor;
@@ -348,6 +354,14 @@ export class MemStorage implements IStorage {
       isActive: insertMember.isActive ?? true,
       memberLevel: insertMember.memberLevel || "Bronze",
       points: insertMember.points || 0,
+      avatar: insertMember.avatar || null,
+      bio: insertMember.bio || null,
+      interests: insertMember.interests || null,
+      investmentFocus: insertMember.investmentFocus || null,
+      socialLinks: insertMember.socialLinks || null,
+      location: insertMember.location || null,
+      occupation: insertMember.occupation || null,
+      totalInvestment: insertMember.totalInvestment || null
     };
     this.communityMembers.set(id, member);
     return member;
@@ -414,7 +428,7 @@ export class MemStorage implements IStorage {
 
   async getAuthUsers(): Promise<AuthUser[]> {
     return Array.from(this.authUsers.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
   }
 
@@ -433,6 +447,9 @@ export class MemStorage implements IStorage {
     const user: AuthUser = { 
       ...insertUser, 
       id,
+      role: insertUser.role || "member",
+      status: insertUser.status || "active",
+      email: insertUser.email || null,
       lastLogin: null,
       createdAt: new Date(),
       updatedAt: new Date(),
