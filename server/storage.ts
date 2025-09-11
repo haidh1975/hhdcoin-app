@@ -19,6 +19,8 @@ import {
   type InsertInvestmentHistory,
   type InvestmentSummary,
   type InsertInvestmentSummary,
+  type ManagerInvestorAssignment,
+  type InsertManagerInvestorAssignment,
   users,
   authUsers,
   contactMessages,
@@ -28,12 +30,13 @@ import {
   paymentTransactions,
   userInvestments,
   investmentHistory,
-  investmentSummary
+  investmentSummary,
+  managerInvestorAssignments
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { hashPassword } from "./auth";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -92,6 +95,12 @@ export interface IStorage {
     investments: UserInvestment[];
     totalReturn: number;
   }>;
+  
+  // SECURITY CRITICAL: Manager-investor assignment validation
+  checkManagerInvestorAssignment(managerId: string, investorId: string): Promise<boolean>;
+  createManagerInvestorAssignment(managerId: string, investorId: string, assignedBy: string, notes?: string): Promise<boolean>;
+  removeManagerInvestorAssignment(managerId: string, investorId: string): Promise<boolean>;
+  getManagerAssignments(managerId: string): Promise<string[]>; // Returns investor IDs
 }
 
 export class DatabaseStorage implements IStorage {
@@ -656,16 +665,39 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Role-based queries for investor management
+  // SECURITY FIXED: Role-based queries for investor management with proper assignment validation
   async getInvestorsByManagerId(managerId: string): Promise<AuthUser[]> {
     try {
-      // For now, managers can see all investors - implement specific logic later
-      return await db.select()
+      console.log(`[SECURITY] Manager ${managerId} requesting investor data - using proper assignment validation`);
+      
+      // Get investors assigned to this manager through secure relationship table
+      const results = await db.select({
+        id: authUsers.id,
+        username: authUsers.username,
+        role: authUsers.role,
+        fullName: authUsers.fullName,
+        email: authUsers.email,
+        status: authUsers.status,
+        lastLogin: authUsers.lastLogin,
+        createdAt: authUsers.createdAt,
+        updatedAt: authUsers.updatedAt,
+        password: authUsers.password
+      })
         .from(authUsers)
-        .where(eq(authUsers.role, 'investor'))
+        .innerJoin(managerInvestorAssignments, eq(authUsers.id, managerInvestorAssignments.investorId))
+        .where(and(
+          eq(authUsers.role, 'investor'),
+          eq(authUsers.status, 'active'),
+          eq(managerInvestorAssignments.managerId, managerId),
+          eq(managerInvestorAssignments.isActive, true)
+        ))
         .orderBy(desc(authUsers.createdAt));
+
+      console.log(`[SECURITY] Manager ${managerId} has access to ${results.length} investors`);
+      return results;
     } catch (error) {
       console.error('Error getting investors by manager:', error);
+      // FAIL SECURE: Return empty array on any error to prevent unauthorized access
       return [];
     }
   }
@@ -712,6 +744,98 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting investor performance report:', error);
       throw error;
+    }
+  }
+
+  // SECURITY CRITICAL: Manager-investor assignment validation methods
+  async checkManagerInvestorAssignment(managerId: string, investorId: string): Promise<boolean> {
+    try {
+      const assignment = await db.select()
+        .from(managerInvestorAssignments)
+        .where(and(
+          eq(managerInvestorAssignments.managerId, managerId),
+          eq(managerInvestorAssignments.investorId, investorId),
+          eq(managerInvestorAssignments.isActive, true)
+        ))
+        .limit(1);
+      
+      return assignment.length > 0;
+    } catch (error) {
+      console.error('Error checking manager-investor assignment:', error);
+      // FAIL SECURE: Return false on any error to prevent unauthorized access
+      return false;
+    }
+  }
+
+  async createManagerInvestorAssignment(managerId: string, investorId: string, assignedBy: string, notes?: string): Promise<boolean> {
+    try {
+      // Verify the manager and investor exist and have correct roles
+      const manager = await this.getAuthUser(managerId);
+      const investor = await this.getAuthUser(investorId);
+      
+      if (!manager || manager.role !== 'manager') {
+        console.error('Invalid manager for assignment:', managerId);
+        return false;
+      }
+      
+      if (!investor || investor.role !== 'investor') {
+        console.error('Invalid investor for assignment:', investorId);
+        return false;
+      }
+
+      // Check if assignment already exists
+      const existingAssignment = await this.checkManagerInvestorAssignment(managerId, investorId);
+      if (existingAssignment) {
+        console.log('Assignment already exists between manager and investor');
+        return true;
+      }
+
+      // Create new assignment
+      await db.insert(managerInvestorAssignments).values({
+        managerId,
+        investorId,
+        assignedBy,
+        notes: notes || null,
+        isActive: true
+      });
+
+      console.log(`Created manager-investor assignment: ${managerId} -> ${investorId}`);
+      return true;
+    } catch (error) {
+      console.error('Error creating manager-investor assignment:', error);
+      return false;
+    }
+  }
+
+  async removeManagerInvestorAssignment(managerId: string, investorId: string): Promise<boolean> {
+    try {
+      const result = await db.update(managerInvestorAssignments)
+        .set({ isActive: false })
+        .where(and(
+          eq(managerInvestorAssignments.managerId, managerId),
+          eq(managerInvestorAssignments.investorId, investorId)
+        ));
+
+      return true;
+    } catch (error) {
+      console.error('Error removing manager-investor assignment:', error);
+      return false;
+    }
+  }
+
+  async getManagerAssignments(managerId: string): Promise<string[]> {
+    try {
+      const assignments = await db.select({ investorId: managerInvestorAssignments.investorId })
+        .from(managerInvestorAssignments)
+        .where(and(
+          eq(managerInvestorAssignments.managerId, managerId),
+          eq(managerInvestorAssignments.isActive, true)
+        ));
+
+      return assignments.map(a => a.investorId);
+    } catch (error) {
+      console.error('Error getting manager assignments:', error);
+      return [];
     }
   }
 }

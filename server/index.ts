@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { pnlScheduler } from "./pnl-scheduler";
 
 const app = express();
 
@@ -86,5 +87,11 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Start the P&L scheduler after server is running
+    setTimeout(() => {
+      pnlScheduler.start();
+      log('[P&L Scheduler] Automatic P&L calculation service started');
+    }, 2000); // Wait 2 seconds for server to fully initialize
   });
 })();

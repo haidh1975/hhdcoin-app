@@ -128,6 +128,7 @@ export const userInvestments = pgTable("user_investments", {
   packageId: varchar("package_id").references(() => investmentPackages.id).notNull(),
   transactionId: varchar("transaction_id").references(() => paymentTransactions.id).notNull(),
   investmentAmount: decimal("investment_amount", { precision: 15, scale: 2 }).notNull(),
+  entryPrice: decimal("entry_price", { precision: 15, scale: 2 }).notNull(), // Bitcoin price when investment was made
   currentValue: decimal("current_value", { precision: 15, scale: 2 }),
   profitLoss: decimal("profit_loss", { precision: 15, scale: 2 }),
   profitLossPercentage: decimal("profit_loss_percentage", { precision: 5, scale: 2 }),
@@ -230,3 +231,22 @@ export const insertInvestmentSummarySchema = createInsertSchema(investmentSummar
 
 export type InvestmentSummary = typeof investmentSummary.$inferSelect;
 export type InsertInvestmentSummary = z.infer<typeof insertInvestmentSummarySchema>;
+
+// Manager-Investor Assignment Table - CRITICAL for security
+export const managerInvestorAssignments = pgTable("manager_investor_assignments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  managerId: varchar("manager_id").references(() => authUsers.id).notNull(),
+  investorId: varchar("investor_id").references(() => authUsers.id).notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+  assignedBy: varchar("assigned_by").references(() => authUsers.id).notNull(), // Admin who made the assignment
+  isActive: boolean("is_active").default(true),
+  notes: text("notes"),
+});
+
+export const insertManagerInvestorAssignmentSchema = createInsertSchema(managerInvestorAssignments).omit({
+  id: true,
+  assignedAt: true,
+});
+
+export type ManagerInvestorAssignment = typeof managerInvestorAssignments.$inferSelect;
+export type InsertManagerInvestorAssignment = z.infer<typeof insertManagerInvestorAssignmentSchema>;

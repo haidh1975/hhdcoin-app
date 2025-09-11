@@ -100,13 +100,15 @@ export const hasPermission = (userRole: string, requiredRoles: string[]): boolea
   return requiredRoles.includes(userRole);
 };
 
-// Check if current user can access target user's data
+// Check if current user can access target user's data - SECURITY SCOPED
 export const canAccessUserData = (currentUser: AuthUser, targetUserId?: string): boolean => {
   // Admin can access all users
   if (currentUser.role === 'admin') return true;
   
-  // Manager can access their managed investors (for now, all investors)
-  if (currentUser.role === 'manager') return true;
+  // Manager can only access their own data unless specifically checking user relationships
+  if (currentUser.role === 'manager') {
+    return !targetUserId || targetUserId === currentUser.id;
+  }
   
   // Investors can only access their own data
   if (currentUser.role === 'investor') {
@@ -114,6 +116,34 @@ export const canAccessUserData = (currentUser: AuthUser, targetUserId?: string):
   }
   
   return false;
+};
+
+// SECURITY CRITICAL: Check if manager can access specific investor data
+export const canManagerAccessInvestor = async (managerId: string, investorId: string): Promise<boolean> => {
+  try {
+    // Import here to avoid circular dependency
+    const { storage } = await import('./storage');
+    
+    // Check if there's an active assignment between this manager and investor
+    const hasAssignment = await storage.checkManagerInvestorAssignment(managerId, investorId);
+    
+    return hasAssignment;
+  } catch (error) {
+    console.error('Error checking manager-investor assignment:', error);
+    // FAIL SECURE: Return false on any error to prevent unauthorized access
+    return false;
+  }
+};
+
+// NEW: Role-based data access helper for specific operations
+export const hasDataAccess = (userRole: string, operation: 'read' | 'write' | 'delete', dataType: 'investors' | 'users' | 'payments'): boolean => {
+  const permissions = {
+    admin: { investors: ['read', 'write', 'delete'], users: ['read', 'write', 'delete'], payments: ['read', 'write', 'delete'] },
+    manager: { investors: ['read', 'write'], users: ['read'], payments: ['read'] },
+    investor: { investors: [], users: [], payments: ['read'] }
+  };
+
+  return permissions[userRole as keyof typeof permissions]?.[dataType]?.includes(operation) || false;
 };
 
 // Extract user info from token without throwing errors

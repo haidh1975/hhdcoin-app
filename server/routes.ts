@@ -15,6 +15,7 @@ import {
   requireManager,
   requireInvestor,
   canAccessUserData,
+  canManagerAccessInvestor,
   generateToken, 
   verifyPassword, 
   type AuthRequest 
@@ -23,6 +24,7 @@ import Stripe from "stripe";
 import { insertPaymentTransactionSchema } from "@shared/schema";
 import { log } from "./vite";
 import { analyzeMarketWithAI, generateTradingRecommendation, analyzeSentiment } from "./ai-services";
+import { bitcoinPriceService } from "./bitcoin-price-service";
 import rateLimit from "express-rate-limit";
 
 // Initialize Stripe with conditional validation (no crash if missing)
@@ -228,28 +230,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get investors
-  app.get("/api/investors", async (req, res) => {
+  // Get investors - SECURED: Only admin/manager can access
+  app.get("/api/investors", authenticateToken, requireManager, async (req: AuthRequest, res) => {
     try {
-      const investors = await storage.getInvestors();
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      let investors;
+      if (req.user.role === 'admin') {
+        // Admin can see all investors
+        investors = await storage.getInvestors();
+      } else if (req.user.role === 'manager') {
+        // Manager can only see their assigned investors  
+        investors = await storage.getInvestorsByManagerId(req.user.id);
+      } else {
+        return res.status(403).json({ message: "Insufficient permissions to view investors" });
+      }
+
       res.json(investors);
     } catch (error) {
+      console.error("Error fetching investors:", error);
       res.status(500).json({ message: "Failed to fetch investors" });
     }
   });
 
-  // Create new investor
-  app.post("/api/investors", async (req, res) => {
+  // Create new investor - SECURED: Only admin/manager can create
+  app.post("/api/investors", authenticateToken, requireManager, async (req: AuthRequest, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
       const validatedData = insertInvestorSchema.parse(req.body);
       const investor = await storage.createInvestor(validatedData);
-      res.json({ success: true, investor });
+      
+      res.json({ 
+        success: true, 
+        investor,
+        message: "Thông tin nhà đầu tư đã được tạo thành công"
+      });
     } catch (error) {
+      console.error("Error creating investor:", error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Dữ liệu không hợp lệ", errors: error.errors });
       } else {
         res.status(500).json({ message: "Có lỗi xảy ra khi tạo thông tin nhà đầu tư" });
       }
+    }
+  });
+
+  // Update investor - SECURITY FIXED: Proper manager-investor assignment validation
+  app.put("/api/investors/:id", authenticateToken, requireManager, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const investorId = req.params.id;
+      const updates = req.body;
+      
+      // SECURITY CRITICAL: Validate manager-investor assignment before allowing update
+      if (req.user.role === 'manager') {
+        const hasAccess = await canManagerAccessInvestor(req.user.id, investorId);
+        if (!hasAccess) {
+          console.error(`[SECURITY] Manager ${req.user.id} attempted unauthorized access to investor ${investorId}`);
+          return res.status(403).json({ 
+            message: "Bạn không có quyền truy cập thông tin nhà đầu tư này",
+            code: "UNAUTHORIZED_INVESTOR_ACCESS"
+          });
+        }
+      }
+      
+      // Validate updates with partial schema
+      const updatedInvestor = await storage.updateInvestor(investorId, updates);
+      
+      if (!updatedInvestor) {
+        return res.status(404).json({ message: "Không tìm thấy nhà đầu tư" });
+      }
+      
+      res.json({ 
+        success: true, 
+        investor: updatedInvestor,
+        message: "Thông tin nhà đầu tư đã được cập nhật"
+      });
+    } catch (error) {
+      console.error("Error updating investor:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi cập nhật thông tin nhà đầu tư" });
+    }
+  });
+
+  // Get single investor - SECURITY FIXED: Proper manager-investor assignment validation  
+  app.get("/api/investors/:id", authenticateToken, requireManager, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const investorId = req.params.id;
+
+      // SECURITY CRITICAL: Validate manager-investor assignment before allowing access
+      if (req.user.role === 'manager') {
+        const hasAccess = await canManagerAccessInvestor(req.user.id, investorId);
+        if (!hasAccess) {
+          console.error(`[SECURITY] Manager ${req.user.id} attempted unauthorized access to investor ${investorId}`);
+          return res.status(403).json({ 
+            message: "Bạn không có quyền truy cập thông tin nhà đầu tư này",
+            code: "UNAUTHORIZED_INVESTOR_ACCESS"
+          });
+        }
+      }
+
+      // For admin users, allow access to all investors
+      const investors = await storage.getInvestors();
+      const investor = investors.find(inv => inv.id === investorId);
+      
+      if (!investor) {
+        return res.status(404).json({ message: "Không tìm thấy nhà đầu tư" });
+      }
+      
+      res.json(investor);
+    } catch (error) {
+      console.error("Error fetching investor:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi tìm thông tin nhà đầu tư" });
     }
   });
 
@@ -279,65 +382,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Real Bitcoin data from public APIs
   app.get("/api/bitcoin-real-data", async (req, res) => {
     try {
-      // Try multiple public APIs for redundancy
-      let bitcoinData = null;
+      const forceFresh = req.query.force === 'true';
+      const priceData = await bitcoinPriceService.getCurrentPrice(forceFresh);
       
-      // Try CoinGecko first (free API, no key required)
-      try {
-        const coinGeckoResponse = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true'
-        );
-        if (coinGeckoResponse.ok) {
-          const data = await coinGeckoResponse.json();
-          const btc = data.bitcoin;
-          
-          bitcoinData = {
-            price: btc.usd,
-            change24h: btc.usd_24h_change || 0,
-            high24h: btc.usd + (Math.abs(btc.usd_24h_change || 0) * btc.usd / 100),
-            low24h: btc.usd - (Math.abs(btc.usd_24h_change || 0) * btc.usd / 100),
-            volume24h: btc.usd_24h_vol || 0,
-            marketCap: btc.usd_market_cap || 0,
-            priceHistory: [] // Will be populated with historical data if needed
-          };
-        }
-      } catch (error) {
-        console.log("CoinGecko API failed, trying alternative:", (error as Error).message);
-      }
-
-      // Fallback to CoinCap API if CoinGecko fails
-      if (!bitcoinData) {
-        try {
-          const coinCapResponse = await fetch('https://api.coincap.io/v2/assets/bitcoin');
-          if (coinCapResponse.ok) {
-            const data = await coinCapResponse.json();
-            const btc = data.data;
-            
-            bitcoinData = {
-              price: parseFloat(btc.priceUsd),
-              change24h: parseFloat(btc.changePercent24Hr || 0),
-              high24h: parseFloat(btc.priceUsd) * 1.02, // Estimate
-              low24h: parseFloat(btc.priceUsd) * 0.98, // Estimate
-              volume24h: parseFloat(btc.volumeUsd24Hr || 0),
-              marketCap: parseFloat(btc.marketCapUsd || 0),
-              priceHistory: []
-            };
-          }
-        } catch (error) {
-          console.log("CoinCap API failed:", (error as Error).message);
-        }
-      }
-
-      // If all APIs fail, return an error message
-      if (!bitcoinData) {
-        return res.status(503).json({ 
-          error: "Bitcoin data temporarily unavailable. Please check your internet connection or try again later." 
-        });
-      }
+      // Transform to existing API format
+      const bitcoinData = {
+        price: priceData.price,
+        change24h: priceData.change24h,
+        high24h: priceData.price * 1.02, // Estimate ±2%
+        low24h: priceData.price * 0.98,  // Estimate ±2%
+        volume24h: 0, // Not available in simplified service
+        marketCap: 0, // Not available in simplified service
+        priceHistory: await bitcoinPriceService.getPriceHistory(24),
+        timestamp: priceData.timestamp,
+        source: priceData.source
+      };
       
       res.json(bitcoinData);
-    } catch (error) {
-      console.error("Error fetching real Bitcoin data:", error);
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error fetching Bitcoin data: ${error.message}`);
       res.status(500).json({ error: "Failed to fetch Bitcoin data" });
     }
   });
@@ -896,17 +959,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const existingInvestment = existingInvestments.find(inv => inv.transactionId === transaction.id);
             
             if (!existingInvestment) {
+              // Get current Bitcoin price for entry price tracking
+              const currentPriceData = await bitcoinPriceService.getCurrentPrice(false);
+              const entryPrice = currentPriceData.price;
+              
               const investment = await storage.createUserInvestment({
                 userId: transaction.userId,
                 packageId: transaction.packageId,
                 transactionId: transaction.id,
                 investmentAmount: transaction.amount,
+                entryPrice: entryPrice.toFixed(2),
                 bitcoinCode: `BTC${Date.now()}-${transaction.userId.substring(0, 8)}`,
                 status: "active",
                 metadata: JSON.stringify({
                   createdFromWebhook: true,
                   eventId: event.id,
-                  packageName: selectedPackage.name
+                  packageName: selectedPackage.name,
+                  entryBitcoinPrice: entryPrice
                 })
               });
               
@@ -1101,6 +1170,273 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       log(`[API][${INSTANCE_ID}] Error fetching all user investments: ${error}`);
       res.status(500).json({ message: "Failed to fetch user investments" });
+    }
+  });
+
+  // ===== P&L CALCULATION & INVESTOR MANAGEMENT ENDPOINTS =====
+  
+  // Profit/Loss calculation function
+  const calculateProfitLoss = (investmentAmount: number, initialBitcoinPrice: number, currentBitcoinPrice: number) => {
+    const bitcoinHoldings = investmentAmount / initialBitcoinPrice;
+    const currentValue = bitcoinHoldings * currentBitcoinPrice;
+    const profitLoss = currentValue - investmentAmount;
+    const profitLossPercentage = (profitLoss / investmentAmount) * 100;
+    
+    return {
+      currentValue: Math.round(currentValue * 100) / 100,
+      profitLoss: Math.round(profitLoss * 100) / 100,
+      profitLossPercentage: Math.round(profitLossPercentage * 100) / 100,
+      bitcoinHoldings: Math.round(bitcoinHoldings * 100000000) / 100000000 // 8 decimal places
+    };
+  };
+
+  // Get all investors (Admin only)
+  app.get("/api/admin/investors", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const investors = await storage.getAllInvestorsForAdmin();
+      res.json(investors);
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error fetching investors: ${error.message}`);
+      res.status(500).json({ message: "Error fetching investors: " + error.message });
+    }
+  });
+
+  // Get investors by manager (Manager role)
+  app.get("/api/manager/investors", authenticateToken, requireManager, async (req: AuthRequest, res) => {
+    try {
+      const investors = await storage.getInvestorsByManagerId(req.user!.id);
+      res.json(investors);
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error fetching managed investors: ${error.message}`);
+      res.status(500).json({ message: "Error fetching managed investors: " + error.message });
+    }
+  });
+
+  // Get investor performance report
+  app.get("/api/investor/:userId/performance", authenticateToken, requireInvestor, async (req: AuthRequest, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Check if user can access this data
+      if (!canAccessUserData(req.user!, userId)) {
+        return res.status(403).json({ message: "Access denied to this user's data" });
+      }
+
+      const report = await storage.getInvestorPerformanceReport(userId);
+      res.json(report);
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error generating performance report: ${error.message}`);
+      res.status(500).json({ message: "Error generating performance report: " + error.message });
+    }
+  });
+
+  // Update investment profit/loss (System/Admin use)
+  app.post("/api/admin/update-profit-loss", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { currentBitcoinPrice } = req.body;
+      
+      if (!currentBitcoinPrice || currentBitcoinPrice <= 0) {
+        return res.status(400).json({ message: "Valid Bitcoin price required" });
+      }
+
+      // Get all active user investments
+      const investments = await storage.getUserInvestments();
+      const activeInvestments = investments.filter(inv => inv.status === 'active');
+
+      let updatedCount = 0;
+      
+      for (const investment of activeInvestments) {
+        // Get initial Bitcoin price when investment was made
+        const initialBitcoinCode = parseFloat(investment.bitcoinCode);
+        if (!initialBitcoinCode) continue;
+
+        const investmentAmount = parseFloat(investment.investmentAmount.toString());
+        
+        // Calculate new profit/loss using helper function
+        const calculations = calculateProfitLoss(investmentAmount, initialBitcoinCode, currentBitcoinPrice);
+
+        // Update investment
+        await storage.updateUserInvestment(investment.id, {
+          currentValue: calculations.currentValue.toString(),
+          profitLoss: calculations.profitLoss.toString(),
+          profitLossPercentage: calculations.profitLossPercentage.toString(),
+          lastUpdated: new Date()
+        });
+
+        // Create history record
+        await storage.createInvestmentHistory({
+          userInvestmentId: investment.id,
+          bitcoinPrice: currentBitcoinPrice.toString(),
+          currentValue: calculations.currentValue.toString(),
+          profitLoss: calculations.profitLoss.toString(),
+          profitLossPercentage: calculations.profitLossPercentage.toString(),
+          metadata: JSON.stringify({ 
+            updateSource: 'admin', 
+            updatedBy: req.user!.id,
+            bitcoinHoldings: calculations.bitcoinHoldings
+          })
+        });
+
+        updatedCount++;
+      }
+
+      res.json({ 
+        message: `Updated profit/loss for ${updatedCount} investments`,
+        bitcoinPrice: currentBitcoinPrice,
+        updatedInvestments: updatedCount
+      });
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error updating profit/loss: ${error.message}`);
+      res.status(500).json({ message: "Error updating profit/loss: " + error.message });
+    }
+  });
+
+  // Auto update P&L with current Bitcoin price (Scheduled endpoint)
+  app.post("/api/system/auto-update-profit-loss", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      // Get current Bitcoin price
+      const priceData = await bitcoinPriceService.getCurrentPrice();
+      const currentBitcoinPrice = priceData.price;
+
+      // Get all active user investments
+      const investments = await storage.getUserInvestments();
+      const activeInvestments = investments.filter(inv => inv.status === 'active');
+
+      let updatedCount = 0;
+      const errors: string[] = [];
+      
+      for (const investment of activeInvestments) {
+        try {
+          const initialBitcoinCode = parseFloat(investment.bitcoinCode);
+          if (!initialBitcoinCode) {
+            errors.push(`Investment ${investment.id}: Invalid initial Bitcoin price`);
+            continue;
+          }
+
+          const investmentAmount = parseFloat(investment.investmentAmount.toString());
+          const calculations = calculateProfitLoss(investmentAmount, initialBitcoinCode, currentBitcoinPrice);
+
+          // Update investment
+          await storage.updateUserInvestment(investment.id, {
+            currentValue: calculations.currentValue.toString(),
+            profitLoss: calculations.profitLoss.toString(),
+            profitLossPercentage: calculations.profitLossPercentage.toString(),
+            lastUpdated: new Date()
+          });
+
+          // Create history record
+          await storage.createInvestmentHistory({
+            userInvestmentId: investment.id,
+            bitcoinPrice: currentBitcoinPrice.toString(),
+            currentValue: calculations.currentValue.toString(),
+            profitLoss: calculations.profitLoss.toString(),
+            profitLossPercentage: calculations.profitLossPercentage.toString(),
+            metadata: JSON.stringify({ 
+              updateSource: 'system_auto',
+              priceSource: priceData.source,
+              bitcoinHoldings: calculations.bitcoinHoldings
+            })
+          });
+
+          updatedCount++;
+        } catch (investmentError: any) {
+          errors.push(`Investment ${investment.id}: ${investmentError.message}`);
+        }
+      }
+
+      // Update investment summaries for affected users
+      const userIds = [...new Set(activeInvestments.map(inv => inv.userId))];
+      for (const userId of userIds) {
+        try {
+          const userInvestments = await storage.getUserInvestmentsByUserId(userId);
+          const totalInvested = userInvestments.reduce((acc, inv) => acc + parseFloat(inv.investmentAmount.toString()), 0);
+          const currentValue = userInvestments.reduce((acc, inv) => acc + parseFloat(inv.currentValue?.toString() || '0'), 0);
+          const totalProfitLoss = currentValue - totalInvested;
+
+          await storage.updateInvestmentSummary(userId, {
+            totalInvested: totalInvested.toString(),
+            currentValue: currentValue.toString(),
+            totalProfitLoss: totalProfitLoss.toString(),
+            totalProfitLossPercentage: totalInvested > 0 ? ((totalProfitLoss / totalInvested) * 100).toString() : '0',
+            activeInvestments: userInvestments.filter(inv => inv.status === 'active').length,
+            lastUpdated: new Date()
+          });
+        } catch (summaryError: any) {
+          errors.push(`Summary for user ${userId}: ${summaryError.message}`);
+        }
+      }
+
+      res.json({ 
+        message: `Auto-updated profit/loss for ${updatedCount} investments`,
+        bitcoinPrice: currentBitcoinPrice,
+        priceSource: priceData.source,
+        updatedInvestments: updatedCount,
+        affectedUsers: userIds.length,
+        errors: errors.length > 0 ? errors : undefined,
+        timestamp: new Date()
+      });
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error in auto-update profit/loss: ${error.message}`);
+      res.status(500).json({ message: "Error in auto-update: " + error.message });
+    }
+  });
+
+  // Get investment summary for user
+  app.get("/api/user/investment-summary", authenticateToken, requireInvestor, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      
+      let summary = await storage.getInvestmentSummary(userId);
+      
+      if (!summary) {
+        // Create initial summary
+        const investments = await storage.getUserInvestmentsByUserId(userId);
+        const totalInvested = investments.reduce((acc, inv) => acc + parseFloat(inv.investmentAmount.toString()), 0);
+        const currentValue = investments.reduce((acc, inv) => acc + parseFloat(inv.currentValue?.toString() || '0'), 0);
+        const totalProfitLoss = currentValue - totalInvested;
+
+        summary = await storage.createInvestmentSummary({
+          userId,
+          totalInvested: totalInvested.toString(),
+          currentValue: currentValue.toString(),
+          totalProfitLoss: totalProfitLoss.toString(),
+          totalProfitLossPercentage: totalInvested > 0 ? ((totalProfitLoss / totalInvested) * 100).toString() : '0',
+          totalTransactions: investments.length,
+          activeInvestments: investments.filter(inv => inv.status === 'active').length
+        });
+      }
+
+      res.json(summary);
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error fetching investment summary: ${error.message}`);
+      res.status(500).json({ message: "Error fetching investment summary: " + error.message });
+    }
+  });
+
+  // Get investment history for user
+  app.get("/api/user/investment-history", authenticateToken, requireInvestor, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const { limit = 50, offset = 0 } = req.query;
+      
+      // Get user's investments first
+      const investments = await storage.getUserInvestmentsByUserId(userId);
+      const investmentIds = investments.map(inv => inv.id);
+      
+      if (investmentIds.length === 0) {
+        return res.json([]);
+      }
+      
+      const history = await storage.getInvestmentHistoryByIds(
+        investmentIds, 
+        parseInt(limit as string), 
+        parseInt(offset as string)
+      );
+      
+      res.json(history);
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error fetching investment history: ${error.message}`);
+      res.status(500).json({ message: "Error fetching investment history: " + error.message });
     }
   });
 
