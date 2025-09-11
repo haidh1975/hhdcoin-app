@@ -121,6 +121,30 @@ export const insertPaymentTransactionSchema = createInsertSchema(paymentTransact
   completedAt: true,
 });
 
+// User Investments Table - Links users to their investment packages
+export const userInvestments = pgTable("user_investments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => authUsers.id).notNull(),
+  packageId: varchar("package_id").references(() => investmentPackages.id).notNull(),
+  transactionId: varchar("transaction_id").references(() => paymentTransactions.id).notNull(),
+  investmentAmount: decimal("investment_amount", { precision: 15, scale: 2 }).notNull(),
+  currentValue: decimal("current_value", { precision: 15, scale: 2 }),
+  profitLoss: decimal("profit_loss", { precision: 15, scale: 2 }),
+  profitLossPercentage: decimal("profit_loss_percentage", { precision: 5, scale: 2 }),
+  bitcoinCode: text("bitcoin_code").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, completed, cancelled
+  startDate: timestamp("start_date").defaultNow(),
+  endDate: timestamp("end_date"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  metadata: text("metadata"), // JSON string for additional data
+});
+
+export const insertUserInvestmentSchema = createInsertSchema(userInvestments).omit({
+  id: true,
+  startDate: true,
+  lastUpdated: true,
+});
+
 // User Management Table for Auth System
 export const authUsers = pgTable("auth_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -156,3 +180,5 @@ export type CommunityMember = typeof communityMembers.$inferSelect;
 export type InsertCommunityMember = z.infer<typeof insertCommunityMemberSchema>;
 export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
 export type InsertPaymentTransaction = z.infer<typeof insertPaymentTransactionSchema>;
+export type UserInvestment = typeof userInvestments.$inferSelect;
+export type InsertUserInvestment = z.infer<typeof insertUserInvestmentSchema>;
