@@ -20,7 +20,6 @@ const AuthManagement = lazy(() => import("@/pages/auth"));
 const Analysis = lazy(() => import("@/pages/analysis"));
 const News = lazy(() => import("@/pages/news"));
 const InvestmentUtilities = lazy(() => import("@/pages/investment-utilities"));
-const InvestmentGuide = lazy(() => import("@/pages/investment-guide"));
 const Contact = lazy(() => import("@/pages/contact"));
 const AccountManagement = lazy(() => import("@/pages/account-management"));
 const Login = lazy(() => import("@/pages/login"));
@@ -28,9 +27,7 @@ const Register = lazy(() => import("@/pages/register"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Checkout = lazy(() => import("@/pages/checkout"));
 const PaymentSuccess = lazy(() => import("@/pages/payment-success"));
-const AIInsights = lazy(() => import("@/pages/ai-insights"));
 const InvestmentPurchase = lazy(() => import("@/pages/investment-purchase"));
-const MyInvestments = lazy(() => import("@/pages/my-investments"));
 
 // Redirect components for reorganized content
 function RedirectToAnalysis() {
@@ -84,7 +81,6 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/news" component={News} />
       <Route path="/investment-utilities" component={InvestmentUtilities} />
-      <Route path="/investment-guide" component={InvestmentGuide} />
       <Route path="/contact" component={Contact} />
       <Route path="/account-management">
         <ProtectedRoute>
