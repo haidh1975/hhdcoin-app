@@ -125,6 +125,14 @@ export default function Navigation() {
             >
               AI Insights
             </Link>
+            
+            <Link 
+              href="/my-investments"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-my-investments"
+            >
+              Đầu tư của tôi
+            </Link>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -259,6 +267,15 @@ export default function Navigation() {
                 data-testid="nav-link-mobile-ai-insights"
               >
                 AI Insights
+              </Link>
+              
+              <Link
+                href="/my-investments"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-my-investments"
+              >
+                Đầu tư của tôi
               </Link>
               
               {/* Mobile Language Switcher */}
