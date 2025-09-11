@@ -18,24 +18,29 @@ import {
 import Stripe from "stripe";
 import { insertPaymentTransactionSchema } from "@shared/schema";
 import { log } from "./vite";
+import { analyzeMarketWithAI, generateTradingRecommendation, analyzeSentiment } from "./ai-services";
+import rateLimit from "express-rate-limit";
 
-// Initialize Stripe with validation
+// Initialize Stripe with conditional validation (no crash if missing)
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const INSTANCE_ID = `pid:${process.pid}`;
+const stripeAvailable = !!stripeSecretKey && /^sk_(test|live)_/.test(stripeSecretKey);
 
 log('=== STRIPE INITIALIZATION ===');
 log(`STRIPE_SECRET_KEY available: ${!!stripeSecretKey}`);
 log(`STRIPE_SECRET_KEY starts with: ${stripeSecretKey?.substring(0, 7)}`);
 log(`STRIPE_SECRET_KEY length: ${stripeSecretKey?.length}`);
+log(`Stripe service available: ${stripeAvailable}`);
 log(`Instance ID: ${INSTANCE_ID}`);
 log('=== END STRIPE INIT ===');
 
-if (!stripeSecretKey || !/^sk_(test|live)_/.test(stripeSecretKey)) {
-  throw new Error('Invalid STRIPE_SECRET_KEY: must start with sk_test_ or sk_live_');
+const stripe = stripeAvailable ? new Stripe(stripeSecretKey!, {
+  apiVersion: "2024-06-20", // Use stable API version
+}) : null;
+
+if (!stripeAvailable) {
+  log('[WARNING] Stripe not configured - payment features will be disabled');
 }
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2023-10-16", // Use a valid Stripe API version
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
@@ -295,13 +300,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market Analysis endpoint
-  app.get("/api/market-analysis", async (req, res) => {
+  // Rate limiting for AI endpoints
+  const aiRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 requests per windowMs
+    message: { error: "Too many AI requests from this IP, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // AI-Powered Market Analysis endpoint
+  app.get("/api/market-analysis", aiRateLimit, async (req, res) => {
     try {
-      // This would normally use sophisticated analysis from financial APIs
-      // For now, we'll provide basic analysis based on price movements
+      log(`[AI][${INSTANCE_ID}] Market analysis request received`);
       
-      // Get current Bitcoin data for analysis
+      // Get current Bitcoin data for AI analysis
       const bitcoinResponse = await fetch(`${req.protocol}://${req.get('host')}/api/bitcoin-real-data`);
       
       if (!bitcoinResponse.ok) {
@@ -311,42 +324,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const bitcoinData = await bitcoinResponse.json();
+      log(`[AI][${INSTANCE_ID}] Bitcoin data retrieved for analysis`);
       
-      // Simple analysis logic
-      const trend = bitcoinData.change24h > 2 ? 'bullish' : 
-                    bitcoinData.change24h < -2 ? 'bearish' : 'neutral';
+      // Use AI for market analysis
+      const aiAnalysis = await analyzeMarketWithAI(bitcoinData);
       
-      const support = bitcoinData.price * 0.95; // 5% below current price
-      const resistance = bitcoinData.price * 1.05; // 5% above current price
-      
-      // Simulate RSI (would normally be calculated from historical data)
+      // Calculate technical indicators for additional context
+      const support = bitcoinData.price * 0.95;
+      const resistance = bitcoinData.price * 1.05;
       const rsi = Math.max(30, Math.min(70, 50 + (bitcoinData.change24h * 2)));
       
-      const sentiment = bitcoinData.change24h > 0 ? 'Tích cực' : 
-                        bitcoinData.change24h < 0 ? 'Tiêu cực' : 'Trung tính';
-      
-      let recommendation = '';
-      if (trend === 'bullish') {
-        recommendation = 'Thị trường đang có xu hướng tích cực. Đây có thể là thời điểm tốt để xem xét đầu tư dài hạn.';
-      } else if (trend === 'bearish') {
-        recommendation = 'Thị trường đang điều chỉnh. Hãy thận trọng và đợi tín hiệu phục hồi rõ ràng hơn.';
-      } else {
-        recommendation = 'Thị trường đang trong giai đoạn ổn định. Hãy theo dõi thêm để xác định xu hướng tiếp theo.';
-      }
-      
       const analysis = {
-        trend,
+        // AI-powered insights
+        trend: aiAnalysis.trend,
+        sentiment: aiAnalysis.sentiment,
+        recommendation: aiAnalysis.recommendation,
+        confidenceScore: aiAnalysis.confidenceScore,
+        keyFactors: aiAnalysis.keyFactors,
+        riskLevel: aiAnalysis.riskLevel,
+        priceTarget: aiAnalysis.priceTarget,
+        
+        // Technical indicators
         support,
         resistance,
-        recommendation,
         rsi,
-        sentiment
+        
+        // Metadata
+        analysisType: 'ai-powered',
+        timestamp: new Date().toISOString()
       };
       
+      log(`[AI][${INSTANCE_ID}] Market analysis completed: ${aiAnalysis.trend} trend with ${aiAnalysis.confidenceScore} confidence`);
       res.json(analysis);
+      
     } catch (error) {
-      console.error("Error generating market analysis:", error);
-      res.status(500).json({ error: "Failed to generate market analysis" });
+      log(`[AI][${INSTANCE_ID}] Market analysis error: ${error}`);
+      
+      // Fallback to basic analysis if AI fails
+      try {
+        const bitcoinResponse = await fetch(`${req.protocol}://${req.get('host')}/api/bitcoin-real-data`);
+        const bitcoinData = await bitcoinResponse.json();
+        
+        const trend = bitcoinData.change24h > 2 ? 'bullish' : 
+                      bitcoinData.change24h < -2 ? 'bearish' : 'neutral';
+        
+        const fallbackAnalysis = {
+          trend,
+          sentiment: bitcoinData.change24h > 0 ? 'Tích cực' : 'Tiêu cực',
+          recommendation: 'Phân tích AI tạm thời không khả dụng. Vui lòng theo dõi thị trường và cân nhắc kỹ trước khi đầu tư.',
+          confidenceScore: 0.3,
+          keyFactors: ['Hệ thống AI tạm thời gián đoạn'],
+          riskLevel: 'high',
+          support: bitcoinData.price * 0.95,
+          resistance: bitcoinData.price * 1.05,
+          rsi: 50,
+          analysisType: 'fallback',
+          timestamp: new Date().toISOString()
+        };
+        
+        res.json(fallbackAnalysis);
+      } catch (fallbackError) {
+        res.status(500).json({ error: "Failed to generate market analysis" });
+      }
+    }
+  });
+
+  // AI Trading Recommendations endpoint
+  app.get("/api/trading-recommendations", aiRateLimit, authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      log(`[AI][${INSTANCE_ID}] Trading recommendations request from user: ${req.user?.username}`);
+      
+      // Get current Bitcoin data
+      const bitcoinResponse = await fetch(`${req.protocol}://${req.get('host')}/api/bitcoin-real-data`);
+      
+      if (!bitcoinResponse.ok) {
+        return res.status(503).json({ 
+          error: "Trading recommendations unavailable due to data source issues" 
+        });
+      }
+      
+      const bitcoinData = await bitcoinResponse.json();
+      
+      // Get user risk profile from query params (default: moderate)
+      const riskProfile = (req.query.risk as string) || 'moderate';
+      
+      // Validate risk profile
+      if (!['conservative', 'moderate', 'aggressive'].includes(riskProfile)) {
+        return res.status(400).json({ error: "Invalid risk profile. Must be: conservative, moderate, or aggressive" });
+      }
+      
+      // Generate AI trading recommendation
+      const recommendation = await generateTradingRecommendation(bitcoinData, riskProfile as any);
+      
+      const response = {
+        ...recommendation,
+        bitcoinPrice: bitcoinData.price,
+        change24h: bitcoinData.change24h,
+        riskProfile,
+        timestamp: new Date().toISOString()
+      };
+      
+      log(`[AI][${INSTANCE_ID}] Trading recommendation: ${recommendation.action} with confidence ${recommendation.confidence}`);
+      res.json(response);
+      
+    } catch (error) {
+      log(`[AI][${INSTANCE_ID}] Trading recommendations error: ${error}`);
+      res.status(500).json({ error: "Failed to generate trading recommendations" });
+    }
+  });
+
+  // AI Sentiment Analysis endpoint
+  app.post("/api/sentiment-analysis", aiRateLimit, authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      log(`[AI][${INSTANCE_ID}] Sentiment analysis request from user: ${req.user?.username}`);
+      
+      // Validate request body with Zod
+      const sentimentSchema = z.object({
+        text: z.string().min(1, "Text cannot be empty").max(2000, "Text too long (max 2000 characters)")
+      });
+      
+      const validatedData = sentimentSchema.parse(req.body);
+      const { text } = validatedData;
+      
+      const sentimentResult = await analyzeSentiment(text);
+      
+      log(`[AI][${INSTANCE_ID}] Sentiment analysis completed: ${sentimentResult.rating}/5 stars`);
+      res.json({
+        ...sentimentResult,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      log(`[AI][${INSTANCE_ID}] Sentiment analysis error: ${error}`);
+      res.status(500).json({ error: "Failed to analyze sentiment" });
     }
   });
 
@@ -478,6 +588,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe Payment Routes - Allow without auth for testing 
   app.post("/api/create-payment-intent", async (req: AuthRequest, res) => {
     try {
+      // Check if Stripe is available
+      if (!stripe) {
+        return res.status(503).json({ error: "Payment service temporarily unavailable - Stripe not configured" });
+      }
+
       // Add instance tracking header
       res.setHeader('X-Instance-ID', INSTANCE_ID);
       log(`[PAYMENT][${INSTANCE_ID}] POST /api/create-payment-intent - Request received`);
@@ -618,6 +733,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe webhook for payment confirmation
   app.post("/api/stripe-webhook", async (req, res) => {
     try {
+      // Check if Stripe is available
+      if (!stripe) {
+        return res.status(503).json({ error: "Webhook service unavailable - Stripe not configured" });
+      }
       const sig = req.headers['stripe-signature'] as string;
       let event;
 
@@ -691,7 +810,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const transactions = await storage.getPaymentTransactionsByUserId(req.user?.id || 'guest');
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Authentication required to view transactions" });
+      }
+      
+      const transactions = await storage.getPaymentTransactionsByUserId(req.user.id);
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch payment transactions" });

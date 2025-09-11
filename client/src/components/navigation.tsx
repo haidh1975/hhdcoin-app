@@ -117,6 +117,14 @@ export default function Navigation() {
             >
               {t('nav.contact')}
             </Link>
+            
+            <Link 
+              href="/ai-insights"
+              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
+              data-testid="nav-link-ai-insights"
+            >
+              AI Insights
+            </Link>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -242,6 +250,15 @@ export default function Navigation() {
                 data-testid="nav-link-mobile-contact"
               >
                 {t('nav.contact')}
+              </Link>
+              
+              <Link
+                href="/ai-insights"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
+                data-testid="nav-link-mobile-ai-insights"
+              >
+                AI Insights
               </Link>
               
               {/* Mobile Language Switcher */}
