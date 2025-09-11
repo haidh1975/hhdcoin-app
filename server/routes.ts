@@ -585,11 +585,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const PAYMENT_RATE_LIMIT = 10; // 10 attempts per minute
   const RATE_WINDOW = 60 * 1000; // 1 minute
 
-  // Stripe Payment Routes - Allow without auth for testing 
-  app.post("/api/create-payment-intent", async (req: AuthRequest, res) => {
+  // Stripe Payment Routes - Require authentication
+  app.post("/api/create-payment-intent", authenticateToken, async (req: AuthRequest, res) => {
     try {
       // Check if Stripe is available
       if (!stripe) {
+        log(`[PAYMENT][${INSTANCE_ID}] Stripe not available, checking environment...`);
+        log(`[PAYMENT][${INSTANCE_ID}] NODE_ENV: ${process.env.NODE_ENV}`);
+        log(`[PAYMENT][${INSTANCE_ID}] STRIPE_SECRET_KEY available: ${!!process.env.STRIPE_SECRET_KEY}`);
+        log(`[PAYMENT][${INSTANCE_ID}] Stripe variable initialized: ${!!stripe}`);
         return res.status(503).json({ error: "Payment service temporarily unavailable - Stripe not configured" });
       }
 
@@ -618,29 +622,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       log(`[PAYMENT][${INSTANCE_ID}] Auth header: ${req.headers.authorization ? 'Present' : 'Missing'}`);
       log(`[PAYMENT][${INSTANCE_ID}] Body: ${JSON.stringify(req.body, null, 2)}`);
       
-      // Try to authenticate, but don't require it for this endpoint
-      let user = null;
-      if (req.headers.authorization) {
-        const token = req.headers.authorization.split(' ')[1];
-        if (token && process.env.JWT_SECRET) {
-          try {
-            const jwt = await import('jsonwebtoken');
-            const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
-            user = await storage.getAuthUser(decoded.userId);
-            log(`[PAYMENT][${INSTANCE_ID}] Authenticated user: ${user?.username}`);
-          } catch (error) {
-            log(`[PAYMENT][${INSTANCE_ID}] Auth failed, proceeding without user`);
-          }
-        }
+      // User is already authenticated by middleware
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Authentication required for payment creation" });
       }
       
-      req.user = user;
+      log(`[PAYMENT][${INSTANCE_ID}] Authenticated user: ${req.user.username}`);
 
-      const { packageId, amount, currency = "vnd" } = req.body;
-
-      if (!packageId || !amount || amount <= 0) {
-        return res.status(400).json({ message: "Package ID and valid amount are required" });
+      // Validate request body with Zod
+      const paymentSchema = z.object({
+        packageId: z.string().min(1, "Package ID is required"),
+        amount: z.number().min(1, "Amount must be greater than 0"),
+        currency: z.string().optional().default("vnd")
+      });
+      
+      let validatedData;
+      try {
+        validatedData = paymentSchema.parse(req.body);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ 
+            message: "Invalid request data", 
+            errors: error.errors 
+          });
+        }
+        throw error;
       }
+      
+      const { packageId, amount, currency } = validatedData;
 
       // Get investment package details
       const packages = await storage.getInvestmentPackages();
@@ -648,6 +657,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!selectedPackage) {
         return res.status(404).json({ message: "Investment package not found" });
+      }
+      
+      // Validate minimum investment amount
+      const minInvestment = parseFloat(selectedPackage.minInvestment);
+      if (amount < minInvestment) {
+        return res.status(400).json({ 
+          message: `Minimum investment for ${selectedPackage.name} is ${minInvestment.toLocaleString()} VND`,
+          minInvestment: minInvestment
+        });
       }
 
       // Create Stripe customer if needed
@@ -662,11 +680,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           customerId = customers.data[0].id;
         } else {
           const customer = await stripe.customers.create({
-            email: req.user?.email || undefined,
-            name: req.user?.fullName || 'Guest User',
+            email: req.user.email || undefined,
+            name: req.user.fullName || 'User',
             metadata: {
-              userId: req.user?.id || 'guest',
-              username: req.user?.username || 'guest'
+              userId: req.user.id,
+              username: req.user.username
             }
           });
           customerId = customer.id;
@@ -691,7 +709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currency: currency.toLowerCase(),
         customer: customerId || undefined,
         metadata: {
-          userId: req.user?.id || "anonymous",
+          userId: req.user.id,
           packageId: packageId,
           packageName: selectedPackage.name
         },
@@ -702,17 +720,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create payment transaction record
       const transaction = await storage.createPaymentTransaction({
-        userId: req.user?.id || "anonymous",
+        userId: req.user.id,
         packageId: packageId,
         amount: amount.toString(),
-        currency: currency,
+        currency: currency.toUpperCase(),
         stripePaymentIntentId: paymentIntent.id,
         stripeCustomerId: customerId,
         status: "pending",
         paymentMethod: "stripe",
         metadata: JSON.stringify({
           packageName: selectedPackage.name,
-          customerEmail: req.user?.email || "test@example.com"
+          customerEmail: req.user.email || "user@hhdcoin.net"
         })
       });
 
