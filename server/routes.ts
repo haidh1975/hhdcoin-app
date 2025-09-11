@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -35,7 +36,7 @@ log(`Instance ID: ${INSTANCE_ID}`);
 log('=== END STRIPE INIT ===');
 
 const stripe = stripeAvailable ? new Stripe(stripeSecretKey!, {
-  apiVersion: "2025-08-27.basil", // Use latest API version
+  apiVersion: "2024-06-20", // Use stable API version
 }) : null;
 
 if (!stripeAvailable) {
@@ -80,6 +81,8 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure raw body parsing for Stripe webhooks specifically
+  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
   // Authentication Routes with rate limiting
   app.post("/api/auth/login", authRateLimit, async (req, res) => {
     try {

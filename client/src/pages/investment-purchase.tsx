@@ -57,8 +57,8 @@ function InvestmentPurchase() {
     },
     onSuccess: (data: any) => {
       if (data.clientSecret) {
-        // Redirect to checkout page with payment intent
-        setLocation(`/checkout?payment_intent=${data.clientSecret}&package_id=${selectedPackage}&amount=${investmentAmount}`);
+        // Redirect to checkout page securely - no sensitive data in URL
+        setLocation(`/checkout?package=${selectedPackage}&amount=${investmentAmount}&transaction_id=${data.transactionId}`);
       }
     },
     onError: (error: any) => {

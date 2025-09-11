@@ -176,6 +176,7 @@ export default function Checkout() {
   const searchParams = new URLSearchParams(search);
   const packageId = searchParams.get('package');
   const customAmount = searchParams.get('amount');
+  const transactionId = searchParams.get('transaction_id');
 
   const { data: packages } = useQuery<InvestmentPackage[]>({
     queryKey: ["/api/investment-packages"],
