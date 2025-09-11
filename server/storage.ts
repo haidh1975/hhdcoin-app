@@ -12,7 +12,9 @@ import {
   type CommunityMember,
   type InsertCommunityMember,
   type PaymentTransaction,
-  type InsertPaymentTransaction
+  type InsertPaymentTransaction,
+  type UserInvestment,
+  type InsertUserInvestment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { hashPassword } from "./auth";
@@ -46,6 +48,14 @@ export interface IStorage {
   getPaymentTransactionsByUserId(userId: string): Promise<PaymentTransaction[]>;
   createPaymentTransaction(transaction: InsertPaymentTransaction): Promise<PaymentTransaction>;
   updatePaymentTransaction(id: string, updates: Partial<PaymentTransaction>): Promise<PaymentTransaction | undefined>;
+  
+  // User investment management
+  getUserInvestments(): Promise<UserInvestment[]>;
+  getUserInvestment(id: string): Promise<UserInvestment | undefined>;
+  getUserInvestmentsByUserId(userId: string): Promise<UserInvestment[]>;
+  createUserInvestment(investment: InsertUserInvestment): Promise<UserInvestment>;
+  updateUserInvestment(id: string, updates: Partial<UserInvestment>): Promise<UserInvestment | undefined>;
+  deleteUserInvestment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -56,6 +66,7 @@ export class MemStorage implements IStorage {
   private investors: Map<string, Investor>;
   private communityMembers: Map<string, CommunityMember>;
   private paymentTransactions: Map<string, PaymentTransaction>;
+  private userInvestments: Map<string, UserInvestment>;
 
   constructor() {
     this.users = new Map();
@@ -65,6 +76,7 @@ export class MemStorage implements IStorage {
     this.investors = new Map();
     this.communityMembers = new Map();
     this.paymentTransactions = new Map();
+    this.userInvestments = new Map();
     
     // Initialize data
     this.initializeInvestmentPackages();
@@ -548,6 +560,58 @@ export class MemStorage implements IStorage {
     };
     this.paymentTransactions.set(id, updated);
     return updated;
+  }
+
+  // User Investment Methods
+  async getUserInvestments(): Promise<UserInvestment[]> {
+    return Array.from(this.userInvestments.values()).sort((a, b) => 
+      new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime()
+    );
+  }
+
+  async getUserInvestment(id: string): Promise<UserInvestment | undefined> {
+    return this.userInvestments.get(id);
+  }
+
+  async getUserInvestmentsByUserId(userId: string): Promise<UserInvestment[]> {
+    return Array.from(this.userInvestments.values())
+      .filter(investment => investment.userId === userId)
+      .sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
+  }
+
+  async createUserInvestment(insertInvestment: InsertUserInvestment): Promise<UserInvestment> {
+    const id = randomUUID();
+    const investment: UserInvestment = { 
+      ...insertInvestment, 
+      id,
+      status: insertInvestment.status || "active",
+      currentValue: insertInvestment.currentValue || null,
+      profitLoss: insertInvestment.profitLoss || null,
+      profitLossPercentage: insertInvestment.profitLossPercentage || null,
+      endDate: insertInvestment.endDate || null,
+      metadata: insertInvestment.metadata || null,
+      startDate: new Date(),
+      lastUpdated: new Date()
+    };
+    this.userInvestments.set(id, investment);
+    return investment;
+  }
+
+  async updateUserInvestment(id: string, updates: Partial<UserInvestment>): Promise<UserInvestment | undefined> {
+    const existing = this.userInvestments.get(id);
+    if (!existing) return undefined;
+    
+    const updated = { 
+      ...existing, 
+      ...updates,
+      lastUpdated: new Date()
+    };
+    this.userInvestments.set(id, updated);
+    return updated;
+  }
+
+  async deleteUserInvestment(id: string): Promise<boolean> {
+    return this.userInvestments.delete(id);
   }
 }
 
