@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HHDcoin</string>
+    <string name="title_activity_main">HHDcoin</string>
+    <string name="package_name">com.hhdcoin.app</string>
+    <string name="custom_url_scheme">com.hhdcoin.app</string>
+</resources>

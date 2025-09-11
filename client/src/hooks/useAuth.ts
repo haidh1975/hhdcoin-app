@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { secureStorage, STORAGE_KEYS } from '@/utils/secure-storage';
 
 interface User {
   id: string;
@@ -38,12 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize authentication state from localStorage
+  // Initialize authentication state from secure storage
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const storedToken = localStorage.getItem('hhdcoin_token');
-        const storedUser = localStorage.getItem('hhdcoin_user');
+        const storedToken = await secureStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        const storedUser = await secureStorage.getItem(STORAGE_KEYS.AUTH_USER);
 
         if (storedToken && storedUser) {
           setToken(storedToken);
@@ -61,8 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(data.user);
           } else {
             // Token is invalid, clear storage
-            localStorage.removeItem('hhdcoin_token');
-            localStorage.removeItem('hhdcoin_user');
+            await secureStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+            await secureStorage.removeItem(STORAGE_KEYS.AUTH_USER);
             setToken(null);
             setUser(null);
           }
@@ -70,8 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Auth initialization error:', error);
         // Clear invalid data
-        localStorage.removeItem('hhdcoin_token');
-        localStorage.removeItem('hhdcoin_user');
+        await secureStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        await secureStorage.removeItem(STORAGE_KEYS.AUTH_USER);
         setToken(null);
         setUser(null);
       } finally {
@@ -101,9 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(data.token);
         setUser(data.user);
         
-        // Store in localStorage
-        localStorage.setItem('hhdcoin_token', data.token);
-        localStorage.setItem('hhdcoin_user', JSON.stringify(data.user));
+        // Store in secure storage
+        await secureStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+        await secureStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(data.user));
         
         return true;
       } else {
@@ -138,9 +139,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(data.token);
         setUser(data.user);
         
-        // Store in localStorage
-        localStorage.setItem('hhdcoin_token', data.token);
-        localStorage.setItem('hhdcoin_user', JSON.stringify(data.user));
+        // Store in secure storage
+        await secureStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+        await secureStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(data.user));
         
         return true;
       } else {
@@ -170,12 +171,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear state and localStorage
+      // Clear state and secure storage
       setUser(null);
       setToken(null);
       setError(null);
-      localStorage.removeItem('hhdcoin_token');
-      localStorage.removeItem('hhdcoin_user');
+      await secureStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      await secureStorage.removeItem(STORAGE_KEYS.AUTH_USER);
     }
   };
 

@@ -6,27 +6,31 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/home";
-import Investors from "@/pages/investors";
-import Community from "@/pages/community";
-import Admin from "@/pages/admin";
-import InvestmentPackages from "@/pages/investment-packages";
-import AuthManagement from "@/pages/auth";
-import Analysis from "@/pages/analysis";
-import News from "@/pages/news";
-import InvestmentUtilities from "@/pages/investment-utilities";
-import InvestmentGuide from "@/pages/investment-guide";
-import Contact from "@/pages/contact";
-import AccountManagement from "@/pages/account-management";
-import Login from "@/pages/login";
-import Register from "@/pages/register";
-import Dashboard from "@/pages/dashboard";
-import Checkout from "@/pages/checkout";
-import PaymentSuccess from "@/pages/payment-success";
-import AIInsights from "@/pages/ai-insights";
-import InvestmentPurchase from "@/pages/investment-purchase";
-import MyInvestments from "@/pages/my-investments";
+import React, { lazy, Suspense } from 'react';
+import LoadingSpinner from "@/components/loading-spinner";
+
+// Lazy load all route components for better performance
+const NotFound = lazy(() => import("@/pages/not-found"));
+const Home = lazy(() => import("@/pages/home"));
+const Investors = lazy(() => import("@/pages/investors"));
+const Community = lazy(() => import("@/pages/community"));
+const Admin = lazy(() => import("@/pages/admin"));
+const InvestmentPackages = lazy(() => import("@/pages/investment-packages"));
+const AuthManagement = lazy(() => import("@/pages/auth"));
+const Analysis = lazy(() => import("@/pages/analysis"));
+const News = lazy(() => import("@/pages/news"));
+const InvestmentUtilities = lazy(() => import("@/pages/investment-utilities"));
+const InvestmentGuide = lazy(() => import("@/pages/investment-guide"));
+const Contact = lazy(() => import("@/pages/contact"));
+const AccountManagement = lazy(() => import("@/pages/account-management"));
+const Login = lazy(() => import("@/pages/login"));
+const Register = lazy(() => import("@/pages/register"));
+const Dashboard = lazy(() => import("@/pages/dashboard"));
+const Checkout = lazy(() => import("@/pages/checkout"));
+const PaymentSuccess = lazy(() => import("@/pages/payment-success"));
+const AIInsights = lazy(() => import("@/pages/ai-insights"));
+const InvestmentPurchase = lazy(() => import("@/pages/investment-purchase"));
+const MyInvestments = lazy(() => import("@/pages/my-investments"));
 
 function Router() {
   return (
@@ -76,14 +80,63 @@ function Router() {
   );
 }
 
+// Error boundary for lazy components
+interface LazyErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface LazyErrorBoundaryState {
+  hasError: boolean;
+}
+
+class LazyErrorBoundary extends React.Component<LazyErrorBoundaryProps, LazyErrorBoundaryState> {
+  constructor(props: LazyErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): LazyErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    console.error('Lazy component error:', error, errorInfo);
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Something went wrong</h2>
+            <p className="text-gray-600 mb-4">Failed to load page component.</p>
+            <button 
+              onClick={() => this.setState({ hasError: false })}
+              className="px-4 py-2 bg-bitcoin text-white rounded hover:bg-bitcoin-dark"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
           <TooltipProvider>
+            <LazyErrorBoundary>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Router />
+              </Suspense>
+            </LazyErrorBoundary>
             <Toaster />
-            <Router />
           </TooltipProvider>
         </LanguageProvider>
       </AuthProvider>

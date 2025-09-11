@@ -1,7 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import LoadingSpinner from "@/components/loading-spinner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -45,5 +46,9 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     return null; // Will redirect to dashboard
   }
 
-  return <>{children}</>;
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      {children}
+    </Suspense>
+  );
 }

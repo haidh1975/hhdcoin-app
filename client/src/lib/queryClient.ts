@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { secureStorage, STORAGE_KEYS } from '@/utils/secure-storage';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -12,8 +13,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Get JWT token from localStorage
-  const token = localStorage.getItem('hhdcoin_token');
+  // Get JWT token from secure storage
+  const token = await secureStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   
   const headers: Record<string, string> = {
     ...(data ? { "Content-Type": "application/json" } : {}),
