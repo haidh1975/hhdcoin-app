@@ -3,6 +3,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// IMPORTANT: Configure raw body parsing for Stripe webhooks BEFORE JSON parsing
+app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -11,9 +15,21 @@ app.use((req, res, next) => {
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
+  // List of sensitive routes that should not log response bodies
+  const sensitiveRoutes = [
+    "/api/auth",           // All auth endpoints (login, register) contain JWT tokens
+    "/api/create-payment-intent", 
+    "/api/stripe-webhook",
+    "/api/ai/"             // AI endpoints may contain sensitive user queries
+  ];
+
+  const isSensitiveRoute = sensitiveRoutes.some(route => path.startsWith(route));
+
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
+    if (!isSensitiveRoute) {
+      capturedJsonResponse = bodyJson;
+    }
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
@@ -21,8 +37,11 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      } else if (isSensitiveRoute) {
+        logLine += " :: [sensitive data hidden]";
       }
 
       if (logLine.length > 80) {

@@ -81,8 +81,7 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure raw body parsing for Stripe webhooks specifically
-  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
+  // Raw body parsing for webhooks already configured in server/index.ts
   // Authentication Routes with rate limiting
   app.post("/api/auth/login", authRateLimit, async (req, res) => {
     try {
@@ -832,12 +831,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Verify webhook signature for security
         const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        const isProduction = process.env.NODE_ENV === 'production';
+        
         if (endpointSecret && sig) {
           event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
           log(`[WEBHOOK][${INSTANCE_ID}] Verified webhook signature`);
+        } else if (isProduction) {
+          // CRITICAL: In production, REQUIRE signature verification
+          log(`[WEBHOOK][${INSTANCE_ID}] REJECTED: Webhook signature verification required in production`);
+          return res.status(400).send("Webhook signature verification required in production");
         } else {
-          // For development, accept unverified webhooks but log warning
-          log(`[WEBHOOK][${INSTANCE_ID}] WARNING: Webhook signature not verified (dev mode)`);
+          // For development only, accept unverified webhooks but log warning
+          log(`[WEBHOOK][${INSTANCE_ID}] WARNING: Webhook signature not verified (dev mode only)`);
           event = req.body;
         }
       } catch (err: any) {
