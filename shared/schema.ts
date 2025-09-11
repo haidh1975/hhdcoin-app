@@ -67,6 +67,22 @@ export const communityMembers = pgTable("community_members", {
   points: integer("points").default(0),
 });
 
+// Payment Transactions Table
+export const paymentTransactions = pgTable("payment_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => authUsers.id).notNull(),
+  packageId: varchar("package_id").references(() => investmentPackages.id).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull().default("VND"),
+  stripePaymentIntentId: text("stripe_payment_intent_id").unique(),
+  stripeCustomerId: text("stripe_customer_id"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, completed, failed, refunded
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull().default("stripe"), // stripe, crypto, bank_transfer
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  metadata: text("metadata"), // JSON string for additional data
+});
+
 export const insertRealtUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -97,6 +113,12 @@ export const insertCommunityMemberSchema = createInsertSchema(communityMembers).
   id: true,
   joinDate: true,
   lastActive: true,
+});
+
+export const insertPaymentTransactionSchema = createInsertSchema(paymentTransactions).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
 });
 
 // User Management Table for Auth System
@@ -132,3 +154,5 @@ export type Investor = typeof investors.$inferSelect;
 export type InsertInvestor = z.infer<typeof insertInvestorSchema>;
 export type CommunityMember = typeof communityMembers.$inferSelect;
 export type InsertCommunityMember = z.infer<typeof insertCommunityMemberSchema>;
+export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
+export type InsertPaymentTransaction = z.infer<typeof insertPaymentTransactionSchema>;

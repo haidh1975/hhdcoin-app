@@ -15,6 +15,27 @@ import {
   verifyPassword, 
   type AuthRequest 
 } from "./auth";
+import Stripe from "stripe";
+import { insertPaymentTransactionSchema } from "@shared/schema";
+import { log } from "./vite";
+
+// Initialize Stripe with validation
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const INSTANCE_ID = `pid:${process.pid}`;
+
+log('=== STRIPE INITIALIZATION ===');
+log(`STRIPE_SECRET_KEY available: ${!!stripeSecretKey}`);
+log(`STRIPE_SECRET_KEY starts with: ${stripeSecretKey?.substring(0, 7)}`);
+log(`STRIPE_SECRET_KEY length: ${stripeSecretKey?.length}`);
+log(`Instance ID: ${INSTANCE_ID}`);
+log('=== END STRIPE INIT ===');
+
+if (!stripeSecretKey || !/^sk_(test|live)_/.test(stripeSecretKey)) {
+  throw new Error('Invalid STRIPE_SECRET_KEY: must start with sk_test_ or sk_live_');
+}
+const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: "2023-10-16", // Use a valid Stripe API version
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
@@ -446,6 +467,244 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Tài khoản đã được xóa" });
     } catch (error) {
       res.status(500).json({ message: "Có lỗi xảy ra khi xóa tài khoản" });
+    }
+  });
+
+  // Simple rate limiting for payment intents (basic abuse protection)
+  const paymentAttempts = new Map<string, { count: number, resetTime: number }>();
+  const PAYMENT_RATE_LIMIT = 10; // 10 attempts per minute
+  const RATE_WINDOW = 60 * 1000; // 1 minute
+
+  // Stripe Payment Routes - Allow without auth for testing 
+  app.post("/api/create-payment-intent", async (req: AuthRequest, res) => {
+    try {
+      // Add instance tracking header
+      res.setHeader('X-Instance-ID', INSTANCE_ID);
+      log(`[PAYMENT][${INSTANCE_ID}] POST /api/create-payment-intent - Request received`);
+      
+      // Basic rate limiting by IP
+      const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+      const now = Date.now();
+      const attempts = paymentAttempts.get(clientIp) || { count: 0, resetTime: now + RATE_WINDOW };
+      
+      if (now > attempts.resetTime) {
+        attempts.count = 0;
+        attempts.resetTime = now + RATE_WINDOW;
+      }
+      
+      if (attempts.count >= PAYMENT_RATE_LIMIT) {
+        log(`[PAYMENT][${INSTANCE_ID}] Rate limit exceeded for IP: ${clientIp}`);
+        return res.status(429).json({ error: "Too many payment attempts. Please wait a minute." });
+      }
+      
+      attempts.count++;
+      paymentAttempts.set(clientIp, attempts);
+      log(`[PAYMENT][${INSTANCE_ID}] Starting payment intent creation`);
+      log(`[PAYMENT][${INSTANCE_ID}] Auth header: ${req.headers.authorization ? 'Present' : 'Missing'}`);
+      log(`[PAYMENT][${INSTANCE_ID}] Body: ${JSON.stringify(req.body, null, 2)}`);
+      
+      // Try to authenticate, but don't require it for this endpoint
+      let user = null;
+      if (req.headers.authorization) {
+        const token = req.headers.authorization.split(' ')[1];
+        if (token && process.env.JWT_SECRET) {
+          try {
+            const jwt = await import('jsonwebtoken');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+            user = await storage.getAuthUser(decoded.userId);
+            log(`[PAYMENT][${INSTANCE_ID}] Authenticated user: ${user?.username}`);
+          } catch (error) {
+            log(`[PAYMENT][${INSTANCE_ID}] Auth failed, proceeding without user`);
+          }
+        }
+      }
+      
+      req.user = user;
+
+      const { packageId, amount, currency = "vnd" } = req.body;
+
+      if (!packageId || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Package ID and valid amount are required" });
+      }
+
+      // Get investment package details
+      const packages = await storage.getInvestmentPackages();
+      const selectedPackage = packages.find(p => p.id === packageId);
+      
+      if (!selectedPackage) {
+        return res.status(404).json({ message: "Investment package not found" });
+      }
+
+      // Create Stripe customer if needed
+      let customerId = null;
+      try {
+        const customers = await stripe.customers.list({
+          email: req.user?.email || undefined,
+          limit: 1
+        });
+        
+        if (customers.data.length > 0) {
+          customerId = customers.data[0].id;
+        } else {
+          const customer = await stripe.customers.create({
+            email: req.user?.email || undefined,
+            name: req.user?.fullName || 'Guest User',
+            metadata: {
+              userId: req.user?.id || 'guest',
+              username: req.user?.username || 'guest'
+            }
+          });
+          customerId = customer.id;
+        }
+      } catch (stripeError) {
+        console.error("Stripe customer error:", stripeError);
+      }
+
+      // Handle zero-decimal currencies properly
+      const zeroDecimalCurrencies = new Set(["bif","clp","djf","gnf","jpy","kmf","krw","mga","pyg","rwf","ugx","vnd","vuv","xaf","xof","xpf"]);
+      const isZeroDecimal = zeroDecimalCurrencies.has(currency.toLowerCase());
+      const amountForStripe = isZeroDecimal ? Math.round(amount) : Math.round(amount * 100);
+      
+      // Create payment intent
+      log(`[PAYMENT][${INSTANCE_ID}] Creating Stripe payment intent...`);
+      log(`[PAYMENT][${INSTANCE_ID}] Amount (${currency.toUpperCase()} ${isZeroDecimal ? 'units' : 'cents'}): ${amountForStripe}`);
+      log(`[PAYMENT][${INSTANCE_ID}] Currency: ${currency.toLowerCase()}`);
+      log(`[PAYMENT][${INSTANCE_ID}] Zero-decimal currency: ${isZeroDecimal}`);
+      
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amountForStripe,
+        currency: currency.toLowerCase(),
+        customer: customerId || undefined,
+        metadata: {
+          userId: req.user?.id || "anonymous",
+          packageId: packageId,
+          packageName: selectedPackage.name
+        },
+        description: `HHDcoin Investment - ${selectedPackage.name}`,
+      });
+      
+      log(`[PAYMENT][${INSTANCE_ID}] Payment intent created successfully: ${paymentIntent.id}`);
+
+      // Create payment transaction record
+      const transaction = await storage.createPaymentTransaction({
+        userId: req.user?.id || "anonymous",
+        packageId: packageId,
+        amount: amount.toString(),
+        currency: currency,
+        stripePaymentIntentId: paymentIntent.id,
+        stripeCustomerId: customerId,
+        status: "pending",
+        paymentMethod: "stripe",
+        metadata: JSON.stringify({
+          packageName: selectedPackage.name,
+          customerEmail: req.user?.email || "test@example.com"
+        })
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        transactionId: transaction.id,
+        amount: amount,
+        currency: currency,
+        packageName: selectedPackage.name
+      });
+    } catch (error: any) {
+      console.error("[PAYMENT] Payment intent creation error:", error);
+      console.error("[PAYMENT] Error details:", JSON.stringify(error, null, 2));
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  // Stripe webhook for payment confirmation
+  app.post("/api/stripe-webhook", async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'] as string;
+      let event;
+
+      // For development, we'll skip signature verification
+      // In production, you should verify the webhook signature
+      event = req.body;
+
+      // Handle the event
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          
+          // Find and update the transaction
+          const transactions = await storage.getPaymentTransactions();
+          const transaction = transactions.find(t => t.stripePaymentIntentId === paymentIntent.id);
+          
+          if (transaction) {
+            await storage.updatePaymentTransaction(transaction.id, {
+              status: "completed"
+            });
+            
+            // Create investor record
+            const packages = await storage.getInvestmentPackages();
+            const selectedPackage = packages.find(p => p.id === transaction.packageId);
+            
+            if (selectedPackage) {
+              const user = await storage.getAuthUser(transaction.userId);
+              if (user) {
+                await storage.createInvestor({
+                  fullName: user.fullName,
+                  email: user.email || "",
+                  phone: "", // Will need to collect this
+                  facebookUrl: "",
+                  zaloPhone: "",
+                  investmentAmount: transaction.amount,
+                  bitcoinCode: `BTC${Date.now()}`,
+                  status: "active"
+                });
+              }
+            }
+          }
+          break;
+        
+        case 'payment_intent.payment_failed':
+          const failedPayment = event.data.object;
+          const failedTransactions = await storage.getPaymentTransactions();
+          const failedTransaction = failedTransactions.find(t => t.stripePaymentIntentId === failedPayment.id);
+          
+          if (failedTransaction) {
+            await storage.updatePaymentTransaction(failedTransaction.id, {
+              status: "failed"
+            });
+          }
+          break;
+
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("Webhook error:", error);
+      res.status(400).send(`Webhook Error: ${error.message}`);
+    }
+  });
+
+  // Get user's payment transactions
+  app.get("/api/payment-transactions", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const transactions = await storage.getPaymentTransactionsByUserId(req.user?.id || 'guest');
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch payment transactions" });
+    }
+  });
+
+  // Get all payment transactions (admin only)
+  app.get("/api/admin/payment-transactions", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const transactions = await storage.getPaymentTransactions();
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch payment transactions" });
     }
   });
 

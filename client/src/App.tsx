@@ -22,6 +22,8 @@ import AccountManagement from "@/pages/account-management";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import Checkout from "@/pages/checkout";
+import PaymentSuccess from "@/pages/payment-success";
 
 function Router() {
   return (
@@ -57,6 +59,8 @@ function Router() {
           <AccountManagement />
         </ProtectedRoute>
       </Route>
+      <Route path="/checkout" component={Checkout} />
+      <Route path="/payment-success" component={PaymentSuccess} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -10,7 +10,9 @@ import {
   type Investor,
   type InsertInvestor,
   type CommunityMember,
-  type InsertCommunityMember
+  type InsertCommunityMember,
+  type PaymentTransaction,
+  type InsertPaymentTransaction
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { hashPassword } from "./auth";
@@ -37,6 +39,13 @@ export interface IStorage {
   createCommunityMember(member: InsertCommunityMember): Promise<CommunityMember>;
   updateCommunityMember(id: string, member: Partial<CommunityMember>): Promise<CommunityMember | undefined>;
   deleteCommunityMember(id: string): Promise<boolean>;
+  
+  // Payment transaction management
+  getPaymentTransactions(): Promise<PaymentTransaction[]>;
+  getPaymentTransaction(id: string): Promise<PaymentTransaction | undefined>;
+  getPaymentTransactionsByUserId(userId: string): Promise<PaymentTransaction[]>;
+  createPaymentTransaction(transaction: InsertPaymentTransaction): Promise<PaymentTransaction>;
+  updatePaymentTransaction(id: string, updates: Partial<PaymentTransaction>): Promise<PaymentTransaction | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,6 +55,7 @@ export class MemStorage implements IStorage {
   private investmentPackages: Map<string, InvestmentPackage>;
   private investors: Map<string, Investor>;
   private communityMembers: Map<string, CommunityMember>;
+  private paymentTransactions: Map<string, PaymentTransaction>;
 
   constructor() {
     this.users = new Map();
@@ -54,6 +64,7 @@ export class MemStorage implements IStorage {
     this.investmentPackages = new Map();
     this.investors = new Map();
     this.communityMembers = new Map();
+    this.paymentTransactions = new Map();
     
     // Initialize data
     this.initializeInvestmentPackages();
@@ -366,7 +377,8 @@ export class MemStorage implements IStorage {
       socialLinks: insertMember.socialLinks || null,
       location: insertMember.location || null,
       occupation: insertMember.occupation || null,
-      totalInvestment: insertMember.totalInvestment || null
+      totalInvestment: insertMember.totalInvestment || null,
+      experienceLevel: insertMember.experienceLevel || "beginner"
     };
     this.communityMembers.set(id, member);
     return member;
@@ -488,6 +500,54 @@ export class MemStorage implements IStorage {
 
   async deleteAuthUser(id: string): Promise<boolean> {
     return this.authUsers.delete(id);
+  }
+
+  // Payment Transaction Methods
+  async getPaymentTransactions(): Promise<PaymentTransaction[]> {
+    return Array.from(this.paymentTransactions.values()).sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async getPaymentTransaction(id: string): Promise<PaymentTransaction | undefined> {
+    return this.paymentTransactions.get(id);
+  }
+
+  async getPaymentTransactionsByUserId(userId: string): Promise<PaymentTransaction[]> {
+    return Array.from(this.paymentTransactions.values())
+      .filter(transaction => transaction.userId === userId)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async createPaymentTransaction(insertTransaction: InsertPaymentTransaction): Promise<PaymentTransaction> {
+    const id = randomUUID();
+    const transaction: PaymentTransaction = { 
+      ...insertTransaction, 
+      id,
+      status: insertTransaction.status || "pending",
+      currency: insertTransaction.currency || "VND",
+      paymentMethod: insertTransaction.paymentMethod || "stripe",
+      stripePaymentIntentId: insertTransaction.stripePaymentIntentId || null,
+      stripeCustomerId: insertTransaction.stripeCustomerId || null,
+      createdAt: new Date(),
+      completedAt: null,
+      metadata: insertTransaction.metadata || null
+    };
+    this.paymentTransactions.set(id, transaction);
+    return transaction;
+  }
+
+  async updatePaymentTransaction(id: string, updates: Partial<PaymentTransaction>): Promise<PaymentTransaction | undefined> {
+    const existing = this.paymentTransactions.get(id);
+    if (!existing) return undefined;
+    
+    const updated = { 
+      ...existing, 
+      ...updates,
+      completedAt: updates.status === "completed" && !existing.completedAt ? new Date() : existing.completedAt
+    };
+    this.paymentTransactions.set(id, updated);
+    return updated;
   }
 }
 

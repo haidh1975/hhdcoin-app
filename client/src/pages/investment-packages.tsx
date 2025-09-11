@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import type { InvestmentPackage } from "@shared/schema";
 
 export default function InvestmentPackages() {
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 
   const { data: packages = [], isLoading } = useQuery<InvestmentPackage[]>({
@@ -160,6 +162,10 @@ export default function InvestmentPackages() {
                     <Button 
                       className="w-full bg-gradient-to-r from-bitcoin to-bitcoin-light hover:from-bitcoin-light hover:to-bitcoin text-white"
                       data-testid={`button-select-${pkg.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation(`/checkout?package=${pkg.id}`);
+                      }}
                     >
                       Chọn Gói Này
                       <ArrowRight className="ml-2 h-4 w-4" />
