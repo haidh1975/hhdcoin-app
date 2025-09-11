@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Check, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { InvestmentPackage } from "@shared/schema";
 
 export default function InvestmentPackages() {
+  const { t } = useLanguage();
   const { data: packages = [], isLoading } = useQuery<InvestmentPackage[]>({
     queryKey: ["/api/investment-packages"],
   });
@@ -19,7 +21,7 @@ export default function InvestmentPackages() {
   if (isLoading) {
     return (
       <div className="text-center py-8" data-testid="investment-packages-loading">
-        <div className="text-lg">Đang tải gói đầu tư...</div>
+        <div className="text-lg">{t('packages.loading_message')}</div>
       </div>
     );
   }
@@ -38,7 +40,7 @@ export default function InvestmentPackages() {
               {(pkg.recommended === 1) && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-bitcoin px-4 py-2 rounded-full text-sm font-bold border-2 border-bitcoin">
                   <Star className="inline mr-1 h-4 w-4" />
-                  PHỔ BIẾN NHẤT
+                  {t('packages.popular')}
                 </div>
               )}
               
@@ -53,7 +55,7 @@ export default function InvestmentPackages() {
                     {pkg.minRate}-{pkg.maxRate}%
                   </div>
                   <div className={`${(pkg.recommended === 1) ? 'text-black opacity-80' : 'text-gray-600'}`}>
-                    Lợi nhuận/năm
+                    {t('packages.profit')}
                   </div>
                 </div>
                 
@@ -69,7 +71,7 @@ export default function InvestmentPackages() {
                   {pkg.id === 'basic' && (
                     <div className="flex items-center" data-testid={`feature-disabled-${pkg.id}`}>
                       <X className="mr-3 h-5 w-5 text-gray-400" />
-                      <span className="text-gray-400">Dự báo AI</span>
+                      <span className="text-gray-400">AI Prediction</span>
                     </div>
                   )}
                 </div>
@@ -84,7 +86,7 @@ export default function InvestmentPackages() {
                   }`}
                   data-testid={`button-select-package-${pkg.id}`}
                 >
-                  Chọn gói này
+                  {t('packages.select')}
                 </Button>
               </CardContent>
             </Card>

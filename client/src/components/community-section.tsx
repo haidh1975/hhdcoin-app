@@ -1,8 +1,11 @@
 import { Users, MessageCircle, Star, Globe, ThumbsUp, MessageSquare, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function CommunitySection() {
+  const { t } = useLanguage();
+  
   const communityStats = {
     members: "15,847",
     messages: "1,234", 
@@ -12,31 +15,31 @@ export default function CommunitySection() {
 
   const discussions = [
     {
-      user: { name: "Nguyễn Hoàng", level: "VIP Member", avatar: "NH" },
+      user: { name: t('community.post1.user'), level: t('community.member_levels.vip'), avatar: "NH" },
       post: {
-        title: "Có nên DCA Bitcoin trong tình hình hiện tại?",
-        preview: "Với việc giá Bitcoin đang dao động quanh mức $43K, mọi người nghĩ sao về chiến lược DCA...",
-        time: "2 giờ trước",
+        title: t('community.post1.title'),
+        preview: t('community.post1.preview'),
+        time: `2 ${t('news.hours')} ${t('news.time_ago')}`,
         likes: 23,
         replies: 8
       }
     },
     {
-      user: { name: "HHDcoin AI Assistant", level: "BOT", avatar: "AI" },
+      user: { name: t('community.post2.user'), level: t('community.member_levels.bot'), avatar: "AI" },
       post: {
-        title: "Báo cáo phân tích thị trường tuần này",
-        preview: "AI phân tích cho thấy Bitcoin có 78% khả năng tăng giá trong 7 ngày tới dựa trên...",
-        time: "1 giờ trước",
+        title: t('community.post2.title'),
+        preview: t('community.post2.preview'),
+        time: `1 ${t('news.hours')} ${t('news.time_ago')}`,
         likes: 156,
         replies: 45
       }
     },
     {
-      user: { name: "Lê Thành", level: "Expert Trader", avatar: "LT" },
+      user: { name: t('community.post3.user'), level: t('community.member_levels.expert'), avatar: "LT" },
       post: {
-        title: "Phân tích kỹ thuật: Mô hình cờ bull đang hình thành",
-        preview: "Quan sát biểu đồ 4H của Bitcoin, tôi thấy mô hình bull flag rất rõ ràng. Target ngắn hạn...",
-        time: "5 giờ trước",
+        title: t('community.post3.title'),
+        preview: t('community.post3.preview'),
+        time: `5 ${t('news.hours')} ${t('news.time_ago')}`,
         likes: 89,
         replies: 32
       }
@@ -48,10 +51,10 @@ export default function CommunitySection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-community-title">
-            Cộng đồng <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span>
+            {t('community.title')}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-community-description">
-            Kết nối với hàng nghìn nhà đầu tư Bitcoin, chia sẻ kinh nghiệm và học hỏi từ các chuyên gia
+            {t('community.description')}
           </p>
         </div>
         
@@ -59,12 +62,12 @@ export default function CommunitySection() {
           {/* Community Stats */}
           <Card className="shadow-lg" data-testid="card-community-stats">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-dark-slate mb-6">Thống kê cộng đồng</h3>
+              <h3 className="text-2xl font-bold text-dark-slate mb-6">{t('community.community_stats')}</h3>
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Users className="text-bitcoin text-xl h-6 w-6" />
-                    <span className="text-gray-700">Thành viên</span>
+                    <span className="text-gray-700">{t('community.stats.members')}</span>
                   </div>
                   <span className="text-2xl font-bold text-dark-slate" data-testid="stat-members">
                     {communityStats.members}
@@ -73,7 +76,7 @@ export default function CommunitySection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <MessageCircle className="text-green-500 text-xl h-6 w-6" />
-                    <span className="text-gray-700">Tin nhắn hôm nay</span>
+                    <span className="text-gray-700">{t('community.stats.messages_today')}</span>
                   </div>
                   <span className="text-2xl font-bold text-dark-slate" data-testid="stat-messages">
                     {communityStats.messages}
@@ -82,7 +85,7 @@ export default function CommunitySection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Star className="text-yellow-500 text-xl h-6 w-6" />
-                    <span className="text-gray-700">Chuyên gia</span>
+                    <span className="text-gray-700">{t('community.stats.experts')}</span>
                   </div>
                   <span className="text-2xl font-bold text-dark-slate" data-testid="stat-experts">
                     {communityStats.experts}
@@ -91,7 +94,7 @@ export default function CommunitySection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Globe className="text-blue-500 text-xl h-6 w-6" />
-                    <span className="text-gray-700">Quốc gia</span>
+                    <span className="text-gray-700">{t('community.stats.countries')}</span>
                   </div>
                   <span className="text-2xl font-bold text-dark-slate" data-testid="stat-countries">
                     {communityStats.countries}
@@ -104,7 +107,7 @@ export default function CommunitySection() {
                 data-testid="button-join-community"
               >
                 <LogIn className="mr-2 h-5 w-5" />
-                Tham gia cộng đồng
+                {t('community.join_community')}
               </Button>
             </CardContent>
           </Card>
@@ -113,9 +116,9 @@ export default function CommunitySection() {
           <Card className="lg:col-span-2 shadow-lg" data-testid="card-recent-discussions">
             <CardContent className="p-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-dark-slate">Thảo luận gần đây</h3>
+                <h3 className="text-2xl font-bold text-dark-slate">{t('community.discussions.title')}</h3>
                 <Button variant="ghost" className="text-bitcoin hover:text-bitcoin-light font-medium" data-testid="button-view-all-discussions">
-                  Xem tất cả
+                  {t('community.view_all_discussions')}
                 </Button>
               </div>
               
@@ -157,11 +160,11 @@ export default function CommunitySection() {
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span data-testid={`post-likes-${index}`}>
                             <ThumbsUp className="inline mr-1 h-4 w-4" />
-                            {discussion.post.likes} likes
+                            {discussion.post.likes} {t('community.likes')}
                           </span>
                           <span data-testid={`post-replies-${index}`}>
                             <MessageSquare className="inline mr-1 h-4 w-4" />
-                            {discussion.post.replies} replies
+                            {discussion.post.replies} {t('community.replies')}
                           </span>
                           <Button 
                             variant="ghost" 
@@ -169,7 +172,7 @@ export default function CommunitySection() {
                             className="text-bitcoin hover:text-bitcoin-light p-0 h-auto"
                             data-testid={`button-reply-${index}`}
                           >
-                            {discussion.user.level === 'BOT' ? 'Xem báo cáo đầy đủ' : 'Trả lời'}
+                            {discussion.user.level === t('community.member_levels.bot') ? t('community.reply_button.bot') : t('community.reply_button.default')}
                           </Button>
                         </div>
                       </div>

@@ -34,31 +34,31 @@ export default function InvestmentGuide() {
   const steps = [
     {
       icon: UserPlus,
-      title: "Bước 1: Tạo tài khoản",
+      title: t('guide.step1_title'),
       description: t('guide.step1'),
       color: "text-blue-600"
     },
     {
       icon: DollarSign,
-      title: "Bước 2: Nạp khoản đầu tư",
+      title: t('guide.step2_title'),
       description: t('guide.step2'),
       color: "text-green-600"
     },
     {
       icon: CreditCard,
-      title: "Bước 3: Thanh toán & nhận hợp đồng",
+      title: t('guide.step3_title'),
       description: t('guide.step3'),
       color: "text-purple-600"
     },
     {
       icon: BarChart3,
-      title: "Bước 4: Quản lý & theo dõi",
+      title: t('guide.step4_title'),
       description: t('guide.step4'),
       color: "text-orange-600"
     },
     {
       icon: MessageCircle,
-      title: "Bước 5: Chatbot AI hỗ trợ",
+      title: t('guide.step5_title'),
       description: t('guide.step5'),
       color: "text-red-600"
     }
@@ -74,7 +74,7 @@ export default function InvestmentGuide() {
             {t('guide.title')}
           </h1>
           <p className="text-xl text-purple-100 max-w-3xl mx-auto">
-            Hướng dẫn chi tiết từng bước để bắt đầu hành trình đầu tư Bitcoin thông minh với AI và các tiện ích đầu tư
+            {t('pages.investment_guide.step_by_step')}
           </p>
         </div>
       </section>
@@ -84,7 +84,7 @@ export default function InvestmentGuide() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-utilities-title">
-              Tiện ích đầu tư thông minh
+              {t('pages.investment_guide.utilities_title')}
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               {utilities.map((utility, index) => {
@@ -102,10 +102,10 @@ export default function InvestmentGuide() {
                         {utility.description.includes(':') ? utility.description.split(': ')[1] : utility.description}
                       </p>
                       <Button className="w-full bg-bitcoin hover:bg-bitcoin-light" data-testid={`button-utility-${index}`}>
-                        {index === 0 && 'Xem lịch sử'}
-                        {index === 1 && 'Tải hợp đồng'}
-                        {index === 2 && 'Gửi yêu cầu'}
-                        {index === 3 && 'Quản lý thông báo'}
+                        {index === 0 && t('guide.view_history')}
+                        {index === 1 && t('guide.download_contract')}
+                        {index === 2 && t('guide.send_request')}
+                        {index === 3 && t('guide.manage_notifications')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -120,7 +120,7 @@ export default function InvestmentGuide() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-steps-title">
-              5 Bước Đầu Tư Với HHDcoin
+              {t('guide.five_steps_title')}
             </h2>
             
             <div className="space-y-8">
@@ -164,17 +164,17 @@ export default function InvestmentGuide() {
               <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
             <h2 className="text-3xl font-bold mb-6" data-testid="text-ready-title">
-              Sẵn sàng bắt đầu đầu tư?
+              {t('guide.ready_to_start')}
             </h2>
             <p className="text-gray-600 text-lg mb-8">
-              Theo dõi 5 bước trên để bắt đầu hành trình đầu tư Bitcoin thông minh cùng HHDcoin
+              {t('guide.follow_steps_description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button className="bg-bitcoin hover:bg-bitcoin-light px-8 py-3 text-lg" data-testid="button-start-now">
-                Bắt đầu ngay
+                {t('guide.start_now')}
               </Button>
               <Button variant="outline" className="px-8 py-3 text-lg" data-testid="button-contact-support">
-                Liên hệ hỗ trợ
+                {t('guide.contact_support')}
               </Button>
             </div>
           </div>
@@ -186,30 +186,30 @@ export default function InvestmentGuide() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-demo-title">
-              Demo Interface
+              {t('guide.demo_interface')}
             </h2>
             <div className="bg-white rounded-lg shadow-lg p-8">
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <Calendar className="h-6 w-6 text-bitcoin" />
-                    <span className="font-medium">Đầu tư gần nhất</span>
+                    <span className="font-medium">{t('guide.latest_investment')}</span>
                   </div>
                   <span className="text-green-600 font-semibold">15/12/2024</span>
                 </div>
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <FileText className="h-6 w-6 text-bitcoin" />
-                    <span className="font-medium">Hợp đồng</span>
+                    <span className="font-medium">{t('guide.contract')}</span>
                   </div>
-                  <span className="text-blue-600 font-semibold">Tải PDF</span>
+                  <span className="text-blue-600 font-semibold">{t('guide.download_pdf')}</span>
                 </div>
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <CreditCard className="h-6 w-6 text-bitcoin" />
-                    <span className="font-medium">Trạng thái</span>
+                    <span className="font-medium">{t('guide.status')}</span>
                   </div>
-                  <span className="text-green-600 font-semibold">Hoạt động</span>
+                  <span className="text-green-600 font-semibold">{t('guide.active')}</span>
                 </div>
               </div>
             </div>

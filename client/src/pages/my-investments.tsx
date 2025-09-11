@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Bitcoin, 
   TrendingUp, 
@@ -44,6 +45,7 @@ interface UserInvestment {
 }
 
 function MyInvestments() {
+  const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
@@ -55,14 +57,16 @@ function MyInvestments() {
 
   const formatCurrency = (amount: string | null) => {
     if (!amount) return "N/A";
-    return new Intl.NumberFormat('vi-VN', {
+    const locale = language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'VND'
     }).format(parseFloat(amount));
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
+    const locale = language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -72,11 +76,11 @@ function MyInvestments() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Đang hoạt động</Badge>;
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{t('my_investments.status.active')}</Badge>;
       case 'completed':
-        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Hoàn thành</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{t('my_investments.status.completed')}</Badge>;
       case 'cancelled':
-        return <Badge variant="destructive">Đã hủy</Badge>;
+        return <Badge variant="destructive">{t('my_investments.status.cancelled')}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -103,15 +107,15 @@ function MyInvestments() {
             <Card className="max-w-md mx-auto">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  Yêu cầu đăng nhập
+                  {t('my_investments.login_required_title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center space-y-4">
                 <p className="text-gray-600 dark:text-gray-300">
-                  Vui lòng đăng nhập để xem danh sách đầu tư của bạn.
+                  {t('my_investments.login_required_message')}
                 </p>
                 <Button onClick={() => setLocation("/login")} className="w-full" data-testid="button-login">
-                  Đăng nhập
+                  {t('my_investments.login_button')}
                 </Button>
               </CardContent>
             </Card>
@@ -132,10 +136,10 @@ function MyInvestments() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2" data-testid="title-my-investments">
-                  Danh sách đầu tư
+                  {t('my_investments.title')}
                 </h1>
                 <p className="text-lg text-gray-600 dark:text-gray-300">
-                  Quản lý và theo dõi các khoản đầu tư Bitcoin của bạn
+                  {t('my_investments.portfolio_overview')}
                 </p>
               </div>
               <Button 
@@ -144,7 +148,7 @@ function MyInvestments() {
                 data-testid="button-new-investment"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Đầu tư mới
+                {t('my_investments.start_investing')}
               </Button>
             </div>
           </div>
@@ -158,7 +162,7 @@ function MyInvestments() {
                     <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Tổng đầu tư</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('my_investments.total_invested')}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-total-investment">
                       {formatCurrency(getTotalInvestment().toString())}
                     </p>
@@ -174,7 +178,7 @@ function MyInvestments() {
                     <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-300" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Giá trị hiện tại</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('my_investments.current_value')}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-current-value">
                       {formatCurrency(getTotalCurrentValue().toString())}
                     </p>
@@ -198,7 +202,7 @@ function MyInvestments() {
                     )}
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Lãi/Lỗ</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('my_investments.profit_loss')}</p>
                     <p className={`text-2xl font-bold ${
                       getTotalProfit() >= 0 
                         ? 'text-green-600 dark:text-green-400' 
@@ -229,16 +233,16 @@ function MyInvestments() {
                 </div>
               ) : error ? (
                 <div className="text-center py-12">
-                  <p className="text-red-600 dark:text-red-400">Lỗi tải dữ liệu đầu tư</p>
+                  <p className="text-red-600 dark:text-red-400">{t('my_investments.loading_error')}</p>
                 </div>
               ) : (investments as UserInvestment[]).length === 0 ? (
                 <div className="text-center py-12">
                   <Bitcoin className="h-16 w-16 mx-auto mb-4 text-gray-400" />
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    Chưa có khoản đầu tư nào
+                    {t('my_investments.no_investments_title')}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    Bắt đầu hành trình đầu tư Bitcoin của bạn ngay hôm nay
+                    {t('my_investments.no_investments_message')}
                   </p>
                   <Button 
                     onClick={() => setLocation("/investment-purchase")}
@@ -246,7 +250,7 @@ function MyInvestments() {
                     data-testid="button-start-investing"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Bắt đầu đầu tư
+                    {t('my_investments.start_investing')}
                   </Button>
                 </div>
               ) : (
@@ -263,7 +267,7 @@ function MyInvestments() {
                                   {investment.package.name}
                                 </h3>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  Mã Bitcoin: {investment.bitcoinCode}
+                                  {t('my_investments.bitcoin_code')}: {investment.bitcoinCode}
                                 </p>
                               </div>
                               {getStatusBadge(investment.status)}
@@ -271,11 +275,11 @@ function MyInvestments() {
                             
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
-                                <p className="text-gray-600 dark:text-gray-400">Ngày đầu tư</p>
+                                <p className="text-gray-600 dark:text-gray-400">{t('my_investments.investment_date')}</p>
                                 <p className="font-medium">{formatDate(investment.startDate)}</p>
                               </div>
                               <div>
-                                <p className="text-gray-600 dark:text-gray-400">Lợi nhuận dự kiến</p>
+                                <p className="text-gray-600 dark:text-gray-400">{t('my_investments.expected_profit')}</p>
                                 <p className="font-medium text-green-600 dark:text-green-400">
                                   {investment.package.minRate}% - {investment.package.maxRate}%
                                 </p>
@@ -286,13 +290,13 @@ function MyInvestments() {
                           {/* Financial Info */}
                           <div className="space-y-3">
                             <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Số tiền đầu tư</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{t('my_investments.investment_amount')}</p>
                               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                 {formatCurrency(investment.investmentAmount)}
                               </p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Giá trị hiện tại</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{t('my_investments.current_value')}</p>
                               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                 {formatCurrency(investment.currentValue || investment.investmentAmount)}
                               </p>
@@ -304,7 +308,7 @@ function MyInvestments() {
                             <div className="space-y-2">
                               {investment.profitLoss && (
                                 <div>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">Lãi/Lỗ</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('my_investments.profit_loss')}</p>
                                   <p className={`text-lg font-semibold ${
                                     parseFloat(investment.profitLoss) >= 0 
                                       ? 'text-green-600 dark:text-green-400' 
@@ -335,7 +339,7 @@ function MyInvestments() {
                                 data-testid={`button-view-${investment.id}`}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
-                                Chi tiết
+                                {t('my_investments.details_button')}
                               </Button>
                             </div>
                           </div>

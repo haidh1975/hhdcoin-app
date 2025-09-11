@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ContactFormData {
   name: string;
@@ -27,6 +28,7 @@ interface ContactFormData {
 }
 
 export default function ContactSupport() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
@@ -44,8 +46,8 @@ export default function ContactSupport() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Thành công!",
-        description: data.message || "Tin nhắn đã được gửi thành công!",
+        title: t('common.success'),
+        description: data.message || t('contact.send_success'),
       });
       setFormData({
         name: "",
@@ -58,8 +60,8 @@ export default function ContactSupport() {
     },
     onError: (error: any) => {
       toast({
-        title: "Lỗi",
-        description: error.message || "Có lỗi xảy ra khi gửi tin nhắn",
+        title: t('common.error'),
+        description: error.message || t('contact.send_error'),
         variant: "destructive",
       });
     },
@@ -74,8 +76,8 @@ export default function ContactSupport() {
     
     if (!privacyAccepted) {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng đồng ý với chính sách bảo mật",
+        title: t('common.error'),
+        description: t('contact.privacy_required'),
         variant: "destructive",
       });
       return;
@@ -83,8 +85,8 @@ export default function ContactSupport() {
 
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng điền đầy đủ thông tin bắt buộc",
+        title: t('common.error'),
+        description: t('contact.all_fields_required'),
         variant: "destructive",
       });
       return;
@@ -96,26 +98,26 @@ export default function ContactSupport() {
   const supportOptions = [
     {
       icon: MessageCircle,
-      title: "Live Chat",
-      subtitle: "Trực tuyến",
+      title: t('contact.support_options.live_chat'),
+      subtitle: t('contact.support_options.live_chat_subtitle'),
       color: "text-bitcoin"
     },
     {
       icon: Video,
-      title: "Video Call",
-      subtitle: "Đặt lịch",
+      title: t('contact.support_options.video_call'),
+      subtitle: t('contact.support_options.video_call_subtitle'),
       color: "text-bitcoin"
     },
     {
       icon: HelpCircle,
-      title: "FAQ",
-      subtitle: "Câu hỏi thường gặp",
+      title: t('contact.support_options.faq'),
+      subtitle: t('contact.support_options.faq_subtitle'),
       color: "text-bitcoin"
     },
     {
       icon: Book,
-      title: "Hướng dẫn",
-      subtitle: "Tài liệu chi tiết",
+      title: t('contact.support_options.guide'),
+      subtitle: t('contact.support_options.guide_subtitle'),
       color: "text-bitcoin"
     }
   ];
@@ -125,10 +127,10 @@ export default function ContactSupport() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-contact-title">
-            Liên hệ & Hỗ trợ
+            {t('contact.title')}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-contact-description">
-            Đội ngũ chuyên gia HHDcoin luôn sẵn sàng hỗ trợ bạn 24/7
+            {t('contact.description')}
           </p>
         </div>
         
@@ -137,7 +139,7 @@ export default function ContactSupport() {
           <div className="space-y-8">
             <Card className="bg-gradient-to-br from-bitcoin to-bitcoin-light text-white" data-testid="card-contact-info">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-6">Thông tin liên hệ</h3>
+                <h3 className="text-2xl font-bold mb-6">{t('contact.info.title')}</h3>
                 
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4" data-testid="contact-email">
@@ -149,7 +151,7 @@ export default function ContactSupport() {
                       <a href="mailto:haidh1975@gmail.com" className="opacity-90 hover:opacity-100" data-testid="link-email">
                         haidh1975@gmail.com
                       </a>
-                      <div className="text-sm opacity-75">Phản hồi trong vòng 2 giờ</div>
+                      <div className="text-sm opacity-75">{t('contact.response_time')}</div>
                     </div>
                   </div>
                   
@@ -158,11 +160,11 @@ export default function ContactSupport() {
                       <Phone className="text-white text-xl h-6 w-6" />
                     </div>
                     <div>
-                      <div className="font-semibold mb-1">Điện thoại</div>
+                      <div className="font-semibold mb-1">{t('contact.form.phone')}</div>
                       <a href="tel:+84888151975" className="opacity-90 hover:opacity-100" data-testid="link-phone">
                         +84 888 151 975
                       </a>
-                      <div className="text-sm opacity-75">Hỗ trợ 24/7</div>
+                      <div className="text-sm opacity-75">{t('contact.support_247')}</div>
                     </div>
                   </div>
                   
@@ -171,7 +173,7 @@ export default function ContactSupport() {
                       <MapPin className="text-white text-xl h-6 w-6" />
                     </div>
                     <div>
-                      <div className="font-semibold mb-1">Địa chỉ</div>
+                      <div className="font-semibold mb-1">{t('contact.form.subject')}</div>
                       <div className="opacity-90">Số 25, ngõ 155 đường Cầu Giấy</div>
                       <div className="opacity-90">Phường Quan Giấy, TP. Hà Nội</div>
                       <div className="text-sm opacity-75">Giờ làm việc: 8:00 - 22:00</div>
@@ -203,7 +205,7 @@ export default function ContactSupport() {
             {/* Support Options */}
             <Card className="bg-gray-50" data-testid="card-support-options">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-bold text-dark-slate mb-6">Tùy chọn hỗ trợ</h3>
+                <h3 className="text-2xl font-bold text-dark-slate mb-6">{t('contact.live_support')}</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   {supportOptions.map((option, index) => (
@@ -226,13 +228,13 @@ export default function ContactSupport() {
           {/* Contact Form */}
           <Card className="bg-gray-50" data-testid="card-contact-form">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-dark-slate mb-6">Gửi tin nhắn</h3>
+              <h3 className="text-2xl font-bold text-dark-slate mb-6">{t('contact.form.send')}</h3>
               
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Họ và tên *
+                      {t('contact.form.name')} *
                     </Label>
                     <Input
                       id="name"
@@ -246,7 +248,7 @@ export default function ContactSupport() {
                   </div>
                   <div>
                     <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Số điện thoại
+                      {t('contact.form.phone')}
                     </Label>
                     <Input
                       id="phone"
@@ -276,7 +278,7 @@ export default function ContactSupport() {
                 
                 <div>
                   <Label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                    Chủ đề *
+                    {t('contact.form.subject')} *
                   </Label>
                   <Select value={formData.subject} onValueChange={(value) => handleInputChange("subject", value)}>
                     <SelectTrigger data-testid="select-subject">
@@ -293,7 +295,7 @@ export default function ContactSupport() {
                 
                 <div>
                   <Label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nội dung *
+                    {t('contact.form.message')} *
                   </Label>
                   <Textarea
                     id="message"
@@ -315,8 +317,7 @@ export default function ContactSupport() {
                     data-testid="checkbox-privacy"
                   />
                   <Label htmlFor="privacy" className="text-sm text-gray-600 leading-relaxed">
-                    Tôi đồng ý với <a href="#" className="text-bitcoin hover:text-bitcoin-light">chính sách bảo mật</a> 
-                    {" "}và <a href="#" className="text-bitcoin hover:text-bitcoin-light">điều khoản sử dụng</a>
+                    {t('contact.privacy_policy')}
                   </Label>
                 </div>
                 
@@ -327,7 +328,7 @@ export default function ContactSupport() {
                   data-testid="button-send-message"
                 >
                   <Send className="mr-2 h-5 w-5" />
-                  {contactMutation.isPending ? "Đang gửi..." : "Gửi tin nhắn"}
+                  {contactMutation.isPending ? t('contact.form.sending') : t('contact.form.send')}
                 </Button>
               </form>
               

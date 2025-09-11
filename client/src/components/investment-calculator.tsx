@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type PackageType = "basic" | "premium" | "vip";
 
@@ -18,19 +19,20 @@ interface CalculationResult {
   profit: number;
   total: number;
   profitPercent: number;
-  riskLevel: "Thấp" | "Trung bình" | "Cao";
+  riskLevel: "low" | "medium" | "high";
 }
 
 export default function InvestmentCalculator() {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState<string>("50000000");
   const [duration, setDuration] = useState<string>("6");
   const [selectedPackage, setSelectedPackage] = useState<PackageType>("premium");
   const [calculation, setCalculation] = useState<CalculationResult | null>(null);
 
   const packages = {
-    basic: { name: "Cơ bản", rate: 0.065, minRate: 5, maxRate: 8, risk: "Thấp" as const },
-    premium: { name: "Cao cấp", rate: 0.10, minRate: 8, maxRate: 12, risk: "Trung bình" as const },
-    vip: { name: "VIP", rate: 0.15, minRate: 12, maxRate: 18, risk: "Cao" as const }
+    basic: { name: t('calc.package.basic'), rate: 0.065, minRate: 5, maxRate: 8, risk: 'low' as const },
+    premium: { name: t('calc.package.premium'), rate: 0.10, minRate: 8, maxRate: 12, risk: 'medium' as const },
+    vip: { name: t('calc.package.vip'), rate: 0.15, minRate: 12, maxRate: 18, risk: 'high' as const }
   };
 
   const calculateInvestment = () => {
@@ -72,27 +74,27 @@ export default function InvestmentCalculator() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-calculator-title">
-            Máy tính đầu tư thông minh
+            {t('calc.title')}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-calculator-description">
-            Tính toán lợi nhuận đầu tư Bitcoin với AI dự báo và phân tích rủi ro tự động
+            {t('calc.description')}
           </p>
         </div>
         
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Calculator Form */}
           <div className="bg-gray-50 rounded-2xl p-8" data-testid="form-investment-calculator">
-            <h3 className="text-2xl font-bold text-dark-slate mb-6">Tính toán đầu tư</h3>
+            <h3 className="text-2xl font-bold text-dark-slate mb-6">{t('calc.form.title')}</h3>
             
             <div className="space-y-6">
               <div>
                 <Label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                  Số tiền đầu tư (VNĐ)
+                  {t('calc.form.amount')}
                 </Label>
                 <Input
                   id="amount"
                   type="number"
-                  placeholder="Nhập số tiền..." 
+                  placeholder={t('calc.form.amount_placeholder')} 
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full"
@@ -102,23 +104,23 @@ export default function InvestmentCalculator() {
               
               <div>
                 <Label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
-                  Thời gian đầu tư
+                  {t('calc.form.duration')}
                 </Label>
                 <Select value={duration} onValueChange={setDuration}>
                   <SelectTrigger data-testid="select-investment-duration">
-                    <SelectValue placeholder="Chọn thời gian" />
+                    <SelectValue placeholder={t('calc.form.duration')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="3">3 tháng</SelectItem>
-                    <SelectItem value="6">6 tháng</SelectItem>
-                    <SelectItem value="12">12 tháng</SelectItem>
-                    <SelectItem value="24">24 tháng</SelectItem>
+                    <SelectItem value="3">3 {t('calc.form.duration.months')}</SelectItem>
+                    <SelectItem value="6">{t('calc.form.duration.6')}</SelectItem>
+                    <SelectItem value="12">{t('calc.form.duration.12')}</SelectItem>
+                    <SelectItem value="24">{t('calc.form.duration.24')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label className="block text-sm font-medium text-gray-700 mb-2">Gói đầu tư</Label>
+                <Label className="block text-sm font-medium text-gray-700 mb-2">{t('calc.form.package')}</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(packages).map(([key, pkg]) => (
                     <Button
@@ -145,23 +147,23 @@ export default function InvestmentCalculator() {
               
               <div className="bg-white rounded-lg p-4 border border-gray-200" data-testid="widget-risk-level">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Mức độ rủi ro</span>
+                  <span className="text-sm text-gray-600">{t('calc.risk.level')}</span>
                   <span className={`text-sm font-medium ${
-                    calculation?.riskLevel === 'Thấp' ? 'text-green-600' :
-                    calculation?.riskLevel === 'Trung bình' ? 'text-yellow-600' : 'text-red-600'
+                    calculation?.riskLevel === 'low' ? 'text-green-600' :
+                    calculation?.riskLevel === 'medium' ? 'text-yellow-600' : 'text-red-600'
                   }`} data-testid="text-risk-level">
-                    {calculation?.riskLevel || 'Trung bình'}
+                    {calculation?.riskLevel ? t(`calc.risk.${calculation.riskLevel}`) : t('calc.risk.medium')}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className={`h-2 rounded-full ${
-                      calculation?.riskLevel === 'Thấp' ? 'bg-green-500' :
-                      calculation?.riskLevel === 'Trung bình' ? 'bg-gradient-to-r from-green-400 to-yellow-500' : 'bg-gradient-to-r from-yellow-500 to-red-500'
+                      calculation?.riskLevel === 'low' ? 'bg-green-500' :
+                      calculation?.riskLevel === 'medium' ? 'bg-gradient-to-r from-green-400 to-yellow-500' : 'bg-gradient-to-r from-yellow-500 to-red-500'
                     }`}
                     style={{ 
-                      width: calculation?.riskLevel === 'Thấp' ? '33%' : 
-                             calculation?.riskLevel === 'Trung bình' ? '66%' : '100%' 
+                      width: calculation?.riskLevel === 'low' ? '33%' : 
+                             calculation?.riskLevel === 'medium' ? '66%' : '100%' 
                     }}
                   ></div>
                 </div>
@@ -171,18 +173,18 @@ export default function InvestmentCalculator() {
           
           {/* Results */}
           <div className="bg-gradient-to-br from-bitcoin to-bitcoin-light text-white rounded-2xl p-8" data-testid="card-calculation-results">
-            <h3 className="text-2xl font-bold mb-6">Kết quả dự báo</h3>
+            <h3 className="text-2xl font-bold mb-6">{t('calc.results.title')}</h3>
             
             <div className="space-y-6">
               <div className="bg-white/20 rounded-lg p-4">
-                <div className="text-sm opacity-90 mb-1">Tổng đầu tư</div>
+                <div className="text-sm opacity-90 mb-1">{t('calc.results.investment')}</div>
                 <div className="text-3xl font-bold" data-testid="text-total-investment">
                   {calculation ? `${calculation.investment.toLocaleString('vi-VN')} VNĐ` : '50,000,000 VNĐ'}
                 </div>
               </div>
               
               <div className="bg-white/20 rounded-lg p-4">
-                <div className="text-sm opacity-90 mb-1">Lợi nhuận ước tính</div>
+                <div className="text-sm opacity-90 mb-1">{t('calc.results.profit')}</div>
                 <div className="text-3xl font-bold" data-testid="text-estimated-profit">
                   {calculation ? `+${calculation.profit.toLocaleString('vi-VN')} VNĐ` : '+5,000,000 VNĐ'}
                 </div>
@@ -192,7 +194,7 @@ export default function InvestmentCalculator() {
               </div>
               
               <div className="bg-white/20 rounded-lg p-4">
-                <div className="text-sm opacity-90 mb-1">Tổng nhận về</div>
+                <div className="text-sm opacity-90 mb-1">{t('calc.results.total')}</div>
                 <div className="text-3xl font-bold" data-testid="text-total-return">
                   {calculation ? `${calculation.total.toLocaleString('vi-VN')} VNĐ` : '55,000,000 VNĐ'}
                 </div>
@@ -200,11 +202,11 @@ export default function InvestmentCalculator() {
               
               <div className="bg-white/10 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm">Dự báo AI</span>
+                  <span className="text-sm">{t('calc.ai.prediction_title')}</span>
                   <Calculator className="h-5 w-5" />
                 </div>
-                <div className="text-lg font-semibold" data-testid="text-ai-trend">Xu hướng tăng mạnh</div>
-                <div className="text-sm opacity-75" data-testid="text-ai-confidence-investment">Độ tin cậy: 89%</div>
+                <div className="text-lg font-semibold" data-testid="text-ai-trend">{t('calc.ai.trend')}</div>
+                <div className="text-sm opacity-75" data-testid="text-ai-confidence-investment">{t('calc.ai.confidence')}</div>
               </div>
             </div>
             
@@ -214,7 +216,7 @@ export default function InvestmentCalculator() {
               data-testid="button-start-investment"
             >
               <Rocket className="mr-2 h-5 w-5" />
-              Bắt đầu đầu tư ngay
+              {t('calc.cta')}
             </Button>
           </div>
         </div>

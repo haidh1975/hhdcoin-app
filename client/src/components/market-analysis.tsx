@@ -1,8 +1,11 @@
 import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function MarketAnalysis() {
+  const { t } = useLanguage();
+  
   const chartData = {
     change24h: 8.72,
     high24h: 152500,
@@ -11,10 +14,10 @@ export default function MarketAnalysis() {
   };
 
   const indicators = [
-    { name: "RSI (14)", value: "78.5", trend: "up" },
-    { name: "MACD", value: "+2850", trend: "up" },
-    { name: "MA 50/200", value: "Super Bull", trend: "up" },
-    { name: "Volume", value: "+185%", trend: "up" }
+    { name: t('market.rsi'), value: "78.5", trend: "up" },
+    { name: t('market.macd'), value: "+2850", trend: "up" },
+    { name: t('market.ma_50_200'), value: t('market.super_bull'), trend: "up" },
+    { name: t('market.volume'), value: "+185%", trend: "up" }
   ];
 
   return (
@@ -22,10 +25,10 @@ export default function MarketAnalysis() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-analysis-title">
-            Phân tích thị trường
+            {t('market.title')}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-analysis-description">
-            Bitcoin vượt $150K - Phân tích kỹ thuật và xu hướng thị trường trong bull run lịch sử
+            {t('market.description')}
           </p>
         </div>
         
@@ -35,7 +38,7 @@ export default function MarketAnalysis() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-dark-slate" data-testid="text-chart-title">
-                  Biểu đồ giá Bitcoin
+                  {t('market.chart_title')}
                 </h3>
                 <div className="flex space-x-2">
                   <Button size="sm" className="bg-bitcoin text-white" data-testid="button-timeframe-1d">1D</Button>
@@ -50,10 +53,10 @@ export default function MarketAnalysis() {
                 <div className="text-center">
                   <BarChart3 className="text-bitcoin text-4xl mb-4 mx-auto h-16 w-16" />
                   <p className="text-gray-600" data-testid="text-chart-placeholder">
-                    🚀 Bitcoin phá vỡ mọi kỷ lục - Đạt $152,500 ATH!
+                    {t('market.bitcoin_surges')}
                   </p>
                   <p className="text-sm text-gray-500 mt-2">
-                    Biểu đồ real-time từ CoinGecko & Binance - Cập nhật mỗi 30 giây
+                    {t('market.realtime_updates')}
                   </p>
                 </div>
               </div>
@@ -64,25 +67,25 @@ export default function MarketAnalysis() {
                   <div className="text-2xl font-bold text-green-500" data-testid="text-24h-change">
                     +{chartData.change24h}%
                   </div>
-                  <div className="text-sm text-gray-600">24h Change</div>
+                  <div className="text-sm text-gray-600">{t('market.24h_change')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-dark-slate" data-testid="text-24h-high">
                     ${chartData.high24h.toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-600">24h High</div>
+                  <div className="text-sm text-gray-600">{t('market.24h_high')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-dark-slate" data-testid="text-24h-low">
                     ${chartData.low24h.toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-600">24h Low</div>
+                  <div className="text-sm text-gray-600">{t('market.24h_low')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-dark-slate" data-testid="text-volume">
                     {chartData.volume}
                   </div>
-                  <div className="text-sm text-gray-600">Volume</div>
+                  <div className="text-sm text-gray-600">{t('market.24h_volume')}</div>
                 </div>
               </div>
             </CardContent>
@@ -95,7 +98,7 @@ export default function MarketAnalysis() {
                 <h4 className="text-lg font-bold mb-4">AI Market Sentiment</h4>
                 <div className="text-center">
                   <div className="text-3xl font-bold mb-2" data-testid="text-sentiment-score">97%</div>
-                  <div className="text-sm opacity-90" data-testid="text-sentiment-label">Cực kỳ tích cực</div>
+                  <div className="text-sm opacity-90" data-testid="text-sentiment-label">Extremely Positive</div>
                 </div>
                 <div className="mt-4 bg-white/20 rounded-full h-2">
                   <div className="bg-white h-2 rounded-full" style={{ width: "97%" }}></div>
@@ -105,10 +108,10 @@ export default function MarketAnalysis() {
             
             <Card className="border border-gray-200" data-testid="card-fear-greed">
               <CardContent className="p-6">
-                <h4 className="text-lg font-bold text-dark-slate mb-4">Chỉ số Fear & Greed</h4>
+                <h4 className="text-lg font-bold text-dark-slate mb-4">Fear & Greed Index</h4>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-red-500 mb-2" data-testid="text-fear-greed-score">95</div>
-                  <div className="text-sm text-gray-600" data-testid="text-fear-greed-label">Extreme Greed (Cực kỳ tham lam)</div>
+                  <div className="text-sm text-gray-600" data-testid="text-fear-greed-label">Extreme Greed</div>
                 </div>
                 <div className="mt-4 bg-gray-200 rounded-full h-2">
                   <div className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full" style={{ width: "95%" }}></div>
@@ -118,7 +121,7 @@ export default function MarketAnalysis() {
             
             <Card className="border border-gray-200" data-testid="card-indicators">
               <CardContent className="p-6">
-                <h4 className="text-lg font-bold text-dark-slate mb-4">Top Indicators</h4>
+                <h4 className="text-lg font-bold text-dark-slate mb-4">{t('market.technical_indicators')}</h4>
                 <div className="space-y-3">
                   {indicators.map((indicator, index) => (
                     <div key={index} className="flex justify-between items-center" data-testid={`indicator-${index}`}>
