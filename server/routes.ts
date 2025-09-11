@@ -35,16 +35,53 @@ log(`Instance ID: ${INSTANCE_ID}`);
 log('=== END STRIPE INIT ===');
 
 const stripe = stripeAvailable ? new Stripe(stripeSecretKey!, {
-  apiVersion: "2024-06-20", // Use stable API version
+  apiVersion: "2025-08-27.basil", // Use latest API version
 }) : null;
 
 if (!stripeAvailable) {
   log('[WARNING] Stripe not configured - payment features will be disabled');
 }
 
+// Rate limiting configuration
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 login attempts per 15 minutes per IP
+  message: { error: "Too many authentication attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const paymentRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes  
+  max: 20, // 20 payment attempts per 15 minutes per IP
+  message: { error: "Too many payment attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Idempotency storage for payment intents
+const paymentIdempotencyCache = new Map<string, { 
+  clientSecret: string; 
+  transactionId: string; 
+  createdAt: Date;
+  amount: number;
+  currency: string;
+  packageName: string;
+}>();
+
+// Clean up old idempotency entries every hour
+setInterval(() => {
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  for (const [key, value] of paymentIdempotencyCache.entries()) {
+    if (value.createdAt.getTime() < oneHourAgo) {
+      paymentIdempotencyCache.delete(key);
+    }
+  }
+}, 60 * 60 * 1000);
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication Routes
-  app.post("/api/auth/login", async (req, res) => {
+  // Authentication Routes with rate limiting
+  app.post("/api/auth/login", authRateLimit, async (req, res) => {
     try {
       const { username, password } = req.body;
       
@@ -585,8 +622,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const PAYMENT_RATE_LIMIT = 10; // 10 attempts per minute
   const RATE_WINDOW = 60 * 1000; // 1 minute
 
-  // Stripe Payment Routes - Require authentication
-  app.post("/api/create-payment-intent", authenticateToken, async (req: AuthRequest, res) => {
+  // Stripe Payment Routes with rate limiting and idempotency
+  app.post("/api/create-payment-intent", paymentRateLimit, authenticateToken, async (req: AuthRequest, res) => {
     try {
       // Check if Stripe is available
       if (!stripe) {
@@ -628,6 +665,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       log(`[PAYMENT][${INSTANCE_ID}] Authenticated user: ${req.user.username}`);
+
+      // Check for idempotency key in headers  
+      const idempotencyKey = req.headers['idempotency-key'] as string;
+      if (idempotencyKey) {
+        const existing = paymentIdempotencyCache.get(idempotencyKey);
+        if (existing) {
+          log(`[PAYMENT][${INSTANCE_ID}] Returning cached payment intent for idempotency key: ${idempotencyKey}`);
+          return res.json({
+            clientSecret: existing.clientSecret,
+            transactionId: existing.transactionId,
+            amount: existing.amount,
+            currency: existing.currency,
+            packageName: existing.packageName,
+            cached: true
+          });
+        }
+      }
 
       // Validate request body with Zod
       const paymentSchema = z.object({
@@ -734,6 +788,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       });
 
+      // Cache for idempotency if key provided
+      if (idempotencyKey) {
+        paymentIdempotencyCache.set(idempotencyKey, {
+          clientSecret: paymentIntent.client_secret!,
+          transactionId: transaction.id,
+          createdAt: new Date(),
+          amount: amount,
+          currency: currency,
+          packageName: selectedPackage.name
+        });
+      }
+
       res.json({ 
         clientSecret: paymentIntent.client_secret,
         transactionId: transaction.id,
@@ -748,73 +814,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe webhook for payment confirmation
+  // Enhanced Stripe webhook with signature verification
   app.post("/api/stripe-webhook", async (req, res) => {
     try {
       // Check if Stripe is available
       if (!stripe) {
+        log(`[WEBHOOK][${INSTANCE_ID}] Stripe not configured - webhook disabled`);
         return res.status(503).json({ error: "Webhook service unavailable - Stripe not configured" });
       }
+
       const sig = req.headers['stripe-signature'] as string;
       let event;
 
-      // For development, we'll skip signature verification
-      // In production, you should verify the webhook signature
-      event = req.body;
+      try {
+        // Verify webhook signature for security
+        const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        if (endpointSecret && sig) {
+          event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+          log(`[WEBHOOK][${INSTANCE_ID}] Verified webhook signature`);
+        } else {
+          // For development, accept unverified webhooks but log warning
+          log(`[WEBHOOK][${INSTANCE_ID}] WARNING: Webhook signature not verified (dev mode)`);
+          event = req.body;
+        }
+      } catch (err: any) {
+        log(`[WEBHOOK][${INSTANCE_ID}] Signature verification failed: ${err.message}`);
+        return res.status(400).send(`Webhook signature verification failed: ${err.message}`);
+      }
 
-      // Handle the event
+      log(`[WEBHOOK][${INSTANCE_ID}] Processing event: ${event.type} (${event.id})`);
+
+      // Handle the event with idempotency
       switch (event.type) {
         case 'payment_intent.succeeded':
           const paymentIntent = event.data.object;
+          log(`[WEBHOOK][${INSTANCE_ID}] Payment succeeded: ${paymentIntent.id}`);
           
-          // Find and update the transaction
+          // Find the transaction with idempotency check
           const transactions = await storage.getPaymentTransactions();
           const transaction = transactions.find(t => t.stripePaymentIntentId === paymentIntent.id);
           
-          if (transaction) {
-            await storage.updatePaymentTransaction(transaction.id, {
-              status: "completed"
-            });
+          if (!transaction) {
+            log(`[WEBHOOK][${INSTANCE_ID}] Transaction not found for payment intent: ${paymentIntent.id}`);
+            return res.json({ received: true, error: "Transaction not found" });
+          }
+
+          // Check if already processed (idempotency)
+          if (transaction.status === "completed") {
+            log(`[WEBHOOK][${INSTANCE_ID}] Payment already processed: ${paymentIntent.id}`);
+            return res.json({ received: true, message: "Already processed" });
+          }
+          
+          // Update transaction to completed
+          await storage.updatePaymentTransaction(transaction.id, {
+            status: "completed",
+            metadata: JSON.stringify({
+              ...JSON.parse(transaction.metadata || "{}"),
+              webhookProcessedAt: new Date().toISOString(),
+              eventId: event.id
+            })
+          });
+          
+          // Create user investment record
+          const packages = await storage.getInvestmentPackages();
+          const selectedPackage = packages.find(p => p.id === transaction.packageId);
+          
+          if (selectedPackage) {
+            // Check if user investment already exists (idempotency)
+            const existingInvestments = await storage.getUserInvestmentsByUserId(transaction.userId);
+            const existingInvestment = existingInvestments.find(inv => inv.transactionId === transaction.id);
             
-            // Create user investment record
-            const packages = await storage.getInvestmentPackages();
-            const selectedPackage = packages.find(p => p.id === transaction.packageId);
-            
-            if (selectedPackage) {
-              await storage.createUserInvestment({
+            if (!existingInvestment) {
+              const investment = await storage.createUserInvestment({
                 userId: transaction.userId,
                 packageId: transaction.packageId,
                 transactionId: transaction.id,
                 investmentAmount: transaction.amount,
-                bitcoinCode: `BTC${Date.now()}`,
-                status: "active"
+                bitcoinCode: `BTC${Date.now()}-${transaction.userId.substring(0, 8)}`,
+                status: "active",
+                metadata: JSON.stringify({
+                  createdFromWebhook: true,
+                  eventId: event.id,
+                  packageName: selectedPackage.name
+                })
               });
               
-              log(`[PAYMENT][${INSTANCE_ID}] Created user investment for user: ${transaction.userId}`);
+              log(`[WEBHOOK][${INSTANCE_ID}] Created user investment ${investment.id} for user: ${transaction.userId}`);
+            } else {
+              log(`[WEBHOOK][${INSTANCE_ID}] User investment already exists for transaction: ${transaction.id}`);
             }
+          } else {
+            log(`[WEBHOOK][${INSTANCE_ID}] Package not found: ${transaction.packageId}`);
           }
           break;
         
         case 'payment_intent.payment_failed':
           const failedPayment = event.data.object;
+          log(`[WEBHOOK][${INSTANCE_ID}] Payment failed: ${failedPayment.id}`);
+          
           const failedTransactions = await storage.getPaymentTransactions();
           const failedTransaction = failedTransactions.find(t => t.stripePaymentIntentId === failedPayment.id);
           
-          if (failedTransaction) {
+          if (failedTransaction && failedTransaction.status !== "failed") {
             await storage.updatePaymentTransaction(failedTransaction.id, {
-              status: "failed"
+              status: "failed",
+              metadata: JSON.stringify({
+                ...JSON.parse(failedTransaction.metadata || "{}"),
+                webhookProcessedAt: new Date().toISOString(),
+                eventId: event.id,
+                failureReason: failedPayment.last_payment_error?.message || "Unknown error"
+              })
             });
           }
           break;
 
         default:
-          console.log(`Unhandled event type ${event.type}`);
+          log(`[WEBHOOK][${INSTANCE_ID}] Unhandled event type: ${event.type}`);
       }
 
-      res.json({ received: true });
+      // Always return success to Stripe
+      res.json({ received: true, eventId: event.id });
+      
     } catch (error: any) {
-      console.error("Webhook error:", error);
-      res.status(400).send(`Webhook Error: ${error.message}`);
+      log(`[WEBHOOK][${INSTANCE_ID}] Webhook processing error: ${error.message}`);
+      res.status(500).json({ error: "Webhook processing failed" });
     }
   });
 
