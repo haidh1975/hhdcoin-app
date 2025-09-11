@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { pnlScheduler } from "./pnl-scheduler";
+import { backupScheduler } from "./backup-scheduler";
 
 const app = express();
 
@@ -92,6 +93,10 @@ app.use((req, res, next) => {
     setTimeout(() => {
       pnlScheduler.start();
       log('[P&L Scheduler] Automatic P&L calculation service started');
+      
+      // Start the backup scheduler
+      backupScheduler.start();
+      log('[Backup Scheduler] Automatic backup service started');
     }, 2000); // Wait 2 seconds for server to fully initialize
   });
 })();

@@ -9,6 +9,22 @@ import {
   insertAuthUserSchema
 } from "@shared/schema";
 import { z } from "zod";
+
+// Backup API validation schemas
+const createBackupSchema = z.object({
+  includeDatabase: z.boolean().optional().default(true),
+  includeWebFiles: z.boolean().optional().default(true),
+  includeUserUploads: z.boolean().optional().default(true),
+  filename: z.string().regex(/^[a-zA-Z0-9_-]+$/, "Filename must contain only letters, numbers, hyphens, and underscores").optional()
+});
+
+const backupListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).optional().default(10)
+});
+
+const backupCleanupSchema = z.object({
+  keepCount: z.coerce.number().int().min(1).max(50).optional().default(5)
+});
 import { 
   authenticateToken, 
   requireAdmin, 
@@ -25,6 +41,7 @@ import { insertPaymentTransactionSchema } from "@shared/schema";
 import { log } from "./vite";
 import { analyzeMarketWithAI, generateTradingRecommendation, analyzeSentiment } from "./ai-services";
 import { bitcoinPriceService } from "./bitcoin-price-service";
+import { googleDriveService } from "./google-drive-service";
 import rateLimit from "express-rate-limit";
 
 // Initialize Stripe with conditional validation (no crash if missing)
@@ -1437,6 +1454,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       log(`[API][${INSTANCE_ID}] Error fetching investment history: ${error.message}`);
       res.status(500).json({ message: "Error fetching investment history: " + error.message });
+    }
+  });
+
+  // ===== GOOGLE DRIVE BACKUP ENDPOINTS =====
+  
+  // Get backup service status (Admin only)
+  app.get("/api/admin/backup/status", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const status = googleDriveService.getStatus();
+      const recentBackups = await googleDriveService.listBackups(5);
+      
+      res.json({
+        service: status,
+        recentBackups: recentBackups.map(backup => ({
+          id: backup.id,
+          name: backup.name,
+          size: backup.size ? parseInt(backup.size) : 0,
+          createdTime: backup.createdTime
+        })),
+        timestamp: new Date()
+      });
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error getting backup status: ${error.message}`);
+      res.status(500).json({ message: "Error getting backup status: " + error.message });
+    }
+  });
+
+  // Create manual backup (Admin only)
+  app.post("/api/admin/backup/create", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const validatedData = createBackupSchema.parse(req.body);
+      const { 
+        includeDatabase, 
+        includeWebFiles, 
+        includeUserUploads,
+        filename 
+      } = validatedData;
+      
+      log(`[API][${INSTANCE_ID}] Starting manual backup by admin: ${req.user!.username}`);
+      
+      const result = await googleDriveService.createBackup({
+        includeDatabase,
+        includeWebFiles,
+        includeUserUploads,
+        filename
+      });
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `Backup completed successfully - ${result.fileIds.length} files uploaded`,
+          fileIds: result.fileIds,
+          errors: result.errors.length > 0 ? result.errors : undefined,
+          timestamp: result.timestamp
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "Backup failed",
+          errors: result.errors,
+          timestamp: result.timestamp
+        });
+      }
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error creating backup: ${error.message}`);
+      res.status(500).json({ message: "Error creating backup: " + error.message });
+    }
+  });
+
+  // List all backups (Admin only)  
+  app.get("/api/admin/backup/list", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const validatedQuery = backupListQuerySchema.parse(req.query);
+      const { limit } = validatedQuery;
+      const backups = await googleDriveService.listBackups(limit);
+      
+      res.json({
+        backups: backups.map(backup => ({
+          id: backup.id,
+          name: backup.name,
+          size: backup.size ? parseInt(backup.size) : 0,
+          sizeFormatted: backup.size ? `${Math.round(parseInt(backup.size) / 1024 / 1024 * 100) / 100} MB` : 'Unknown',
+          createdTime: backup.createdTime,
+          type: backup.name.includes('database') ? 'database' : 
+                backup.name.includes('web') ? 'web' : 
+                backup.name.includes('appdata') ? 'appdata' : 'full'
+        })),
+        total: backups.length,
+        timestamp: new Date()
+      });
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error listing backups: ${error.message}`);
+      res.status(500).json({ message: "Error listing backups: " + error.message });
+    }
+  });
+
+  // Cleanup old backups (Admin only)
+  app.post("/api/admin/backup/cleanup", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const validatedData = backupCleanupSchema.parse(req.body);
+      const { keepCount } = validatedData;
+      
+      log(`[API][${INSTANCE_ID}] Starting backup cleanup, keeping ${keepCount} recent backups`);
+      
+      const deletedCount = await googleDriveService.cleanupOldBackups(keepCount);
+      
+      res.json({
+        success: true,
+        message: `Cleanup completed - ${deletedCount} old backups deleted`,
+        deletedCount,
+        timestamp: new Date()
+      });
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error during backup cleanup: ${error.message}`);
+      res.status(500).json({ message: "Error during cleanup: " + error.message });
     }
   });
 
