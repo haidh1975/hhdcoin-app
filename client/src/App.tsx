@@ -19,7 +19,7 @@ const InvestmentPackages = lazy(() => import("@/pages/investment-packages"));
 const AuthManagement = lazy(() => import("@/pages/auth"));
 const Analysis = lazy(() => import("@/pages/analysis"));
 const News = lazy(() => import("@/pages/news"));
-const InvestmentUtilities = lazy(() => import("@/pages/investment-utilities"));
+const InvestmentGuide = lazy(() => import("@/pages/investment-guide"));
 const Contact = lazy(() => import("@/pages/contact"));
 const AccountManagement = lazy(() => import("@/pages/account-management"));
 const Login = lazy(() => import("@/pages/login"));
@@ -46,10 +46,10 @@ function RedirectToAccountManagement() {
   return <LoadingSpinner />;
 }
 
-function RedirectToInvestmentUtilities() {
+function RedirectToInvestmentGuide() {
   const [, setLocation] = useLocation();
   React.useEffect(() => {
-    setLocation("/investment-utilities");
+    setLocation("/investment-guide");
   }, [setLocation]);
   return <LoadingSpinner />;
 }
@@ -80,7 +80,6 @@ function Router() {
       </Route>
       <Route path="/analysis" component={Analysis} />
       <Route path="/news" component={News} />
-      <Route path="/investment-utilities" component={InvestmentUtilities} />
       <Route path="/contact" component={Contact} />
       <Route path="/account-management">
         <ProtectedRoute>
@@ -92,7 +91,8 @@ function Router() {
       {/* Redirects for reorganized content */}
       <Route path="/ai-insights" component={RedirectToAnalysis} />
       <Route path="/my-investments" component={RedirectToAccountManagement} />
-      <Route path="/investment-guide" component={RedirectToInvestmentUtilities} />
+      <Route path="/investment-guide" component={InvestmentGuide} />
+      <Route path="/investment-utilities" component={RedirectToInvestmentGuide} />
       
       {/* Keep original pages for now - can be removed later */}
       <Route path="/investment-purchase" component={InvestmentPurchase} />
