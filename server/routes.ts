@@ -758,24 +758,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: "completed"
             });
             
-            // Create investor record
+            // Create user investment record
             const packages = await storage.getInvestmentPackages();
             const selectedPackage = packages.find(p => p.id === transaction.packageId);
             
             if (selectedPackage) {
-              const user = await storage.getAuthUser(transaction.userId);
-              if (user) {
-                await storage.createInvestor({
-                  fullName: user.fullName,
-                  email: user.email || "",
-                  phone: "", // Will need to collect this
-                  facebookUrl: "",
-                  zaloPhone: "",
-                  investmentAmount: transaction.amount,
-                  bitcoinCode: `BTC${Date.now()}`,
-                  status: "active"
-                });
-              }
+              await storage.createUserInvestment({
+                userId: transaction.userId,
+                packageId: transaction.packageId,
+                transactionId: transaction.id,
+                investmentAmount: transaction.amount,
+                bitcoinCode: `BTC${Date.now()}`,
+                status: "active"
+              });
+              
+              log(`[PAYMENT][${INSTANCE_ID}] Created user investment for user: ${transaction.userId}`);
             }
           }
           break;
@@ -828,6 +825,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch payment transactions" });
+    }
+  });
+
+  // User Investment endpoints
+  
+  // Get user's investments
+  app.get("/api/user-investments", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Authentication required to view investments" });
+      }
+      
+      const investments = await storage.getUserInvestmentsByUserId(req.user.id);
+      
+      // Enrich investments with package details
+      const packages = await storage.getInvestmentPackages();
+      const enrichedInvestments = investments.map(investment => {
+        const packageInfo = packages.find(p => p.id === investment.packageId);
+        return {
+          ...investment,
+          package: packageInfo
+        };
+      });
+      
+      res.json(enrichedInvestments);
+    } catch (error) {
+      log(`[API][${INSTANCE_ID}] Error fetching user investments: ${error}`);
+      res.status(500).json({ message: "Failed to fetch investments" });
+    }
+  });
+
+  // Get specific user investment
+  app.get("/api/user-investments/:id", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const investment = await storage.getUserInvestment(req.params.id);
+      
+      if (!investment) {
+        return res.status(404).json({ error: "Investment not found" });
+      }
+      
+      // Check if investment belongs to the user
+      if (investment.userId !== req.user.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Enrich with package details
+      const packages = await storage.getInvestmentPackages();
+      const packageInfo = packages.find(p => p.id === investment.packageId);
+      
+      res.json({
+        ...investment,
+        package: packageInfo
+      });
+    } catch (error) {
+      log(`[API][${INSTANCE_ID}] Error fetching user investment: ${error}`);
+      res.status(500).json({ message: "Failed to fetch investment" });
+    }
+  });
+
+  // Update user investment (for profit/loss calculation)
+  app.patch("/api/user-investments/:id", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const investment = await storage.getUserInvestment(req.params.id);
+      
+      if (!investment) {
+        return res.status(404).json({ error: "Investment not found" });
+      }
+      
+      // Check if investment belongs to the user or user is admin
+      if (investment.userId !== req.user.id && req.user.role !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const { currentValue, profitLoss, profitLossPercentage, status } = req.body;
+      
+      const updatedInvestment = await storage.updateUserInvestment(req.params.id, {
+        currentValue,
+        profitLoss,
+        profitLossPercentage,
+        status
+      });
+      
+      if (!updatedInvestment) {
+        return res.status(404).json({ error: "Failed to update investment" });
+      }
+      
+      res.json(updatedInvestment);
+    } catch (error) {
+      log(`[API][${INSTANCE_ID}] Error updating user investment: ${error}`);
+      res.status(500).json({ message: "Failed to update investment" });
+    }
+  });
+
+  // Get all user investments (admin only)
+  app.get("/api/admin/user-investments", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const investments = await storage.getUserInvestments();
+      
+      // Enrich investments with user and package details
+      const authUsers = await storage.getAuthUsers();
+      const packages = await storage.getInvestmentPackages();
+      
+      const enrichedInvestments = investments.map(investment => {
+        const user = authUsers.find(u => u.id === investment.userId);
+        const packageInfo = packages.find(p => p.id === investment.packageId);
+        return {
+          ...investment,
+          user: user ? { id: user.id, username: user.username, fullName: user.fullName, email: user.email } : null,
+          package: packageInfo
+        };
+      });
+      
+      res.json(enrichedInvestments);
+    } catch (error) {
+      log(`[API][${INSTANCE_ID}] Error fetching all user investments: ${error}`);
+      res.status(500).json({ message: "Failed to fetch user investments" });
     }
   });
 

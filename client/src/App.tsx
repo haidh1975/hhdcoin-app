@@ -25,6 +25,8 @@ import Dashboard from "@/pages/dashboard";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";
 import AIInsights from "@/pages/ai-insights";
+import InvestmentPurchase from "@/pages/investment-purchase";
+import MyInvestments from "@/pages/my-investments";
 
 function Router() {
   return (
@@ -63,6 +65,12 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/ai-insights" component={AIInsights} />
+      <Route path="/investment-purchase" component={InvestmentPurchase} />
+      <Route path="/my-investments">
+        <ProtectedRoute>
+          <MyInvestments />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
