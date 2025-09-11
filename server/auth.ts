@@ -90,8 +90,31 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
-// Admin role required
+// Role-based access control shortcuts
 export const requireAdmin = requireRole(['admin']);
+export const requireManager = requireRole(['admin', 'manager']); // Admin or Manager
+export const requireInvestor = requireRole(['admin', 'manager', 'investor']); // Any authenticated user
+
+// Role-based access control helper
+export const hasPermission = (userRole: string, requiredRoles: string[]): boolean => {
+  return requiredRoles.includes(userRole);
+};
+
+// Check if current user can access target user's data
+export const canAccessUserData = (currentUser: AuthUser, targetUserId?: string): boolean => {
+  // Admin can access all users
+  if (currentUser.role === 'admin') return true;
+  
+  // Manager can access their managed investors (for now, all investors)
+  if (currentUser.role === 'manager') return true;
+  
+  // Investors can only access their own data
+  if (currentUser.role === 'investor') {
+    return !targetUserId || targetUserId === currentUser.id;
+  }
+  
+  return false;
+};
 
 // Extract user info from token without throwing errors
 export const getUserFromToken = async (token: string): Promise<AuthUser | null> => {

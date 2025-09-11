@@ -12,6 +12,9 @@ import { z } from "zod";
 import { 
   authenticateToken, 
   requireAdmin, 
+  requireManager,
+  requireInvestor,
+  canAccessUserData,
   generateToken, 
   verifyPassword, 
   type AuthRequest 
@@ -36,7 +39,7 @@ log(`Instance ID: ${INSTANCE_ID}`);
 log('=== END STRIPE INIT ===');
 
 const stripe = stripeAvailable ? new Stripe(stripeSecretKey!, {
-  apiVersion: "2024-06-20", // Use stable API version
+  apiVersion: "2025-08-27.basil", // Use latest API version  
 }) : null;
 
 if (!stripeAvailable) {
@@ -73,11 +76,11 @@ const paymentIdempotencyCache = new Map<string, {
 // Clean up old idempotency entries every hour
 setInterval(() => {
   const oneHourAgo = Date.now() - 60 * 60 * 1000;
-  for (const [key, value] of paymentIdempotencyCache.entries()) {
+  paymentIdempotencyCache.forEach((value, key) => {
     if (value.createdAt.getTime() < oneHourAgo) {
       paymentIdempotencyCache.delete(key);
     }
-  }
+  });
 }, 60 * 60 * 1000);
 
 export async function registerRoutes(app: Express): Promise<Server> {

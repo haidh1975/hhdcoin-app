@@ -150,7 +150,7 @@ export const authUsers = pgTable("auth_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: varchar("username", { length: 50 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
-  role: varchar("role", { length: 20 }).notNull().default("member"), // admin, member
+  role: varchar("role", { length: 20 }).notNull().default("investor"), // admin, manager, investor
   fullName: varchar("full_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 100 }),
   status: varchar("status", { length: 20 }).notNull().default("active"), // active, inactive
@@ -182,3 +182,51 @@ export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
 export type InsertPaymentTransaction = z.infer<typeof insertPaymentTransactionSchema>;
 export type UserInvestment = typeof userInvestments.$inferSelect;
 export type InsertUserInvestment = z.infer<typeof insertUserInvestmentSchema>;
+
+// Investment History for P&L tracking
+export const investmentHistory = pgTable("investment_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userInvestmentId: varchar("user_investment_id").references(() => userInvestments.id).notNull(),
+  bitcoinPrice: decimal("bitcoin_price", { precision: 15, scale: 2 }).notNull(),
+  currentValue: decimal("current_value", { precision: 15, scale: 2 }).notNull(),
+  profitLoss: decimal("profit_loss", { precision: 15, scale: 2 }).notNull(),
+  profitLossPercentage: decimal("profit_loss_percentage", { precision: 5, scale: 2 }).notNull(),
+  recordedAt: timestamp("recorded_at").defaultNow(),
+  metadata: text("metadata"), // JSON for additional tracking data
+});
+
+export const insertInvestmentHistorySchema = createInsertSchema(investmentHistory).omit({
+  id: true,
+  recordedAt: true,
+});
+
+export type InvestmentHistory = typeof investmentHistory.$inferSelect;
+export type InsertInvestmentHistory = z.infer<typeof insertInvestmentHistorySchema>;
+
+// Investment Performance Summary
+export const investmentSummary = pgTable("investment_summary", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => authUsers.id).notNull(),
+  totalInvested: decimal("total_invested", { precision: 15, scale: 2 }).notNull().default("0"),
+  currentValue: decimal("current_value", { precision: 15, scale: 2 }).notNull().default("0"),
+  totalProfitLoss: decimal("total_profit_loss", { precision: 15, scale: 2 }).notNull().default("0"),
+  totalProfitLossPercentage: decimal("total_profit_loss_percentage", { precision: 5, scale: 2 }).notNull().default("0"),
+  bestPerformance: decimal("best_performance", { precision: 5, scale: 2 }).default("0"),
+  worstPerformance: decimal("worst_performance", { precision: 5, scale: 2 }).default("0"),
+  averageReturn: decimal("average_return", { precision: 5, scale: 2 }).default("0"),
+  totalTransactions: integer("total_transactions").default(0),
+  activeInvestments: integer("active_investments").default(0),
+  lastCalculated: timestamp("last_calculated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertInvestmentSummarySchema = createInsertSchema(investmentSummary).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastCalculated: true,
+});
+
+export type InvestmentSummary = typeof investmentSummary.$inferSelect;
+export type InsertInvestmentSummary = z.infer<typeof insertInvestmentSummarySchema>;

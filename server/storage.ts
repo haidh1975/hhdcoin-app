@@ -15,6 +15,10 @@ import {
   type InsertPaymentTransaction,
   type UserInvestment,
   type InsertUserInvestment,
+  type InvestmentHistory,
+  type InsertInvestmentHistory,
+  type InvestmentSummary,
+  type InsertInvestmentSummary,
   users,
   authUsers,
   contactMessages,
@@ -22,7 +26,9 @@ import {
   investors,
   communityMembers,
   paymentTransactions,
-  userInvestments
+  userInvestments,
+  investmentHistory,
+  investmentSummary
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { hashPassword } from "./auth";
@@ -66,6 +72,26 @@ export interface IStorage {
   createUserInvestment(investment: InsertUserInvestment): Promise<UserInvestment>;
   updateUserInvestment(id: string, updates: Partial<UserInvestment>): Promise<UserInvestment | undefined>;
   deleteUserInvestment(id: string): Promise<boolean>;
+  
+  // Investment history tracking for P&L calculations
+  getInvestmentHistory(userInvestmentId: string): Promise<InvestmentHistory[]>;
+  createInvestmentHistory(history: InsertInvestmentHistory): Promise<InvestmentHistory>;
+  getLatestInvestmentHistory(userInvestmentId: string): Promise<InvestmentHistory | undefined>;
+  
+  // Investment summary management
+  getInvestmentSummary(userId: string): Promise<InvestmentSummary | undefined>;
+  createInvestmentSummary(summary: InsertInvestmentSummary): Promise<InvestmentSummary>;
+  updateInvestmentSummary(userId: string, updates: Partial<InvestmentSummary>): Promise<InvestmentSummary | undefined>;
+  
+  // Role-based queries for investor management
+  getInvestorsByManagerId(managerId: string): Promise<AuthUser[]>; // Manager can see their investors
+  getAllInvestorsForAdmin(): Promise<AuthUser[]>; // Admin can see all investors
+  getInvestorPerformanceReport(userId: string): Promise<{
+    user: AuthUser;
+    summary: InvestmentSummary | undefined;
+    investments: UserInvestment[];
+    totalReturn: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -555,6 +581,138 @@ export class DatabaseStorage implements IStorage {
   async deleteUserInvestment(id: string): Promise<boolean> {
     const result = await db.delete(userInvestments).where(eq(userInvestments.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Investment history tracking for P&L calculations
+  async getInvestmentHistory(userInvestmentId: string): Promise<InvestmentHistory[]> {
+    try {
+      return await db.select()
+        .from(investmentHistory)
+        .where(eq(investmentHistory.userInvestmentId, userInvestmentId))
+        .orderBy(desc(investmentHistory.recordedAt));
+    } catch (error) {
+      console.error('Error getting investment history:', error);
+      return [];
+    }
+  }
+
+  async createInvestmentHistory(history: InsertInvestmentHistory): Promise<InvestmentHistory> {
+    try {
+      const [newHistory] = await db.insert(investmentHistory).values(history).returning();
+      return newHistory;
+    } catch (error) {
+      console.error('Error creating investment history:', error);
+      throw error;
+    }
+  }
+
+  async getLatestInvestmentHistory(userInvestmentId: string): Promise<InvestmentHistory | undefined> {
+    try {
+      const [latest] = await db.select()
+        .from(investmentHistory)
+        .where(eq(investmentHistory.userInvestmentId, userInvestmentId))
+        .orderBy(desc(investmentHistory.recordedAt))
+        .limit(1);
+      return latest;
+    } catch (error) {
+      console.error('Error getting latest investment history:', error);
+      return undefined;
+    }
+  }
+
+  // Investment summary management
+  async getInvestmentSummary(userId: string): Promise<InvestmentSummary | undefined> {
+    try {
+      const [summary] = await db.select()
+        .from(investmentSummary)
+        .where(eq(investmentSummary.userId, userId));
+      return summary;
+    } catch (error) {
+      console.error('Error getting investment summary:', error);
+      return undefined;
+    }
+  }
+
+  async createInvestmentSummary(summary: InsertInvestmentSummary): Promise<InvestmentSummary> {
+    try {
+      const [newSummary] = await db.insert(investmentSummary).values(summary).returning();
+      return newSummary;
+    } catch (error) {
+      console.error('Error creating investment summary:', error);
+      throw error;
+    }
+  }
+
+  async updateInvestmentSummary(userId: string, updates: Partial<InvestmentSummary>): Promise<InvestmentSummary | undefined> {
+    try {
+      const [updated] = await db.update(investmentSummary)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(investmentSummary.userId, userId))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error('Error updating investment summary:', error);
+      return undefined;
+    }
+  }
+
+  // Role-based queries for investor management
+  async getInvestorsByManagerId(managerId: string): Promise<AuthUser[]> {
+    try {
+      // For now, managers can see all investors - implement specific logic later
+      return await db.select()
+        .from(authUsers)
+        .where(eq(authUsers.role, 'investor'))
+        .orderBy(desc(authUsers.createdAt));
+    } catch (error) {
+      console.error('Error getting investors by manager:', error);
+      return [];
+    }
+  }
+
+  async getAllInvestorsForAdmin(): Promise<AuthUser[]> {
+    try {
+      return await db.select()
+        .from(authUsers)
+        .where(eq(authUsers.role, 'investor'))
+        .orderBy(desc(authUsers.createdAt));
+    } catch (error) {
+      console.error('Error getting all investors:', error);
+      return [];
+    }
+  }
+
+  async getInvestorPerformanceReport(userId: string): Promise<{
+    user: AuthUser;
+    summary: InvestmentSummary | undefined;
+    investments: UserInvestment[];
+    totalReturn: number;
+  }> {
+    try {
+      const user = await this.getAuthUser(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const summary = await this.getInvestmentSummary(userId);
+      const investments = await this.getUserInvestmentsByUserId(userId);
+      
+      // Calculate total return
+      const totalReturn = investments.reduce((acc, inv) => {
+        const profitLoss = parseFloat(inv.profitLoss?.toString() || '0');
+        return acc + profitLoss;
+      }, 0);
+
+      return {
+        user,
+        summary,
+        investments,
+        totalReturn
+      };
+    } catch (error) {
+      console.error('Error getting investor performance report:', error);
+      throw error;
+    }
   }
 }
 
