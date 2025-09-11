@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -31,6 +31,31 @@ const PaymentSuccess = lazy(() => import("@/pages/payment-success"));
 const AIInsights = lazy(() => import("@/pages/ai-insights"));
 const InvestmentPurchase = lazy(() => import("@/pages/investment-purchase"));
 const MyInvestments = lazy(() => import("@/pages/my-investments"));
+
+// Redirect components for reorganized content
+function RedirectToAnalysis() {
+  const [, setLocation] = useLocation();
+  React.useEffect(() => {
+    setLocation("/analysis");
+  }, [setLocation]);
+  return <LoadingSpinner />;
+}
+
+function RedirectToAccountManagement() {
+  const [, setLocation] = useLocation();
+  React.useEffect(() => {
+    setLocation("/account-management");
+  }, [setLocation]);
+  return <LoadingSpinner />;
+}
+
+function RedirectToInvestmentUtilities() {
+  const [, setLocation] = useLocation();
+  React.useEffect(() => {
+    setLocation("/investment-utilities");
+  }, [setLocation]);
+  return <LoadingSpinner />;
+}
 
 function Router() {
   return (
@@ -68,13 +93,13 @@ function Router() {
       </Route>
       <Route path="/checkout" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
-      <Route path="/ai-insights" component={AIInsights} />
+      {/* Redirects for reorganized content */}
+      <Route path="/ai-insights" component={RedirectToAnalysis} />
+      <Route path="/my-investments" component={RedirectToAccountManagement} />
+      <Route path="/investment-guide" component={RedirectToInvestmentUtilities} />
+      
+      {/* Keep original pages for now - can be removed later */}
       <Route path="/investment-purchase" component={InvestmentPurchase} />
-      <Route path="/my-investments">
-        <ProtectedRoute>
-          <MyInvestments />
-        </ProtectedRoute>
-      </Route>
       <Route component={NotFound} />
     </Switch>
   );

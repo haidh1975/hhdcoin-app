@@ -1,40 +1,133 @@
+import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, BarChart3, Wallet, Settings, TrendingUp, Calendar, DollarSign } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { 
+  User, 
+  BarChart3, 
+  Wallet, 
+  Settings, 
+  TrendingUp, 
+  Calendar, 
+  DollarSign,
+  Bitcoin, 
+  TrendingDown,
+  Clock,
+  Plus,
+  Eye
+} from "lucide-react";
+
+// User Investment Interface
+interface UserInvestment {
+  id: string;
+  userId: string;
+  packageId: string;
+  transactionId: string;
+  investmentAmount: string;
+  currentValue: string | null;
+  profitLoss: string | null;
+  profitLossPercentage: string | null;
+  bitcoinCode: string;
+  status: string;
+  startDate: string;
+  endDate: string | null;
+  lastUpdated: string;
+  metadata: string | null;
+  package: {
+    id: string;
+    name: string;
+    minInvestment: string;
+    minRate: string;
+    maxRate: string;
+    features: string[];
+    recommended: number;
+  };
+}
 
 export default function AccountManagement() {
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
+  const { user, isAuthenticated } = useAuth();
 
-  const investmentData = [
-    {
-      id: "INV001",
-      amount: "50,000,000 VND",
-      date: "15/12/2024",
-      duration: "6 tháng",
-      rate: "8.5%",
-      status: "Hoạt động",
-      currentValue: "54,250,000 VND",
-      profit: "+4,250,000 VND"
-    },
-    {
-      id: "INV002",
-      amount: "30,000,000 VND",
-      date: "01/11/2024",
-      duration: "12 tháng",
-      rate: "9.2%",
-      status: "Hoạt động",
-      currentValue: "32,760,000 VND",
-      profit: "+2,760,000 VND"
+  // Get user investments
+  const { data: investments = [], isLoading, error } = useQuery({
+    queryKey: ["/api/user-investments"],
+    enabled: !!isAuthenticated,
+  });
+
+  const formatCurrency = (amount: string | null) => {
+    if (!amount) return "N/A";
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(parseFloat(amount));
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Đang hoạt động</Badge>;
+      case 'completed':
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Hoàn thành</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive">Đã hủy</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  ];
+  };
 
-  const totalInvestment = "80,000,000 VND";
-  const totalCurrentValue = "87,010,000 VND";
-  const totalProfit = "+7,010,000 VND";
+  const getTotalInvestment = () => {
+    return (investments as UserInvestment[]).reduce((total, inv) => total + parseFloat(inv.investmentAmount || '0'), 0);
+  };
+
+  const getTotalCurrentValue = () => {
+    return (investments as UserInvestment[]).reduce((total, inv) => total + parseFloat(inv.currentValue || inv.investmentAmount || '0'), 0);
+  };
+
+  const getTotalProfit = () => {
+    return (investments as UserInvestment[]).reduce((total, inv) => total + parseFloat(inv.profitLoss || '0'), 0);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen">
+        <Navigation />
+        <div className="pt-20 pb-16">
+          <div className="container mx-auto px-4">
+            <Card className="max-w-md mx-auto">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  Yêu cầu đăng nhập
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center space-y-4">
+                <p className="text-gray-600 dark:text-gray-300">
+                  Vui lòng đăng nhập để xem và quản lý đầu tư của bạn.
+                </p>
+                <Button onClick={() => setLocation("/login")} className="w-full" data-testid="button-login">
+                  Đăng nhập
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -54,44 +147,86 @@ export default function AccountManagement() {
       <section className="py-16" data-testid="section-account-overview">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-overview-title">
-              Tổng quan tài khoản
-            </h2>
+            <div className="mb-8">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2" data-testid="text-overview-title">
+                    Quản lý đầu tư của tôi
+                  </h2>
+                  <p className="text-lg text-gray-600 dark:text-gray-300">
+                    Theo dõi và quản lý toàn bộ hoạt động đầu tư Bitcoin của bạn
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setLocation("/investment-purchase")} 
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  data-testid="button-new-investment"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Đầu tư mới
+                </Button>
+              </div>
+            </div>
             
+            {/* Summary Cards */}
             <div className="grid md:grid-cols-3 gap-8 mb-12">
               <Card className="text-center" data-testid="card-total-investment">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-center gap-2">
-                    <Wallet className="h-6 w-6 text-bitcoin" />
-                    Tổng đầu tư
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-gray-900">{totalInvestment}</p>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Tổng đầu tư</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-total-investment">
+                        {formatCurrency(getTotalInvestment().toString())}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
               
               <Card className="text-center" data-testid="card-current-value">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-center gap-2">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                    Giá trị hiện tại
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-green-600">{totalCurrentValue}</p>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                      <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Giá trị hiện tại</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-current-value">
+                        {formatCurrency(getTotalCurrentValue().toString())}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
               
               <Card className="text-center" data-testid="card-total-profit">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-center gap-2">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
-                    Tổng lãi
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-blue-600">{totalProfit}</p>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg ${
+                      getTotalProfit() >= 0 
+                        ? 'bg-green-100 dark:bg-green-900' 
+                        : 'bg-red-100 dark:bg-red-900'
+                    }`}>
+                      {getTotalProfit() >= 0 ? (
+                        <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-300" />
+                      ) : (
+                        <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-300" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Lãi/Lỗ</p>
+                      <p className={`text-2xl font-bold ${
+                        getTotalProfit() >= 0 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`} data-testid="text-profit-loss">
+                        {getTotalProfit() >= 0 ? '+' : ''}{formatCurrency(getTotalProfit().toString())}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -102,57 +237,141 @@ export default function AccountManagement() {
       <section className="bg-gray-50 py-16" data-testid="section-investment-history">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-history-title">
-              Lịch sử đầu tư
-            </h2>
-            
-            <div className="space-y-6">
-              {investmentData.map((investment, index) => (
-                <Card key={investment.id} className="hover:shadow-lg transition-shadow" data-testid={`card-investment-${index}`}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <BarChart3 className="h-6 w-6 text-bitcoin" />
-                        <span>Hợp đồng {investment.id}</span>
-                      </div>
-                      <Badge variant={investment.status === 'Hoạt động' ? 'default' : 'secondary'}>
-                        {investment.status}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-4 gap-6">
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Số tiền đầu tư</p>
-                        <p className="font-semibold text-lg">{investment.amount}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Ngày bắt đầu</p>
-                        <p className="font-semibold">{investment.date}</p>
-                        <p className="text-sm text-gray-500">{investment.duration}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Lãi suất</p>
-                        <p className="font-semibold text-bitcoin">{investment.rate}/năm</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500 mb-1">Giá trị hiện tại</p>
-                        <p className="font-semibold text-lg text-green-600">{investment.currentValue}</p>
-                        <p className="text-sm text-green-600">{investment.profit}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex gap-3">
-                      <Button size="sm" variant="outline" data-testid={`button-download-${index}`}>
-                        Tải hợp đồng
-                      </Button>
-                      <Button size="sm" variant="outline" data-testid={`button-details-${index}`}>
-                        Xem chi tiết
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {/* Investments List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2" data-testid="title-investments-list">
+                  <BarChart3 className="h-5 w-5 text-orange-500" />
+                  Danh sách đầu tư ({(investments as UserInvestment[]).length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                    ))}
+                  </div>
+                ) : error ? (
+                  <div className="text-center py-12">
+                    <p className="text-red-600 dark:text-red-400">Lỗi tải dữ liệu đầu tư</p>
+                  </div>
+                ) : (investments as UserInvestment[]).length === 0 ? (
+                  <div className="text-center py-12">
+                    <Bitcoin className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      Chưa có khoản đầu tư nào
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                      Bắt đầu hành trình đầu tư Bitcoin của bạn ngay hôm nay
+                    </p>
+                    <Button 
+                      onClick={() => setLocation("/investment-purchase")}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                      data-testid="button-start-investing"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Bắt đầu đầu tư
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {(investments as UserInvestment[]).map((investment: UserInvestment, index: number) => (
+                      <Card key={investment.id} className="border border-gray-200 dark:border-gray-700" data-testid={`card-investment-${investment.id}`}>
+                        <CardContent className="p-6">
+                          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            {/* Investment Info */}
+                            <div className="lg:col-span-2">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                    {investment.package.name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Mã Bitcoin: {investment.bitcoinCode}
+                                  </p>
+                                </div>
+                                {getStatusBadge(investment.status)}
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-gray-600 dark:text-gray-400">Ngày đầu tư</p>
+                                  <p className="font-medium">{formatDate(investment.startDate)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-600 dark:text-gray-400">Lợi nhuận dự kiến</p>
+                                  <p className="font-medium text-green-600 dark:text-green-400">
+                                    {investment.package.minRate}% - {investment.package.maxRate}%
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Financial Info */}
+                            <div className="space-y-3">
+                              <div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Số tiền đầu tư</p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  {formatCurrency(investment.investmentAmount)}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Giá trị hiện tại</p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  {formatCurrency(investment.currentValue || investment.investmentAmount)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Performance & Actions */}
+                            <div className="flex flex-col justify-between">
+                              <div className="space-y-2">
+                                {investment.profitLoss && (
+                                  <div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">Lãi/Lỗ</p>
+                                    <p className={`text-lg font-semibold ${
+                                      parseFloat(investment.profitLoss) >= 0 
+                                        ? 'text-green-600 dark:text-green-400' 
+                                        : 'text-red-600 dark:text-red-400'
+                                    }`}>
+                                      {parseFloat(investment.profitLoss) >= 0 ? '+' : ''}
+                                      {formatCurrency(investment.profitLoss)}
+                                    </p>
+                                    {investment.profitLossPercentage && (
+                                      <p className={`text-sm ${
+                                        parseFloat(investment.profitLossPercentage) >= 0 
+                                          ? 'text-green-600 dark:text-green-400' 
+                                          : 'text-red-600 dark:text-red-400'
+                                      }`}>
+                                        ({parseFloat(investment.profitLossPercentage) >= 0 ? '+' : ''}
+                                        {investment.profitLossPercentage}%)
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex gap-2 pt-4">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => setLocation(`/investment-details/${investment.id}`)}
+                                  data-testid={`button-view-${investment.id}`}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Chi tiết
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
