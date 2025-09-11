@@ -15,24 +15,18 @@ export default function Home() {
   const newsItems = [
     {
       icon: TrendingUp,
-      title: "Bitcoin tăng giá mạnh",
-      content: t('news.bitcoin_surge'),
-      titleEn: "Bitcoin Price Surges",
-      contentEn: t('news.bitcoin_surge')
+      title: t('news.bitcoin_title'),
+      content: t('news.bitcoin_surge')
     },
     {
       icon: Bot,
-      title: "AI dự báo xu hướng giảm nhẹ",
-      content: t('news.ai_prediction'),
-      titleEn: "AI Predicts Minor Correction",
-      contentEn: t('news.ai_prediction')
+      title: t('news.ai_title'),
+      content: t('news.ai_prediction')
     },
     {
       icon: Smartphone,
-      title: "HHDcoin ra mắt app mobile",
-      content: t('news.mobile_app'),
-      titleEn: "HHDcoin Launches Mobile App",
-      contentEn: t('news.mobile_app')
+      title: t('news.mobile_title'),
+      content: t('news.mobile_app')
     }
   ];
 
@@ -45,7 +39,7 @@ export default function Home() {
       <section className="py-16 bg-gray-50" data-testid="section-news">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-news-title">
-            Tin tức mới nhất
+            {t('news.title')}
           </h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {newsItems.map((news, index) => {

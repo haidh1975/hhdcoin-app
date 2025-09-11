@@ -100,6 +100,10 @@ const translations = {
     'investors.status.inactive': 'Không hoạt động',
     
     // News Section
+    'news.title': 'Tin tức mới nhất',
+    'news.bitcoin_title': 'Bitcoin tăng giá mạnh',
+    'news.ai_title': 'AI dự báo xu hướng giảm nhẹ',
+    'news.mobile_title': 'HHDcoin ra mắt app mobile',
     'news.bitcoin_surge': 'Bitcoin tăng giá mạnh: Giá BTC vượt mốc $125.000 lần đầu tiên trong năm 2025 nhờ lực mua từ các tổ chức lớn.',
     'news.ai_prediction': 'AI dự báo xu hướng giảm nhẹ: Mô hình AI cho thấy xác suất điều chỉnh giá trong 3 ngày tới lên tới 63%.',
     'news.mobile_app': 'HHDcoin ra mắt phiên bản app mobile: Ứng dụng đầu tư Bitcoin tích hợp AI đã có mặt trên iOS và Android.',
@@ -236,6 +240,10 @@ const translations = {
     'investors.status.inactive': 'Inactive',
     
     // News Section
+    'news.title': 'Latest News',
+    'news.bitcoin_title': 'Bitcoin Price Surges',
+    'news.ai_title': 'AI Predicts Minor Correction',
+    'news.mobile_title': 'HHDcoin Launches Mobile App',
     'news.bitcoin_surge': 'Bitcoin Price Surges: BTC price surpassed the $125,000 mark for the first time in 2025 due to strong institutional buying.',
     'news.ai_prediction': 'AI Predicts Minor Correction: The AI model indicates a 63% probability of a price correction over the next 3 days.',
     'news.mobile_app': 'HHDcoin Launches Mobile App: The AI-integrated Bitcoin investment app is now available on iOS and Android.',
