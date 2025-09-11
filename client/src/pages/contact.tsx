@@ -1,5 +1,6 @@
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
+import ContactSupport from "@/components/contact-support";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
@@ -129,6 +130,9 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* Contact Form Section */}
+      <ContactSupport />
 
       <Footer />
     </div>
