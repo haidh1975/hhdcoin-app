@@ -1,8 +1,10 @@
 import { SiBitcoin, SiFacebook, SiTelegram, SiYoutube } from "react-icons/si";
 import { FaTwitter } from "react-icons/fa";
+import { useLanguage } from "@/contexts/LanguageContext";
 import logoPath from "@assets/ChatGPT Image 11_42_25 23 thg 8, 2025_1757214723752.png";
 
 export default function Footer() {
+  const { t } = useLanguage();
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
     if (section) {
@@ -11,28 +13,28 @@ export default function Footer() {
   };
 
   const quickLinks = [
-    { label: "Trang chủ", section: "home" },
-    { label: "Đầu tư", section: "investment" },
-    { label: "Tin tức", section: "news" },
-    { label: "Phân tích", section: "analysis" },
-    { label: "Cộng đồng", section: "community" },
-    { label: "Liên hệ", section: "contact" }
+    { label: t("nav.home"), section: "home" },
+    { label: t("nav.investment"), section: "investment" },
+    { label: t("nav.news"), section: "news" },
+    { label: t("nav.analysis"), section: "analysis" },
+    { label: t("nav.community"), section: "community" },
+    { label: t("nav.contact"), section: "contact" }
   ];
 
   const supportLinks = [
-    { label: "Hướng dẫn đầu tư", href: "#" },
-    { label: "FAQ", href: "#" },
-    { label: "Bảo mật", href: "#" },
-    { label: "Điều khoản", href: "#" },
-    { label: "Chính sách", href: "#" },
-    { label: "Liên hệ hỗ trợ", href: "mailto:haidh1975@gmail.com" }
+    { label: t("footer.links.investment_guide"), href: "#" },
+    { label: t("footer.links.faq"), href: "#" },
+    { label: t("footer.links.security"), href: "#" },
+    { label: t("footer.links.terms"), href: "#" },
+    { label: t("footer.links.policy"), href: "#" },
+    { label: t("footer.links.contact_support"), href: "mailto:haidh1975@gmail.com" }
   ];
 
   const footerLinks = [
-    { label: "Chính sách bảo mật", href: "#" },
-    { label: "Điều khoản sử dụng", href: "#" },
-    { label: "Chính sách cookie", href: "#" },
-    { label: "Sitemap", href: "#" }
+    { label: t("footer.links.privacy_policy"), href: "#" },
+    { label: t("footer.links.terms_of_use"), href: "#" },
+    { label: t("footer.links.cookie_policy"), href: "#" },
+    { label: t("footer.links.sitemap"), href: "#" }
   ];
 
   const socialLinks = [
@@ -65,13 +67,12 @@ export default function Footer() {
                   <span className="text-yellow-500">D</span>
                   <span className="text-bitcoin">coin</span>
                 </h3>
-                <p className="text-gray-400 text-sm">Bitcoin Investment Platform</p>
+                <p className="text-gray-400 text-sm">{t("footer.subtitle")}</p>
               </div>
             </div>
             
             <p className="text-gray-300 mb-6 leading-relaxed" data-testid="text-company-description">
-              <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span> là nền tảng đầu tư Bitcoin hàng đầu Việt Nam, cung cấp công nghệ AI dự báo tiên tiến, 
-              phân tích thị trường chuyên sâu và dịch vụ tư vấn đầu tư chuyên nghiệp.
+              <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span> {t("footer.description")}
             </p>
             
             <div className="flex space-x-4" data-testid="social-links">
@@ -93,7 +94,7 @@ export default function Footer() {
           
           {/* Quick Links */}
           <div data-testid="footer-quick-links">
-            <h4 className="text-xl font-bold mb-6">Liên kết nhanh</h4>
+            <h4 className="text-xl font-bold mb-6">{t("footer.quick_links")}</h4>
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
@@ -111,7 +112,7 @@ export default function Footer() {
           
           {/* Support */}
           <div data-testid="footer-support">
-            <h4 className="text-xl font-bold mb-6">Hỗ trợ</h4>
+            <h4 className="text-xl font-bold mb-6">{t("footer.support")}</h4>
             <ul className="space-y-3">
               {supportLinks.map((link, index) => (
                 <li key={index}>
@@ -131,7 +132,7 @@ export default function Footer() {
         <div className="border-t border-gray-700 mt-12 pt-8" data-testid="footer-bottom">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="text-gray-400 text-sm mb-4 lg:mb-0" data-testid="text-copyright">
-              © 2024 HHDcoin. Tất cả quyền được bảo lưu.
+              {t("footer.copyright")}
             </div>
             <div className="flex flex-wrap gap-6 text-sm text-gray-400" data-testid="footer-legal-links">
               {footerLinks.map((link, index) => (

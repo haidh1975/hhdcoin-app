@@ -18,20 +18,20 @@ export default function Contact() {
     },
     {
       icon: Phone,
-      label: "Điện thoại",
+      label: t("contact.phone_label"),
       value: "+84 888151975",
       link: "tel:+84888151975"
     },
     {
       icon: MapPin,
-      label: "Địa chỉ",
+      label: t("contact.address_label"),
       value: "Số 25, ngõ 155 đường Cầu Giấy, TP. Hà Nội",
       link: null
     },
     {
       icon: SiFacebook,
-      label: "Facebook",
-      value: "Zalo hỗ trợ HHDcoin",
+      label: t("contact.facebook_label"),
+      value: t("contact.zalo_support"),
       link: null
     }
   ];
@@ -46,7 +46,7 @@ export default function Contact() {
             {t('contact.page_title')}
           </h1>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-            Liên hệ với đội ngũ chuyên gia HHDcoin để được hỗ trợ tốt nhất về đầu tư Bitcoin
+            {t('contact.page_subtitle')}
           </p>
         </div>
       </section>
@@ -55,7 +55,7 @@ export default function Contact() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-contact-info-title">
-              Thông tin liên hệ
+              {t('contact.info_title')}
             </h2>
             
             <div className="grid md:grid-cols-2 gap-8">
@@ -95,7 +95,7 @@ export default function Contact() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-office-title">
-              Văn phòng HHDcoin
+              {t('contact.office_title')}
             </h2>
             
             <Card className="overflow-hidden">
@@ -103,25 +103,25 @@ export default function Contact() {
                 <div className="bg-gradient-to-r from-bitcoin to-bitcoin-light text-white p-8">
                   <div className="flex items-center gap-4 mb-4">
                     <MapPin className="h-8 w-8" />
-                    <h3 className="text-2xl font-bold">Trụ sở chính</h3>
+                    <h3 className="text-2xl font-bold">{t('contact.headquarters')}</h3>
                   </div>
                   <p className="text-lg opacity-90">
-                    Số 25, ngõ 155 đường Cầu Giấy, Phường Quan Hoa, Quận Cầu Giấy, Thành phố Hà Nội
+                    {t('contact.full_address')}
                   </p>
                 </div>
                 <div className="p-8">
                   <div className="grid md:grid-cols-2 gap-8">
                     <div>
-                      <h4 className="font-semibold mb-2">Giờ làm việc:</h4>
-                      <p className="text-gray-600">Thứ 2 - Thứ 6: 9:00 - 18:00</p>
-                      <p className="text-gray-600">Thứ 7: 9:00 - 12:00</p>
-                      <p className="text-gray-600">Chủ nhật: Nghỉ</p>
+                      <h4 className="font-semibold mb-2">{t('contact.working_hours')}</h4>
+                      <p className="text-gray-600">{t('contact.monday_friday')}</p>
+                      <p className="text-gray-600">{t('contact.saturday')}</p>
+                      <p className="text-gray-600">{t('contact.sunday')}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2">Hỗ trợ 24/7:</h4>
-                      <p className="text-gray-600">Chatbot AI luôn sẵn sàng</p>
-                      <p className="text-gray-600">Email support</p>
-                      <p className="text-gray-600">Zalo consultation</p>
+                      <h4 className="font-semibold mb-2">{t('contact.support_24_7')}</h4>
+                      <p className="text-gray-600">{t('contact.ai_chatbot')}</p>
+                      <p className="text-gray-600">{t('contact.email_support')}</p>
+                      <p className="text-gray-600">{t('contact.zalo_consultation')}</p>
                     </div>
                   </div>
                 </div>

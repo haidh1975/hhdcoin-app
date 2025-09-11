@@ -80,11 +80,11 @@ export default function AccountManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Đang hoạt động</Badge>;
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{t('account.status_active')}</Badge>;
       case 'completed':
-        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Hoàn thành</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{t('account.status_completed')}</Badge>;
       case 'cancelled':
-        return <Badge variant="destructive">Đã hủy</Badge>;
+        return <Badge variant="destructive">{t('account.status_cancelled')}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -111,15 +111,15 @@ export default function AccountManagement() {
             <Card className="max-w-md mx-auto">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  Yêu cầu đăng nhập
+                  {t('account.login_required')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center space-y-4">
                 <p className="text-gray-600 dark:text-gray-300">
-                  Vui lòng đăng nhập để xem và quản lý đầu tư của bạn.
+                  {t('account.login_message')}
                 </p>
                 <Button onClick={() => setLocation("/login")} className="w-full" data-testid="button-login">
-                  Đăng nhập
+                  {t('login.login_button')}
                 </Button>
               </CardContent>
             </Card>
@@ -139,7 +139,7 @@ export default function AccountManagement() {
             {t('account.title')}
           </h1>
           <p className="text-xl text-green-100 max-w-3xl mx-auto">
-            Theo dõi và quản lý toàn bộ hoạt động đầu tư Bitcoin của bạn một cách dễ dàng
+            {t('account.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -151,10 +151,10 @@ export default function AccountManagement() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2" data-testid="text-overview-title">
-                    Quản lý đầu tư của tôi
+                    {t('account.my_investments')}
                   </h2>
                   <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Theo dõi và quản lý toàn bộ hoạt động đầu tư Bitcoin của bạn
+                    {t('account.my_investments_desc')}
                   </p>
                 </div>
                 <Button 
@@ -163,7 +163,7 @@ export default function AccountManagement() {
                   data-testid="button-new-investment"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Đầu tư mới
+                  {t('account.new_investment')}
                 </Button>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function AccountManagement() {
                       <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Tổng đầu tư</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{t('account.total_investment')}</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-total-investment">
                         {formatCurrency(getTotalInvestment().toString())}
                       </p>
@@ -193,7 +193,7 @@ export default function AccountManagement() {
                       <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-300" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Giá trị hiện tại</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{t('account.current_value')}</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-current-value">
                         {formatCurrency(getTotalCurrentValue().toString())}
                       </p>
@@ -217,7 +217,7 @@ export default function AccountManagement() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Lãi/Lỗ</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{t('account.profit_loss')}</p>
                       <p className={`text-2xl font-bold ${
                         getTotalProfit() >= 0 
                           ? 'text-green-600 dark:text-green-400' 
@@ -242,7 +242,7 @@ export default function AccountManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2" data-testid="title-investments-list">
                   <BarChart3 className="h-5 w-5 text-orange-500" />
-                  Danh sách đầu tư ({(investments as UserInvestment[]).length})
+                  {t('account.investments_list', { count: (investments as UserInvestment[]).length })}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -254,16 +254,16 @@ export default function AccountManagement() {
                   </div>
                 ) : error ? (
                   <div className="text-center py-12">
-                    <p className="text-red-600 dark:text-red-400">Lỗi tải dữ liệu đầu tư</p>
+                    <p className="text-red-600 dark:text-red-400">{t('account.loading_error')}</p>
                   </div>
                 ) : (investments as UserInvestment[]).length === 0 ? (
                   <div className="text-center py-12">
                     <Bitcoin className="h-16 w-16 mx-auto mb-4 text-gray-400" />
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                      Chưa có khoản đầu tư nào
+                      {t('account.no_investments')}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      Bắt đầu hành trình đầu tư Bitcoin của bạn ngay hôm nay
+                      {t('account.no_investments_desc')}
                     </p>
                     <Button 
                       onClick={() => setLocation("/investment-purchase")}
@@ -271,7 +271,7 @@ export default function AccountManagement() {
                       data-testid="button-start-investing"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Bắt đầu đầu tư
+                      {t('account.start_investing')}
                     </Button>
                   </div>
                 ) : (
@@ -288,7 +288,7 @@ export default function AccountManagement() {
                                     {investment.package.name}
                                   </h3>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Mã Bitcoin: {investment.bitcoinCode}
+                                    {t('account.bitcoin_code')} {investment.bitcoinCode}
                                   </p>
                                 </div>
                                 {getStatusBadge(investment.status)}
@@ -296,11 +296,11 @@ export default function AccountManagement() {
                               
                               <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                  <p className="text-gray-600 dark:text-gray-400">Ngày đầu tư</p>
+                                  <p className="text-gray-600 dark:text-gray-400">{t('account.investment_date')}</p>
                                   <p className="font-medium">{formatDate(investment.startDate)}</p>
                                 </div>
                                 <div>
-                                  <p className="text-gray-600 dark:text-gray-400">Lợi nhuận dự kiến</p>
+                                  <p className="text-gray-600 dark:text-gray-400">{t('account.expected_profit')}</p>
                                   <p className="font-medium text-green-600 dark:text-green-400">
                                     {investment.package.minRate}% - {investment.package.maxRate}%
                                   </p>
@@ -311,13 +311,13 @@ export default function AccountManagement() {
                             {/* Financial Info */}
                             <div className="space-y-3">
                               <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Số tiền đầu tư</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{t('account.investment_amount')}</p>
                                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                   {formatCurrency(investment.investmentAmount)}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Giá trị hiện tại</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{t('account.current_value_label')}</p>
                                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                   {formatCurrency(investment.currentValue || investment.investmentAmount)}
                                 </p>
@@ -329,7 +329,7 @@ export default function AccountManagement() {
                               <div className="space-y-2">
                                 {investment.profitLoss && (
                                   <div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Lãi/Lỗ</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('account.profit_loss_label')}</p>
                                     <p className={`text-lg font-semibold ${
                                       parseFloat(investment.profitLoss) >= 0 
                                         ? 'text-green-600 dark:text-green-400' 
@@ -360,7 +360,7 @@ export default function AccountManagement() {
                                   data-testid={`button-view-${investment.id}`}
                                 >
                                   <Eye className="h-4 w-4 mr-1" />
-                                  Chi tiết
+                                  {t('account.view_details')}
                                 </Button>
                               </div>
                             </div>
@@ -380,21 +380,21 @@ export default function AccountManagement() {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-8" data-testid="text-actions-title">
-              Thao tác tài khoản
+              {t('account.actions_title')}
             </h2>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button className="bg-bitcoin hover:bg-bitcoin-light px-8 py-3 text-lg" data-testid="button-new-investment">
                 <BarChart3 className="mr-2 h-5 w-5" />
-                Đầu tư mới
+                {t('account.new_investment_action')}
               </Button>
               <Button variant="outline" className="px-8 py-3 text-lg" data-testid="button-withdrawal">
                 <Wallet className="mr-2 h-5 w-5" />
-                Yêu cầu rút vốn
+                {t('account.withdrawal_request')}
               </Button>
               <Button variant="outline" className="px-8 py-3 text-lg" data-testid="button-settings">
                 <Settings className="mr-2 h-5 w-5" />
-                Cài đặt tài khoản
+                {t('account.account_settings')}
               </Button>
             </div>
           </div>

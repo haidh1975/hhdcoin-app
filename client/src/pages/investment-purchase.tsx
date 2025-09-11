@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Navigation from "@/components/navigation";
 import { 
   Bitcoin, 
@@ -36,6 +37,7 @@ function InvestmentPurchase() {
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [selectedPackage, setSelectedPackage] = useState<string>("");
   const [investmentAmount, setInvestmentAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,8 +65,8 @@ function InvestmentPurchase() {
     },
     onError: (error: any) => {
       toast({
-        title: "Lỗi thanh toán",
-        description: error.message || "Không thể tạo thanh toán. Vui lòng thử lại.",
+        title: t('purchase.error_payment'),
+        description: error.message || t('purchase.error_payment_desc'),
         variant: "destructive",
       });
       setIsProcessing(false);
@@ -83,8 +85,8 @@ function InvestmentPurchase() {
   const handlePurchase = async () => {
     if (!isAuthenticated) {
       toast({
-        title: "Yêu cầu đăng nhập",
-        description: "Vui lòng đăng nhập để tiếp tục đầu tư.",
+        title: t('purchase.login_required'),
+        description: t('purchase.login_message'),
         variant: "destructive",
       });
       setLocation("/login");
@@ -93,8 +95,8 @@ function InvestmentPurchase() {
 
     if (!selectedPackage) {
       toast({
-        title: "Chưa chọn gói",
-        description: "Vui lòng chọn gói đầu tư.",
+        title: t('purchase.error_no_package'),
+        description: t('purchase.error_no_package_desc'),
         variant: "destructive",
       });
       return;
@@ -103,8 +105,8 @@ function InvestmentPurchase() {
     const amount = parseInt(investmentAmount.replace(/\D/g, ''));
     if (!amount || amount <= 0) {
       toast({
-        title: "Số tiền không hợp lệ",
-        description: "Vui lòng nhập số tiền đầu tư hợp lệ.",
+        title: t('purchase.error_invalid_amount'),
+        description: t('purchase.error_invalid_amount_desc'),
         variant: "destructive",
       });
       return;
@@ -112,8 +114,8 @@ function InvestmentPurchase() {
 
     if (selectedPackageData && amount < parseInt(selectedPackageData.minInvestment)) {
       toast({
-        title: "Số tiền quá thấp",
-        description: `Số tiền đầu tư tối thiểu cho gói này là ${formatCurrency(selectedPackageData.minInvestment)}.`,
+        title: t('purchase.error_amount_too_low'),
+        description: t('purchase.error_amount_too_low_desc', { amount: formatCurrency(selectedPackageData.minInvestment) }),
         variant: "destructive",
       });
       return;
@@ -139,15 +141,15 @@ function InvestmentPurchase() {
             <Card className="max-w-md mx-auto">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  Yêu cầu đăng nhập
+                  {t('purchase.login_required')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center space-y-4">
                 <p className="text-gray-600 dark:text-gray-300">
-                  Vui lòng đăng nhập để tiếp tục đầu tư.
+                  {t('purchase.login_message')}
                 </p>
                 <Button onClick={() => setLocation("/login")} className="w-full" data-testid="button-login">
-                  Đăng nhập
+                  {t('login.login_button')}
                 </Button>
               </CardContent>
             </Card>
@@ -172,15 +174,15 @@ function InvestmentPurchase() {
               data-testid="button-back"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Quay lại gói đầu tư
+              {t('purchase.back_to_packages')}
             </Button>
             
             <div className="text-center">
               <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Đầu tư Bitcoin
+                {t('purchase.title')}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                Chọn gói đầu tư và bắt đầu hành trình đầu tư của bạn
+                {t('purchase.subtitle')}
               </p>
             </div>
           </div>
@@ -192,7 +194,7 @@ function InvestmentPurchase() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2" data-testid="title-package-selection">
                     <Bitcoin className="h-5 w-5 text-orange-500" />
-                    Chọn gói đầu tư
+                    {t('purchase.select_package')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -219,18 +221,18 @@ function InvestmentPurchase() {
                             <h3 className="font-semibold text-lg">{pkg.name}</h3>
                             {pkg.recommended === 1 && (
                               <Badge variant="default" className="bg-orange-500 text-white">
-                                Khuyến nghị
+                                {t('purchase.recommended')}
                               </Badge>
                             )}
                           </div>
                           
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">Đầu tư tối thiểu:</span>
+                              <span className="text-gray-600 dark:text-gray-400">{t('purchase.min_investment')}</span>
                               <span className="font-medium">{formatCurrency(pkg.minInvestment)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">Lợi nhuận:</span>
+                              <span className="text-gray-600 dark:text-gray-400">{t('purchase.profit_range')}</span>
                               <span className="font-medium text-green-600 dark:text-green-400">
                                 {pkg.minRate}% - {pkg.maxRate}%
                               </span>
@@ -256,16 +258,16 @@ function InvestmentPurchase() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2" data-testid="title-investment-amount">
                     <DollarSign className="h-5 w-5 text-green-500" />
-                    Số tiền đầu tư
+                    {t('purchase.investment_amount')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="amount">Số tiền (VNĐ)</Label>
+                    <Label htmlFor="amount">{t('purchase.amount_vnd')}</Label>
                     <Input
                       id="amount"
                       type="text"
-                      placeholder="Nhập số tiền đầu tư"
+                      placeholder={t('purchase.enter_amount')}
                       value={investmentAmount}
                       onChange={(e) => handleAmountChange(e.target.value)}
                       className="text-lg"
@@ -273,7 +275,7 @@ function InvestmentPurchase() {
                     />
                     {selectedPackageData && (
                       <p className="text-sm text-gray-500 mt-1">
-                        Tối thiểu: {formatCurrency(selectedPackageData.minInvestment)}
+                        {t('purchase.minimum')} {formatCurrency(selectedPackageData.minInvestment)}
                       </p>
                     )}
                   </div>
@@ -287,7 +289,7 @@ function InvestmentPurchase() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2" data-testid="title-purchase-summary">
                     <CreditCard className="h-5 w-5 text-blue-500" />
-                    Tóm tắt đầu tư
+                    {t('purchase.summary')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -297,14 +299,14 @@ function InvestmentPurchase() {
                         <h3 className="font-semibold text-lg mb-2">{selectedPackageData.name}</h3>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span>Lợi nhuận dự kiến:</span>
+                            <span>{t('purchase.expected_profit')}</span>
                             <span className="font-medium text-green-600 dark:text-green-400">
                               {selectedPackageData.minRate}% - {selectedPackageData.maxRate}%
                             </span>
                           </div>
                           {investmentAmount && (
                             <div className="flex justify-between">
-                              <span>Số tiền đầu tư:</span>
+                              <span>{t('purchase.investment_amount_label')}</span>
                               <span className="font-medium">
                                 {new Intl.NumberFormat('vi-VN', {
                                   style: 'currency',
@@ -319,7 +321,7 @@ function InvestmentPurchase() {
                       <Separator />
 
                       <div className="space-y-2">
-                        <h4 className="font-medium">Đặc quyền gói:</h4>
+                        <h4 className="font-medium">{t('purchase.package_benefits')}</h4>
                         <ul className="space-y-1 text-sm">
                           {selectedPackageData.features.map((feature: string, index: number) => (
                             <li key={index} className="flex items-center gap-2">
@@ -338,13 +340,13 @@ function InvestmentPurchase() {
                         className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                         data-testid="button-purchase"
                       >
-                        {isProcessing ? "Đang xử lý..." : "Thanh toán ngay"}
+                        {isProcessing ? t('purchase.processing') : t('purchase.pay_now')}
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                       <Bitcoin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Vui lòng chọn gói đầu tư</p>
+                      <p>{t('purchase.select_package_prompt')}</p>
                     </div>
                   )}
                 </CardContent>
@@ -355,22 +357,22 @@ function InvestmentPurchase() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-purple-500" />
-                    Lợi ích khi đầu tư
+                    {t('purchase.benefits_title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center gap-3">
                       <Shield className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                      <span>Bảo mật an toàn với công nghệ blockchain</span>
+                      <span>{t('purchase.benefit_security')}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <TrendingUp className="h-5 w-5 text-green-500 flex-shrink-0" />
-                      <span>AI phân tích thị trường thời gian thực</span>
+                      <span>{t('purchase.benefit_ai')}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Users className="h-5 w-5 text-purple-500 flex-shrink-0" />
-                      <span>Hỗ trợ khách hàng 24/7</span>
+                      <span>{t('purchase.benefit_support')}</span>
                     </div>
                   </div>
                 </CardContent>

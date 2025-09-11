@@ -11,20 +11,28 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "wouter";
 import { Bitcoin, Eye, EyeOff, Shield, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const loginSchema = z.object({
-  username: z.string().min(3, "Username phải có ít nhất 3 ký tự"),
-  password: z.string().min(6, "Password phải có ít nhất 6 ký tự"),
+// Create login schema with translation function  
+const createLoginSchema = (t: (key: string) => string) => z.object({
+  username: z.string().min(3, t('login.username_min_error')),
+  password: z.string().min(6, t('login.password_min_error')),
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = {
+  username: string;
+  password: string;
+};
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
+  const loginSchema = createLoginSchema(t);
+  
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -37,8 +45,8 @@ export default function Login() {
     const success = await login(data.username, data.password);
     if (success) {
       toast({
-        title: "Đăng nhập thành công!",
-        description: "Chào mừng bạn trở lại HHDcoin.",
+        title: t('login.success_title'),
+        description: t('login.success_description'),
       });
       setLocation("/dashboard");
     }
@@ -53,10 +61,10 @@ export default function Login() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-dark-slate">
-              Đăng nhập HHDcoin
+              {t('login.title')}
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Truy cập vào tài khoản đầu tư Bitcoin của bạn
+              {t('login.subtitle')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -76,11 +84,11 @@ export default function Login() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tài khoản</FormLabel>
+                    <FormLabel>{t('login.username_label')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Nhập tài khoản của bạn"
+                        placeholder={t('login.username_placeholder')}
                         data-testid="input-username"
                         className="h-12"
                       />
@@ -95,13 +103,13 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mật khẩu</FormLabel>
+                    <FormLabel>{t('login.password_label')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           {...field}
                           type={showPassword ? "text" : "password"}
-                          placeholder="Nhập mật khẩu của bạn"
+                          placeholder={t('login.password_placeholder')}
                           data-testid="input-password"
                           className="h-12 pr-12"
                         />
@@ -135,12 +143,12 @@ export default function Login() {
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    <span>Đang đăng nhập...</span>
+                    <span>{t('login.logging_in')}</span>
                   </div>
                 ) : (
                   <>
                     <Shield className="mr-2 h-4 w-4" />
-                    Đăng nhập
+                    {t('login.login_button')}
                   </>
                 )}
               </Button>
@@ -153,25 +161,25 @@ export default function Login() {
                 <span className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">Hoặc</span>
+                <span className="bg-white px-2 text-gray-500">{t('login.or')}</span>
               </div>
             </div>
 
             <div className="text-sm text-gray-600">
-              Chưa có tài khoản?{" "}
+              {t('login.no_account')}{" "}
               <Link href="/register">
                 <a className="text-bitcoin hover:text-bitcoin/80 font-semibold" data-testid="link-register">
-                  Đăng ký ngay
+                  {t('login.register_now')}
                 </a>
               </Link>
             </div>
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-2">Tài khoản demo:</h4>
+            <h4 className="font-semibold text-sm text-gray-700 mb-2">{t('login.demo_accounts')}</h4>
             <div className="text-xs text-gray-600 space-y-1">
-              <div><strong>Admin:</strong> admin / admin123</div>
-              <div><strong>Member:</strong> member1 / member123</div>
+              <div><strong>{t('login.admin_demo')}</strong> admin / admin123</div>
+              <div><strong>{t('login.member_demo')}</strong> member1 / member123</div>
             </div>
           </div>
         </CardContent>

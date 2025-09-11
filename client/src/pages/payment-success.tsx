@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Bitcoin, ArrowRight, Download, Home } from "lucide-react";
 import Navigation from "@/components/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function PaymentSuccess() {
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
   const search = useSearch();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const { t } = useLanguage();
 
   // Parse URL parameters from Stripe redirect
   const searchParams = new URLSearchParams(search);
@@ -53,20 +55,20 @@ export default function PaymentSuccess() {
                 <span className="text-red-500 text-2xl">✗</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                Thanh toán không thành công
+                {t('payment_success.failed_title')}
               </h1>
               <p className="text-gray-600 mb-6">
-                Có vẻ như thanh toán của bạn gặp sự cố. Vui lòng thử lại.
+                {t('payment_success.failed_message')}
               </p>
               <div className="flex gap-4 justify-center">
                 <Button 
                   onClick={() => setLocation('/investment-packages')}
                   variant="outline"
                 >
-                  Thử lại
+                  {t('payment_success.try_again')}
                 </Button>
                 <Button onClick={() => setLocation('/dashboard')}>
-                  Về Dashboard
+                  {t('payment_success.go_dashboard')}
                 </Button>
               </div>
             </div>
@@ -88,10 +90,10 @@ export default function PaymentSuccess() {
               <CheckCircle2 className="h-10 w-10 text-green-600" />
             </div>
             <h1 className="text-3xl font-bold text-dark-slate mb-2">
-              Thanh toán thành công! 🎉
+              {t('payment_success.title')}
             </h1>
             <p className="text-gray-600 text-lg">
-              Chúc mừng bạn đã bắt đầu hành trình đầu tư Bitcoin cùng HHDcoin
+              {t('payment_success.congratulations')}
             </p>
           </div>
 
@@ -100,17 +102,17 @@ export default function PaymentSuccess() {
             <CardHeader>
               <CardTitle className="flex items-center text-lg">
                 <Bitcoin className="mr-2 h-5 w-5 text-bitcoin" />
-                Chi tiết thanh toán
+                {t('payment_success.payment_details')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Gói đầu tư</p>
+                  <p className="text-sm text-gray-600">{t('payment_success.package')}</p>
                   <p className="font-semibold">{paymentDetails.packageName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Số tiền</p>
+                  <p className="text-sm text-gray-600">{t('payment_success.amount')}</p>
                   <p className="font-semibold text-bitcoin">
                     {new Intl.NumberFormat('vi-VN', { 
                       style: 'currency', 
@@ -119,21 +121,21 @@ export default function PaymentSuccess() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Mã giao dịch</p>
+                  <p className="text-sm text-gray-600">{t('payment_success.transaction_code')}</p>
                   <p className="font-mono text-sm text-gray-800">
                     {paymentDetails.id.slice(-8)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Trạng thái</p>
+                  <p className="text-sm text-gray-600">{t('payment_success.status')}</p>
                   <Badge className="bg-green-100 text-green-800">
-                    Thành công
+                    {t('payment_success.successful')}
                   </Badge>
                 </div>
               </div>
 
               <div className="pt-4 border-t">
-                <p className="text-sm text-gray-600 mb-2">Thời gian thanh toán</p>
+                <p className="text-sm text-gray-600 mb-2">{t('payment_success.payment_time')}</p>
                 <p className="text-sm">
                   {new Date(paymentDetails.date).toLocaleString('vi-VN')}
                 </p>
@@ -144,9 +146,9 @@ export default function PaymentSuccess() {
           {/* Next Steps */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Bước tiếp theo</CardTitle>
+              <CardTitle>{t('payment_success.next_steps')}</CardTitle>
               <CardDescription>
-                Những gì sẽ xảy ra sau khi bạn thanh toán thành công
+                {t('payment_success.next_steps_desc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -155,9 +157,9 @@ export default function PaymentSuccess() {
                   1
                 </div>
                 <div>
-                  <p className="font-medium">Xác nhận đầu tư</p>
+                  <p className="font-medium">{t('payment_success.confirm_investment')}</p>
                   <p className="text-sm text-gray-600">
-                    Chúng tôi sẽ xử lý khoản đầu tư của bạn trong vòng 24 giờ
+                    {t('payment_success.confirm_investment_desc')}
                   </p>
                 </div>
               </div>
@@ -167,9 +169,9 @@ export default function PaymentSuccess() {
                   2
                 </div>
                 <div>
-                  <p className="font-medium">Gửi thông báo email</p>
+                  <p className="font-medium">{t('payment_success.email_notification')}</p>
                   <p className="text-sm text-gray-600">
-                    Bạn sẽ nhận được email xác nhận và hướng dẫn chi tiết
+                    {t('payment_success.email_notification_desc')}
                   </p>
                 </div>
               </div>
@@ -179,9 +181,9 @@ export default function PaymentSuccess() {
                   3
                 </div>
                 <div>
-                  <p className="font-medium">Theo dõi đầu tư</p>
+                  <p className="font-medium">{t('payment_success.track_investment')}</p>
                   <p className="text-sm text-gray-600">
-                    Truy cập dashboard để theo dõi hiệu suất đầu tư của bạn
+                    {t('payment_success.track_investment_desc')}
                   </p>
                 </div>
               </div>
@@ -193,14 +195,14 @@ export default function PaymentSuccess() {
             <Link href="/dashboard" className="flex-1">
               <Button className="w-full bg-bitcoin hover:bg-bitcoin/90" data-testid="button-go-dashboard">
                 <Home className="mr-2 h-4 w-4" />
-                Về Dashboard
+                {t('payment_success.go_dashboard')}
               </Button>
             </Link>
             
             <Link href="/investment-packages" className="flex-1">
               <Button variant="outline" className="w-full" data-testid="button-view-packages">
                 <ArrowRight className="mr-2 h-4 w-4" />
-                Xem thêm gói khác
+                {t('payment_success.view_other_packages')}
               </Button>
             </Link>
           </div>
@@ -208,10 +210,10 @@ export default function PaymentSuccess() {
           {/* Support Contact */}
           <div className="text-center mt-8 p-4 bg-gray-100 rounded-lg">
             <p className="text-sm text-gray-600">
-              Có câu hỏi về khoản đầu tư của bạn?{" "}
+              {t('payment_success.questions')}{" "}
               <Link href="/contact">
                 <a className="text-bitcoin hover:text-bitcoin/80 font-medium">
-                  Liên hệ với chúng tôi
+                  {t('payment_success.contact_us')}
                 </a>
               </Link>
             </p>

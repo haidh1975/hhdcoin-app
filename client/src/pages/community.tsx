@@ -26,11 +26,14 @@ const memberLevelColors = {
   Diamond: "bg-blue-100 text-blue-800"
 };
 
-const experienceLevelLabels = {
-  beginner: "Người mới",
-  intermediate: "Trung cấp", 
-  advanced: "Nâng cao",
-  expert: "Chuyên gia"
+const getExperienceLevelLabel = (level: string, t: (key: string) => string) => {
+  const labels: Record<string, string> = {
+    beginner: t('community.experience.beginner'),
+    intermediate: t('community.experience.intermediate'),
+    advanced: t('community.experience.advanced'),
+    expert: t('community.experience.expert')
+  };
+  return labels[level] || level;
 };
 
 export default function Community() {
@@ -55,14 +58,14 @@ export default function Community() {
       queryClient.invalidateQueries({ queryKey: ["/api/community-members"] });
       setIsAddDialogOpen(false);
       toast({
-        title: "Thành công",
-        description: "Thành viên mới đã được thêm vào cộng đồng!",
+        title: t('common.success'),
+        description: t('community.success.member_added'),
       });
     },
     onError: () => {
       toast({
-        title: "Lỗi",
-        description: "Có lỗi xảy ra khi thêm thành viên mới",
+        title: t('common.error'),
+        description: t('community.error.add_member'),
         variant: "destructive",
       });
     },
@@ -75,14 +78,14 @@ export default function Community() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/community-members"] });
       toast({
-        title: "Thành công",
-        description: "Thành viên đã được xóa khỏi cộng đồng",
+        title: t('common.success'),
+        description: t('community.success.member_deleted'),
       });
     },
     onError: () => {
       toast({
-        title: "Lỗi", 
-        description: "Có lỗi xảy ra khi xóa thành viên",
+        title: t('common.error'), 
+        description: t('community.error.delete_member'),
         variant: "destructive",
       });
     },
@@ -123,7 +126,7 @@ export default function Community() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa thành viên ${name} khỏi cộng đồng?`)) {
+    if (confirm(t('community.confirm_delete').replace('{{name}}', name))) {
       deleteMemberMutation.mutate(id);
     }
   };
@@ -136,20 +139,20 @@ export default function Community() {
           <div>
             <h1 className="text-4xl font-bold text-dark-slate mb-4 flex items-center" data-testid="text-community-title">
               <Users className="mr-3 h-10 w-10 text-bitcoin" />
-              {t('community.join_title')}
+              {t('community.title')}
             </h1>
             <p className="text-xl text-gray-600" data-testid="text-community-description">
-              Kết nối với cộng đồng nhà đầu tư Bitcoin tại Việt Nam
+              {t('community.description')}
             </p>
             <div className="flex items-center mt-4 space-x-6 text-sm text-gray-500">
               <div className="flex items-center">
                 <Users className="h-4 w-4 mr-1" />
-                <span data-testid="text-total-members">{members.length} thành viên</span>
+                <span data-testid="text-total-members">{members.length} {t('community.stats.total_members').toLowerCase()}</span>
               </div>
               <div className="flex items-center">
                 <Star className="h-4 w-4 mr-1" />
                 <span data-testid="text-active-members">
-                  {members.filter(m => m.isActive).length} hoạt động
+                  {members.filter(m => m.isActive).length} {t('community.stats.active_today').toLowerCase()}
                 </span>
               </div>
             </div>
@@ -162,12 +165,12 @@ export default function Community() {
                 data-testid="button-add-member"
               >
                 <UserPlus className="mr-2 h-5 w-5" />
-                Thêm thành viên
+                {t('community.add_member')}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Thêm thành viên mới</DialogTitle>
+                <DialogTitle>{t('community.add_member_dialog_title')}</DialogTitle>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -177,9 +180,9 @@ export default function Community() {
                       name="fullName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Họ và tên *</FormLabel>
+                          <FormLabel>{t('community.form.full_name')} *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Nguyễn Văn A" {...field} data-testid="input-full-name" />
+                            <Input placeholder={t('community.placeholder.full_name')} {...field} data-testid="input-full-name" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -190,9 +193,9 @@ export default function Community() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email *</FormLabel>
+                          <FormLabel>{t('community.form.email')} *</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="email@example.com" {...field} data-testid="input-email" />
+                            <Input type="email" placeholder={t('community.placeholder.email')} {...field} data-testid="input-email" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -206,9 +209,9 @@ export default function Community() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Số điện thoại *</FormLabel>
+                          <FormLabel>{t('community.form.phone')} *</FormLabel>
                           <FormControl>
-                            <Input placeholder="0987654321" {...field} data-testid="input-phone" />
+                            <Input placeholder={t('community.placeholder.phone')} {...field} data-testid="input-phone" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -219,9 +222,9 @@ export default function Community() {
                       name="location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Địa điểm</FormLabel>
+                          <FormLabel>{t('community.form.location')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Hà Nội" {...field} value={field.value || ""} data-testid="input-location" />
+                            <Input placeholder={t('community.placeholder.location')} {...field} value={field.value || ""} data-testid="input-location" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -235,18 +238,18 @@ export default function Community() {
                       name="experienceLevel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Mức độ kinh nghiệm</FormLabel>
+                          <FormLabel>{t('community.form.experience_level')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || "beginner"}>
                             <FormControl>
                               <SelectTrigger data-testid="select-experience-level">
-                                <SelectValue placeholder="Chọn mức độ" />
+                                <SelectValue placeholder={t('common.select')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="beginner">Người mới</SelectItem>
-                              <SelectItem value="intermediate">Trung cấp</SelectItem>
-                              <SelectItem value="advanced">Nâng cao</SelectItem>
-                              <SelectItem value="expert">Chuyên gia</SelectItem>
+                              <SelectItem value="beginner">{t('community.experience.beginner')}</SelectItem>
+                              <SelectItem value="intermediate">{t('community.experience.intermediate')}</SelectItem>
+                              <SelectItem value="advanced">{t('community.experience.advanced')}</SelectItem>
+                              <SelectItem value="expert">{t('community.experience.expert')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -258,9 +261,9 @@ export default function Community() {
                       name="occupation"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nghề nghiệp</FormLabel>
+                          <FormLabel>{t('community.form.occupation')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Kỹ sư phần mềm" {...field} value={field.value || ""} data-testid="input-occupation" />
+                            <Input placeholder={t('community.placeholder.occupation')} {...field} value={field.value || ""} data-testid="input-occupation" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -273,10 +276,10 @@ export default function Community() {
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giới thiệu bản thân</FormLabel>
+                        <FormLabel>{t('community.form.bio_label')}</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Chia sẻ về kinh nghiệm đầu tư và mục tiêu của bạn..."
+                            placeholder={t('community.placeholder.bio')}
                             className="min-h-[100px]"
                             {...field}
                             value={field.value || ""}
@@ -289,16 +292,16 @@ export default function Community() {
                   />
 
                   <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-dark-slate">Thông tin mạng xã hội</h4>
+                    <h4 className="text-lg font-semibold text-dark-slate">{t('community.social_media_title')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2 flex items-center">
                           <SiFacebook className="mr-2 h-4 w-4 text-blue-600" />
-                          Facebook URL
+                          {t('community.facebook_url')}
                         </label>
                         <Input 
-                          placeholder="https://facebook.com/username" 
+                          placeholder={t('community.placeholder.facebook')} 
                           data-testid="input-facebook-link" 
                           onChange={(e) => {
                             const currentLinks = form.getValues("socialLinks") || [];
@@ -313,10 +316,10 @@ export default function Community() {
                       <div>
                         <label className="block text-sm font-medium mb-2 flex items-center">
                           <MessageCircle className="mr-2 h-4 w-4 text-blue-500" />
-                          Zalo (Số điện thoại)
+                          {t('community.zalo_phone')}
                         </label>
                         <Input 
-                          placeholder="0987654321" 
+                          placeholder={t('community.placeholder.zalo')} 
                           data-testid="input-zalo-link" 
                           onChange={(e) => {
                             const currentLinks = form.getValues("socialLinks") || [];
@@ -338,7 +341,7 @@ export default function Community() {
                       onClick={() => setIsAddDialogOpen(false)}
                       data-testid="button-cancel"
                     >
-                      Hủy
+                      {t('common.cancel')}
                     </Button>
                     <Button 
                       type="submit" 
@@ -346,7 +349,7 @@ export default function Community() {
                       disabled={addMemberMutation.isPending}
                       data-testid="button-submit"
                     >
-                      {addMemberMutation.isPending ? "Đang thêm..." : "Thêm thành viên"}
+                      {addMemberMutation.isPending ? t('community.button.adding') : t('community.button.add_member')}
                     </Button>
                   </div>
                 </form>
@@ -361,7 +364,7 @@ export default function Community() {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Tìm kiếm thành viên..."
+                placeholder={t('community.placeholder.search_members')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -370,22 +373,22 @@ export default function Community() {
             </div>
             <Select value={experienceFilter} onValueChange={setExperienceFilter}>
               <SelectTrigger data-testid="select-filter-experience">
-                <SelectValue placeholder="Mức độ kinh nghiệm" />
+                <SelectValue placeholder={t('community.placeholder.experience_level')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="beginner">Người mới</SelectItem>
-                <SelectItem value="intermediate">Trung cấp</SelectItem>
-                <SelectItem value="advanced">Nâng cao</SelectItem>
-                <SelectItem value="expert">Chuyên gia</SelectItem>
+                <SelectItem value="all">{t('community.placeholder.all')}</SelectItem>
+                <SelectItem value="beginner">{t('community.experience.beginner')}</SelectItem>
+                <SelectItem value="intermediate">{t('community.experience.intermediate')}</SelectItem>
+                <SelectItem value="advanced">{t('community.experience.advanced')}</SelectItem>
+                <SelectItem value="expert">{t('community.experience.expert')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={memberLevelFilter} onValueChange={setMemberLevelFilter}>
               <SelectTrigger data-testid="select-filter-level">
-                <SelectValue placeholder="Cấp độ thành viên" />
+                <SelectValue placeholder={t('community.placeholder.member_level')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="all">{t('community.placeholder.all')}</SelectItem>
                 <SelectItem value="Bronze">Bronze</SelectItem>
                 <SelectItem value="Silver">Silver</SelectItem>
                 <SelectItem value="Gold">Gold</SelectItem>
@@ -402,7 +405,7 @@ export default function Community() {
               data-testid="button-clear-filters"
             >
               <Filter className="mr-2 h-4 w-4" />
-              Xóa bộ lọc
+              {t('community.clear_filters')}
             </Button>
           </div>
         </div>
@@ -410,7 +413,7 @@ export default function Community() {
         {/* Members Grid */}
         {isLoading ? (
           <div className="text-center py-12" data-testid="loading-members">
-            <div className="text-gray-500">Đang tải danh sách thành viên...</div>
+            <div className="text-gray-500">{t('community.loading_members')}</div>
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -435,7 +438,7 @@ export default function Community() {
                             {member.memberLevel}
                           </Badge>
                           <Badge variant="outline" data-testid={`member-experience-${member.id}`}>
-                            {experienceLevelLabels[member.experienceLevel as keyof typeof experienceLevelLabels]}
+                            {getExperienceLevelLabel(member.experienceLevel, t)}
                           </Badge>
                         </div>
                       </div>
@@ -486,14 +489,14 @@ export default function Community() {
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2" />
                       <span data-testid={`member-join-date-${member.id}`}>
-                        Tham gia: {new Date(member.joinDate || '').toLocaleDateString('vi-VN')}
+                        {t('community.member.joined')} {new Date(member.joinDate || '').toLocaleDateString('vi-VN')}
                       </span>
                     </div>
                   </div>
 
                   {member.interests && member.interests.length > 0 && (
                     <div className="mt-4">
-                      <div className="text-sm font-medium text-gray-700 mb-2">Sở thích:</div>
+                      <div className="text-sm font-medium text-gray-700 mb-2">{t('community.member.interests')}</div>
                       <div className="flex flex-wrap gap-1">
                         {member.interests.slice(0, 3).map((interest, index) => (
                           <Badge 
@@ -516,13 +519,13 @@ export default function Community() {
 
                   <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <div className="text-sm">
-                      <span className="text-gray-500">Điểm: </span>
+                      <span className="text-gray-500">{t('community.member.points')}</span>
                       <span className="font-semibold text-bitcoin" data-testid={`member-points-${member.id}`}>
                         {member.points?.toLocaleString() || 0}
                       </span>
                     </div>
                     <div className={`w-2 h-2 rounded-full ${member.isActive ? 'bg-green-500' : 'bg-gray-300'}`} 
-                         title={member.isActive ? 'Đang hoạt động' : 'Không hoạt động'}>
+                         title={member.isActive ? t('community.member.active') : t('community.member.inactive')}>
                     </div>
                   </div>
                 </CardContent>
@@ -534,8 +537,8 @@ export default function Community() {
         {filteredMembers.length === 0 && !isLoading && (
           <div className="text-center py-12" data-testid="no-members-found">
             <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-500 mb-2">Không tìm thấy thành viên</h3>
-            <p className="text-gray-400">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+            <h3 className="text-lg font-medium text-gray-500 mb-2">{t('community.no_members_found')}</h3>
+            <p className="text-gray-400">{t('community.no_members_hint')}</p>
           </div>
         )}
       </div>

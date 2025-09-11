@@ -11,19 +11,27 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "wouter";
 import { Bitcoin, Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const registerSchema = z.object({
-  username: z.string().min(3, "Username phải có ít nhất 3 ký tự"),
-  password: z.string().min(6, "Password phải có ít nhất 6 ký tự"),
+// Create register schema with translation function
+const createRegisterSchema = (t: (key: string) => string) => z.object({
+  username: z.string().min(3, t('register.username_min_error')),
+  password: z.string().min(6, t('register.password_min_error')),
   confirmPassword: z.string(),
-  fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
-  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
+  fullName: z.string().min(2, t('register.full_name_min_error')),
+  email: z.string().email(t('register.email_invalid_error')).optional().or(z.literal("")),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Mật khẩu xác nhận không khớp",
+  message: t('register.password_mismatch_error'),
   path: ["confirmPassword"],
 });
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+type RegisterFormData = {
+  username: string;
+  password: string;
+  confirmPassword: string;
+  fullName: string;
+  email?: string;
+};
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +39,9 @@ export default function Register() {
   const { register, isLoading, error } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useLanguage();
+  
+  const registerSchema = createRegisterSchema(t);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -53,8 +64,8 @@ export default function Register() {
     
     if (success) {
       toast({
-        title: "Đăng ký thành công!",
-        description: "Chào mừng bạn đến với HHDcoin.",
+        title: t('register.success_title'),
+        description: t('register.success_description'),
       });
       setLocation("/dashboard");
     }
@@ -69,10 +80,10 @@ export default function Register() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-dark-slate">
-              Đăng ký HHDcoin
+              {t('register.title')}
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Tạo tài khoản để bắt đầu đầu tư Bitcoin
+              {t('register.subtitle')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -92,11 +103,11 @@ export default function Register() {
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Họ tên đầy đủ</FormLabel>
+                    <FormLabel>{t('register.full_name_label')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Nhập họ tên của bạn"
+                        placeholder={t('register.full_name_placeholder')}
                         data-testid="input-fullname"
                         className="h-12"
                       />
@@ -111,11 +122,11 @@ export default function Register() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tài khoản</FormLabel>
+                    <FormLabel>{t('register.username_label')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Chọn tài khoản đăng nhập"
+                        placeholder={t('register.username_placeholder')}
                         data-testid="input-username"
                         className="h-12"
                       />
@@ -130,12 +141,12 @@ export default function Register() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email (tùy chọn)</FormLabel>
+                    <FormLabel>{t('register.email_label')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
-                        placeholder="your@email.com"
+                        placeholder={t('register.email_placeholder')}
                         data-testid="input-email"
                         className="h-12"
                       />
@@ -150,13 +161,13 @@ export default function Register() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mật khẩu</FormLabel>
+                    <FormLabel>{t('register.password_label')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           {...field}
                           type={showPassword ? "text" : "password"}
-                          placeholder="Tạo mật khẩu mạnh"
+                          placeholder={t('register.password_placeholder')}
                           data-testid="input-password"
                           className="h-12 pr-12"
                         />
@@ -186,13 +197,13 @@ export default function Register() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Xác nhận mật khẩu</FormLabel>
+                    <FormLabel>{t('register.confirm_password_label')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           {...field}
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Nhập lại mật khẩu"
+                          placeholder={t('register.confirm_password_placeholder')}
                           data-testid="input-confirm-password"
                           className="h-12 pr-12"
                         />
@@ -226,12 +237,12 @@ export default function Register() {
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    <span>Đang tạo tài khoản...</span>
+                    <span>{t('register.registering')}</span>
                   </div>
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Tạo tài khoản
+                    {t('register.register_button')}
                   </>
                 )}
               </Button>
@@ -240,10 +251,10 @@ export default function Register() {
 
           <div className="text-center">
             <div className="text-sm text-gray-600">
-              Đã có tài khoản?{" "}
+              {t('register.have_account')}{" "}
               <Link href="/login">
                 <a className="text-bitcoin hover:text-bitcoin/80 font-semibold" data-testid="link-login">
-                  Đăng nhập ngay
+                  {t('register.login_now')}
                 </a>
               </Link>
             </div>

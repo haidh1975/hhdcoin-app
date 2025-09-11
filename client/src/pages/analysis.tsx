@@ -103,8 +103,8 @@ export default function Analysis() {
   const handleSentimentAnalysis = async () => {
     if (!newsText.trim()) {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng nhập văn bản để phân tích cảm xúc",
+        title: t('analysis.toast.error_title'),
+        description: t('analysis.toast.no_text'),
         variant: "destructive",
       });
       return;
@@ -117,13 +117,13 @@ export default function Analysis() {
       setSentimentResult(data);
       
       toast({
-        title: "Phân tích hoàn thành",
-        description: `Cảm xúc: ${data.rating}/5 sao với độ tin cậy ${Math.round(data.confidence * 100)}%`,
+        title: t('analysis.toast.analysis_complete'),
+        description: `${t('analysis.sentiment_summary')} ${data.rating}/5 ★ ${t('analysis.confidence').toLowerCase()} ${Math.round(data.confidence * 100)}%`,
       });
     } catch (error) {
       toast({
-        title: "Lỗi phân tích",
-        description: "Không thể phân tích cảm xúc. Vui lòng thử lại.",
+        title: t('analysis.toast.analysis_error'),
+        description: t('analysis.toast.analysis_error_desc'),
         variant: "destructive",
       });
     } finally {
@@ -160,17 +160,17 @@ export default function Analysis() {
   const analysisFeatures = [
     {
       icon: BarChart3,
-      title: "Biểu đồ đầu tư",
+      title: t('analysis.investment_chart'),
       description: t('analytics.investment_chart')
     },
     {
       icon: PieChart,
-      title: "Biểu đồ thị phần",
+      title: t('analysis.market_share'),
       description: t('analytics.market_share')
     },
     {
       icon: TrendingUp,
-      title: "Phân tích lãi suất",
+      title: t('analysis.interest_rate_analysis'),
       description: t('analytics.interest_rate')
     }
   ];
@@ -183,10 +183,10 @@ export default function Analysis() {
       <section className="bg-gradient-to-br from-green-600 via-blue-600 to-green-700 text-white py-20" data-testid="section-analysis-hero">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl lg:text-5xl font-bold mb-6" data-testid="text-analysis-title">
-            {t('analytics.title')}
+            {t('analysis.title')}
           </h1>
           <p className="text-xl text-green-100 max-w-3xl mx-auto">
-            Phân tích toàn diện với AI để đưa ra quyết định đầu tư thông minh và hiệu quả nhất
+            {t('analysis.description')}
           </p>
         </div>
       </section>
@@ -195,7 +195,7 @@ export default function Analysis() {
       <section className="py-16" data-testid="section-analysis-features">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-features-title">
-            Các tính năng phân tích
+            {t('analysis.features_title')}
           </h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
             {analysisFeatures.map((feature, index) => {
@@ -232,10 +232,10 @@ export default function Analysis() {
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                   <Brain className="h-8 w-8 text-blue-600" />
-                  AI Insights & Analysis
+                  {t('analysis.ai_insights')}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mt-2">
-                  Phân tích thị trường thông minh với công nghệ AI GPT-5
+                  {t('analysis.ai_description')}
                 </p>
               </div>
               <Button
@@ -248,7 +248,7 @@ export default function Analysis() {
                 data-testid="button-refresh-ai"
               >
                 <RefreshCw className="h-4 w-4" />
-                Cập nhật
+                {t('analysis.refresh')}
               </Button>
             </div>
 
@@ -258,14 +258,14 @@ export default function Analysis() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5" />
-                    Phân Tích Thị Trường AI
+                    {t('analysis.market_analysis')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {isLoadingAnalysis ? (
                     <div className="flex items-center justify-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin" />
-                      <span className="ml-2">Đang phân tích...</span>
+                      <span className="ml-2">{t('analysis.analyzing')}</span>
                     </div>
                   ) : aiMarketAnalysis ? (
                     <div className="space-y-4">
@@ -276,14 +276,14 @@ export default function Analysis() {
                           <span className="font-semibold capitalize">{aiMarketAnalysis.trend}</span>
                         </div>
                         <Badge variant="secondary" data-testid="badge-confidence">
-                          Độ tin cậy: {Math.round(aiMarketAnalysis.confidenceScore * 100)}%
+                          {t('analysis.confidence')} {Math.round(aiMarketAnalysis.confidenceScore * 100)}%
                         </Badge>
                       </div>
 
                       {/* Risk Level */}
                       <div className="flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
-                        <span>Mức độ rủi ro:</span>
+                        <span>{t('analysis.risk_level')}</span>
                         <Badge className={getRiskColor(aiMarketAnalysis.riskLevel)} data-testid="badge-risk-level">
                           {aiMarketAnalysis.riskLevel}
                         </Badge>
@@ -294,15 +294,15 @@ export default function Analysis() {
                         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <Target className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium">Mục tiêu giá</span>
+                            <span className="font-medium">{t('analysis.price_targets')}</span>
                           </div>
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                              <p className="text-gray-600 dark:text-gray-400">Ngắn hạn</p>
+                              <p className="text-gray-600 dark:text-gray-400">{t('analysis.short_term')}</p>
                               <p className="font-semibold">${aiMarketAnalysis.priceTarget.short_term?.toLocaleString()}</p>
                             </div>
                             <div>
-                              <p className="text-gray-600 dark:text-gray-400">Trung hạn</p>
+                              <p className="text-gray-600 dark:text-gray-400">{t('analysis.medium_term')}</p>
                               <p className="font-semibold">${aiMarketAnalysis.priceTarget.medium_term?.toLocaleString()}</p>
                             </div>
                           </div>
@@ -311,7 +311,7 @@ export default function Analysis() {
 
                       {/* Key Factors */}
                       <div>
-                        <p className="font-medium mb-2">Yếu tố chính:</p>
+                        <p className="font-medium mb-2">{t('analysis.key_factors')}</p>
                         <ul className="space-y-1">
                           {aiMarketAnalysis.keyFactors?.map((factor, index) => (
                             <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
@@ -326,18 +326,18 @@ export default function Analysis() {
                       <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
                           <Lightbulb className="h-4 w-4 text-green-600" />
-                          <span className="font-medium">Khuyến nghị AI</span>
+                          <span className="font-medium">{t('analysis.ai_recommendation')}</span>
                         </div>
                         <p className="text-sm">{aiMarketAnalysis.recommendation}</p>
                       </div>
 
                       <div className="text-xs text-gray-500 mt-4">
-                        Loại phân tích: {aiMarketAnalysis.analysisType} | 
-                        Cập nhật: {new Date(aiMarketAnalysis.timestamp).toLocaleString('vi-VN')}
+                        {t('analysis.analysis_type')} {aiMarketAnalysis.analysisType} | 
+                        {t('analysis.updated')} {new Date(aiMarketAnalysis.timestamp).toLocaleString('vi-VN')}
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-gray-500 py-8">Không thể tải dữ liệu phân tích</p>
+                    <p className="text-center text-gray-500 py-8">{t('analysis.error_no_data')}</p>
                   )}
                 </CardContent>
               </Card>
@@ -347,24 +347,24 @@ export default function Analysis() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5" />
-                    Khuyến Nghị Giao Dịch
+                    {t('analysis.trading_recommendations')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {!isAuthenticated ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500 mb-4">Vui lòng đăng nhập để xem khuyến nghị giao dịch</p>
+                      <p className="text-gray-500 mb-4">{t('analysis.login_required')}</p>
                     </div>
                   ) : isLoadingRecommendation ? (
                     <div className="flex items-center justify-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin" />
-                      <span className="ml-2">Đang tạo khuyến nghị...</span>
+                      <span className="ml-2">{t('analysis.creating_recommendations')}</span>
                     </div>
                   ) : tradingRecommendation ? (
                     <div className="space-y-4">
                       {/* Risk Profile Selection */}
                       <div>
-                        <p className="font-medium mb-2">Hồ sơ rủi ro:</p>
+                        <p className="font-medium mb-2">{t('analysis.risk_profile')}</p>
                         <div className="flex gap-2">
                           {(['conservative', 'moderate', 'aggressive'] as const).map((profile) => (
                             <Button
@@ -374,8 +374,8 @@ export default function Analysis() {
                               onClick={() => setRiskProfile(profile)}
                               data-testid={`button-risk-${profile}`}
                             >
-                              {profile === 'conservative' ? 'Bảo thủ' : 
-                               profile === 'moderate' ? 'Vừa phải' : 'Tích cực'}
+                              {profile === 'conservative' ? t('analysis.conservative') : 
+                               profile === 'moderate' ? t('analysis.moderate') : t('analysis.aggressive')}
                             </Button>
                           ))}
                         </div>
@@ -384,32 +384,32 @@ export default function Analysis() {
                       {/* Action Recommendation */}
                       <div className="flex items-center justify-between">
                         <Badge className={getActionColor(tradingRecommendation.action)} data-testid="badge-action">
-                          {tradingRecommendation.action === 'buy' ? 'MUA' :
-                           tradingRecommendation.action === 'sell' ? 'BÁN' : 'GIỮ'}
+                          {tradingRecommendation.action === 'buy' ? t('analysis.buy') :
+                           tradingRecommendation.action === 'sell' ? t('analysis.sell') : t('analysis.hold')}
                         </Badge>
                         <Badge variant="secondary">
-                          Độ tin cậy: {Math.round(tradingRecommendation.confidence * 100)}%
+                          {t('analysis.confidence')} {Math.round(tradingRecommendation.confidence * 100)}%
                         </Badge>
                       </div>
 
                       {/* Reasoning */}
                       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                        <p className="font-medium mb-2">Lý do:</p>
+                        <p className="font-medium mb-2">{t('analysis.reasoning')}</p>
                         <p className="text-sm">{tradingRecommendation.reasoning}</p>
                       </div>
 
                       {/* Additional Info */}
                       <div className="grid grid-cols-1 gap-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Khung thời gian:</span>
+                          <span className="text-gray-600 dark:text-gray-400">{t('analysis.timeframe')}</span>
                           <span>{tradingRecommendation.timeframe}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Giá Bitcoin:</span>
+                          <span className="text-gray-600 dark:text-gray-400">{t('analysis.bitcoin_price')}</span>
                           <span>${tradingRecommendation.bitcoinPrice?.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Thay đổi 24h:</span>
+                          <span className="text-gray-600 dark:text-gray-400">{t('analysis.change_24h')}</span>
                           <span className={tradingRecommendation.change24h > 0 ? 'text-green-600' : 'text-red-600'}>
                             {tradingRecommendation.change24h > 0 ? '+' : ''}{tradingRecommendation.change24h?.toFixed(2)}%
                           </span>
@@ -420,13 +420,13 @@ export default function Analysis() {
                       <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
                           <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                          <span className="font-medium">Đánh giá rủi ro</span>
+                          <span className="font-medium">{t('analysis.risk_assessment')}</span>
                         </div>
                         <p className="text-sm">{tradingRecommendation.riskAssessment}</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-gray-500 py-8">Không thể tải khuyến nghị giao dịch</p>
+                    <p className="text-center text-gray-500 py-8">{t('analysis.error_no_recommendations')}</p>
                   )}
                 </CardContent>
               </Card>
@@ -437,23 +437,23 @@ export default function Analysis() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" />
-                  Phân Tích Cảm Xúc Tin Tức
+                  {t('analysis.sentiment_analysis')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!isAuthenticated ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">Vui lòng đăng nhập để sử dụng phân tích cảm xúc</p>
+                    <p className="text-gray-500 mb-4">{t('analysis.sentiment_login_required')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="news-text" className="block text-sm font-medium mb-2">
-                        Nhập tin tức hoặc bài viết về Bitcoin:
+                        {t('analysis.news_input_label')}
                       </label>
                       <Textarea
                         id="news-text"
-                        placeholder="Dán nội dung tin tức, bài viết hoặc bình luận về Bitcoin để phân tích cảm xúc thị trường..."
+                        placeholder={t('analysis.news_placeholder')}
                         value={newsText}
                         onChange={(e) => setNewsText(e.target.value)}
                         rows={4}
@@ -470,12 +470,12 @@ export default function Analysis() {
                       {isAnalyzing ? (
                         <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Đang phân tích...
+                          {t('analysis.analyzing_sentiment')}
                         </>
                       ) : (
                         <>
                           <Brain className="h-4 w-4 mr-2" />
-                          Phân tích cảm xúc
+                          {t('analysis.analyze_sentiment')}
                         </>
                       )}
                     </Button>
@@ -483,19 +483,19 @@ export default function Analysis() {
                     {sentimentResult && (
                       <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                         <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-medium">Kết quả phân tích:</h4>
+                          <h4 className="font-medium">{t('analysis.sentiment_results')}</h4>
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{'⭐'.repeat(sentimentResult.rating)}</span>
                             <Badge variant="secondary">
-                              {Math.round(sentimentResult.confidence * 100)}% tin cậy
+                              {Math.round(sentimentResult.confidence * 100)}% {t('analysis.confidence').toLowerCase()}
                             </Badge>
                           </div>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          <strong>Tóm tắt:</strong> {sentimentResult.summary}
+                          <strong>{t('analysis.sentiment_summary')}</strong> {sentimentResult.summary}
                         </p>
                         <p className="text-xs text-gray-500">
-                          Phân tích lúc: {new Date(sentimentResult.timestamp).toLocaleString('vi-VN')}
+                          {t('analysis.analyzed_at')} {new Date(sentimentResult.timestamp).toLocaleString('vi-VN')}
                         </p>
                       </div>
                     )}

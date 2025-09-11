@@ -1,29 +1,42 @@
 import { Bot, Zap, TrendingUp, Gift } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function FeaturesSection() {
+  const { t } = useLanguage();
+  
+  // Reusable brand name component
+  const BrandName = () => (
+    <span>
+      <span className="text-gray-400">H</span>
+      <span className="text-blue-600">H</span>
+      <span className="text-black">D</span>
+      <span className="text-bitcoin">coin</span>
+    </span>
+  );
+  
   const features = [
     {
       icon: Bot,
-      title: "AI Dự báo Thông minh",
-      description: "Công nghệ AI độc quyền phân tích 50+ chỉ số thị trường để đưa ra dự báo chính xác đến 89%",
+      title: t("features.ai.title"),
+      description: t("features.ai.description"),
       color: "from-bitcoin to-bitcoin-light"
     },
     {
       icon: Zap,
-      title: "Cập nhật Siêu nhanh",
-      description: "Hệ thống real-time cập nhật giá Bitcoin và tin tức thị trường trong vòng 0.1 giây",
+      title: t("features.speed.title"),
+      description: t("features.speed.description"),
       color: "from-green-500 to-green-400"
     },
     {
       icon: TrendingUp,
-      title: "Phân tích Chuyên sâu",
-      description: "Đội ngũ chuyên gia 10+ năm kinh nghiệm cung cấp phân tích kỹ thuật và cơ bản chi tiết",
+      title: t("features.analysis.title"),
+      description: t("features.analysis.description"),
       color: "from-blue-500 to-blue-400"
     },
     {
       icon: Gift,
-      title: "Hoàn toàn Miễn phí",
-      description: "Tất cả tính năng cơ bản hoàn toàn miễn phí, không phí ẩn, cam kết minh bạch",
+      title: t("features.free.title"),
+      description: t("features.free.description"),
       color: "from-purple-500 to-purple-400"
     }
   ];
@@ -33,10 +46,10 @@ export default function FeaturesSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-features-title">
-            Tại sao chọn <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span>?
+            {t("features.title_prefix")} <BrandName />?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-features-description">
-            Những điểm khác biệt vượt trội giúp <span className="text-gray-400">H</span><span className="text-blue-600">H</span><span className="text-black">D</span><span className="text-bitcoin">coin</span> dẫn đầu thị trường đầu tư Bitcoin Việt Nam
+            {t("features.description_prefix")} <BrandName /> {t("features.description_suffix")}
           </p>
         </div>
         

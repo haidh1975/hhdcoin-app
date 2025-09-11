@@ -48,30 +48,30 @@ export default function InvestmentPackages() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-dark-slate mb-4" data-testid="text-packages-title">
-            Gói Đầu Tư Bitcoin
+            {t("packages.page.title")}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto" data-testid="text-packages-description">
-            Chọn gói đầu tư phù hợp với mục tiêu tài chính của bạn. Tất cả gói đều được hỗ trợ bởi AI và phân tích chuyên sâu.
+            {t("packages.page.description")}
           </p>
         </div>
 
         {/* Investment Calculator Section */}
         <div className="bg-white rounded-lg p-8 mb-12 shadow-sm">
           <h2 className="text-2xl font-bold text-dark-slate mb-6 text-center">
-            Máy Tính Lợi Nhuận Đầu Tư
+            {t("packages.calculator.title")}
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-bitcoin mb-2">15-25%</div>
-              <div className="text-gray-600">Lợi nhuận năm trung bình</div>
+              <div className="text-gray-600">{t("packages.calculator.annual_profit")}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-bitcoin mb-2">24/7</div>
-              <div className="text-gray-600">Giám sát AI</div>
+              <div className="text-gray-600">{t("packages.calculator.ai_monitoring")}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-bitcoin mb-2">98%</div>
-              <div className="text-gray-600">Độ chính xác dự đoán</div>
+              <div className="text-gray-600">{t("packages.calculator.prediction_accuracy")}</div>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function InvestmentPackages() {
         {/* Investment Packages Grid */}
         {isLoading ? (
           <div className="text-center py-12" data-testid="loading-packages">
-            <div className="text-gray-500">Đang tải gói đầu tư...</div>
+            <div className="text-gray-500">{t("packages.loading")}</div>
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 xl:grid-cols-2 gap-8 mb-12">
@@ -98,7 +98,7 @@ export default function InvestmentPackages() {
                 >
                   {pkg.recommended && (
                     <div className="absolute top-0 right-0 bg-bitcoin text-white px-3 py-1 text-sm font-medium rounded-bl-lg">
-                      Đề xuất
+                      {t("packages.recommended")}
                     </div>
                   )}
                   
@@ -121,30 +121,27 @@ export default function InvestmentPackages() {
                         <div className="text-2xl font-bold text-dark-slate" data-testid={`text-rate-${pkg.id}`}>
                           {pkg.minRate}% - {pkg.maxRate}%
                         </div>
-                        <div className="text-sm text-gray-500">Lợi nhuận/năm</div>
+                        <div className="text-sm text-gray-500">{t("packages.profit_per_year")}</div>
                       </div>
                     </div>
                   </CardHeader>
 
                   <CardContent>
                     <CardDescription className="text-gray-600 mb-4 leading-relaxed" data-testid={`text-description-${pkg.id}`}>
-                      {pkg.id === 'basic' ? 'Gói đầu tư phù hợp cho người mới bắt đầu với rủi ro thấp' :
-                       pkg.id === 'intermediate' ? 'Gói đầu tư trung bình với lợi nhuận ổn định' :
-                       pkg.id === 'premium' ? 'Gói đầu tư cao cấp với tiềm năng lợi nhuận cao' :
-                       'Gói đầu tư VIP dành cho nhà đầu tư chuyên nghiệp'}
+                      {t(`packages.descriptions.${pkg.id}`)}
                     </CardDescription>
 
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Số tiền tối thiểu:</span>
+                        <span className="text-gray-600">{t("packages.min_amount")}</span>
                         <span className="font-semibold" data-testid={`text-min-amount-${pkg.id}`}>
                           {pkg.minInvestment}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Mức độ rủi ro:</span>
+                        <span className="text-gray-600">{t("packages.risk_level")}</span>
                         <Badge variant={pkg.id === 'basic' ? 'secondary' : pkg.id === 'intermediate' ? 'default' : 'destructive'}>
-                          {pkg.id === 'basic' ? 'Thấp' : pkg.id === 'intermediate' ? 'Trung bình' : 'Cao'}
+                          {pkg.id === 'basic' ? t("packages.risk.low") : pkg.id === 'intermediate' ? t("packages.risk.medium") : t("packages.risk.high")}
                         </Badge>
                       </div>
                     </div>
@@ -167,7 +164,7 @@ export default function InvestmentPackages() {
                         setLocation(`/checkout?package=${pkg.id}`);
                       }}
                     >
-                      Chọn Gói Này
+                      {t("packages.select_package")}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </CardContent>
@@ -182,11 +179,9 @@ export default function InvestmentPackages() {
           <div className="flex items-start space-x-3">
             <Shield className="h-6 w-6 text-amber-600 mt-1" />
             <div>
-              <h3 className="font-semibold text-amber-800 mb-2">Lưu Ý Quan Trọng</h3>
+              <h3 className="font-semibold text-amber-800 mb-2">{t("packages.warning.title")}</h3>
               <p className="text-amber-700 text-sm leading-relaxed">
-                Đầu tư cryptocurrency có rủi ro cao. Giá trị đầu tư có thể tăng hoặc giảm. 
-                Bạn nên cân nhắc kỹ lưỡng và chỉ đầu tư số tiền mà bạn có thể chấp nhận mất. 
-                Tham khảo ý kiến chuyên gia tài chính trước khi đưa ra quyết định đầu tư.
+                {t("packages.warning.content")}
               </p>
             </div>
           </div>
@@ -195,13 +190,13 @@ export default function InvestmentPackages() {
         {/* Contact Section */}
         <div className="text-center">
           <h3 className="text-xl font-semibold text-dark-slate mb-4">
-            Cần Tư Vấn Thêm?
+            {t("packages.consultation.title")}
           </h3>
           <p className="text-gray-600 mb-6">
-            Đội ngũ chuyên gia của chúng tôi sẵn sàng hỗ trợ bạn chọn gói đầu tư phù hợp nhất.
+            {t("packages.consultation.description")}
           </p>
           <Button variant="outline" size="lg">
-            Liên Hệ Tư Vấn
+            {t("packages.consultation.button")}
           </Button>
         </div>
       </div>
