@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { secureStorage, STORAGE_KEYS } from '@/utils/secure-storage';
+import { apiUrl } from '@/utils/api-config';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -16,12 +17,15 @@ export async function apiRequest(
   // Get JWT token from secure storage
   const token = await secureStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   
+  // Build proper URL for environment (relative for web, absolute for mobile)
+  const fullUrl = apiUrl(url);
+  
   const headers: Record<string, string> = {
     ...(data ? { "Content-Type": "application/json" } : {}),
     ...(token ? { "Authorization": `Bearer ${token}` } : {})
   };
 
-  const res = await fetch(url, {
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -38,8 +42,18 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    // Build proper URL for environment (relative for web, absolute for mobile)
+    const path = queryKey.join("/") as string;
+    const fullUrl = apiUrl(path);
+    
+    // Get JWT token for mobile auth support
+    const token = await secureStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
+      headers: {
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      },
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
