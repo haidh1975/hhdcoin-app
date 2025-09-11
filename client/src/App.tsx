@@ -30,13 +30,6 @@ const PaymentSuccess = lazy(() => import("@/pages/payment-success"));
 const InvestmentPurchase = lazy(() => import("@/pages/investment-purchase"));
 
 // Redirect components for reorganized content
-function RedirectToAnalysis() {
-  const [, setLocation] = useLocation();
-  React.useEffect(() => {
-    setLocation("/analysis");
-  }, [setLocation]);
-  return <LoadingSpinner />;
-}
 
 function RedirectToAccountManagement() {
   const [, setLocation] = useLocation();
@@ -89,7 +82,6 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
       {/* Redirects for reorganized content */}
-      <Route path="/ai-insights" component={RedirectToAnalysis} />
       <Route path="/my-investments" component={RedirectToAccountManagement} />
       <Route path="/investment-guide" component={InvestmentGuide} />
       <Route path="/investment-utilities" component={RedirectToInvestmentGuide} />

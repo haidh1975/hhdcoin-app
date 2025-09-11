@@ -95,14 +95,6 @@ export default function Navigation() {
             </Link>
             
             <Link 
-              href="/investment-utilities"
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-investment-utilities"
-            >
-              {t('nav.investment_utilities')}
-            </Link>
-            
-            <Link 
               href="/investment-guide"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-investment-guide"
@@ -116,14 +108,6 @@ export default function Navigation() {
               data-testid="nav-link-contact"
             >
               {t('nav.contact')}
-            </Link>
-            
-            <Link 
-              href="/ai-insights"
-              className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
-              data-testid="nav-link-ai-insights"
-            >
-              AI Insights
             </Link>
             
             <Link 
@@ -236,14 +220,6 @@ export default function Navigation() {
                 {t('nav.community')}
               </Link>
               <Link
-                href="/investment-utilities"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
-                data-testid="nav-link-mobile-investment-utilities"
-              >
-                {t('nav.investment_utilities')}
-              </Link>
-              <Link
                 href="/investment-guide"
                 onClick={() => setIsMenuOpen(false)}
                 className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
@@ -258,15 +234,6 @@ export default function Navigation() {
                 data-testid="nav-link-mobile-contact"
               >
                 {t('nav.contact')}
-              </Link>
-              
-              <Link
-                href="/ai-insights"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-dark-slate hover:text-bitcoin transition-colors font-medium text-left"
-                data-testid="nav-link-mobile-ai-insights"
-              >
-                AI Insights
               </Link>
               
               <Link
