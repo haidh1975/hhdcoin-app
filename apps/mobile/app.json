@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "HHD-I",
+    "slug": "hhd-i",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "hhdi",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0B0E11"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hhdi.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0E11"
+      },
+      "package": "com.hhdi.app"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
