@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0B0E11;
+  --foreground: #EAECEF;
+  --card-bg: #131722;
+  --card-border: #2B3139;
+  --brand: #F0B90B;
+  --brand-dark: #d4a309;
+  --text-muted: #707A8A;
+  --text-secondary: #848E9C;
+  --success: #0ECB81;
+  --danger: #F6465D;
+  --sidebar-width: 240px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #131722;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2B3139;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #474D57;
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-success {
+    color: var(--success);
+  }
+
+  .text-danger {
+    color: var(--danger);
+  }
+
+  .bg-card {
+    background-color: var(--card-bg);
+  }
+
+  .border-card {
+    border-color: var(--card-border);
+  }
+}
+
+/* Chat bubble styles */
+.chat-bubble-user {
+  background: linear-gradient(135deg, #F0B90B, #d4a309);
+  color: #000;
+  border-radius: 18px 18px 4px 18px;
+}
+
+.chat-bubble-assistant {
+  background-color: #1E2329;
+  color: #EAECEF;
+  border-radius: 18px 18px 18px 4px;
+  border: 1px solid #2B3139;
+}
+
+/* Animated gradient border for active elements */
+.gradient-border {
+  position: relative;
+  background: linear-gradient(#131722, #131722) padding-box,
+    linear-gradient(135deg, #F0B90B, #d4a309) border-box;
+  border: 1px solid transparent;
+}
+
+/* Number ticker animation */
+@keyframes ticker {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
