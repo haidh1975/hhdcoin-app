@@ -10,6 +10,10 @@ import {
   MessageCircle,
   Settings,
   Zap,
+  GraduationCap,
+  Newspaper,
+  BookOpen,
+  Phone,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -18,6 +22,13 @@ const NAV_ITEMS = [
   { href: '/risk', icon: ShieldAlert, label: 'Quản lý rủi ro' },
   { href: '/sentiment', icon: BarChart2, label: 'Phân tích tâm lý' },
   { href: '/support', icon: MessageCircle, label: 'Hỗ trợ' },
+];
+
+const INFO_ITEMS = [
+  { href: '/dao-tao', icon: GraduationCap, label: 'Đào tạo' },
+  { href: '/tin-tuc', icon: Newspaper, label: 'Tin tức' },
+  { href: '/sach', icon: BookOpen, label: 'Sách' },
+  { href: '/lien-he', icon: Phone, label: 'Liên hệ' },
 ];
 
 export function Sidebar() {
@@ -40,9 +51,9 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="text-xs text-dark-500 font-medium uppercase tracking-wider px-3 mb-2">
-          Điều hướng
+          AI Platform
         </p>
         {NAV_ITEMS.map((item) => {
           const isActive =
@@ -58,7 +69,6 @@ export function Sidebar() {
                   : 'text-dark-400 hover:text-white hover:bg-dark-700'
               }`}
             >
-              {/* Active indicator */}
               {isActive && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-brand rounded-r-full" />
               )}
@@ -74,6 +84,34 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        <div className="pt-3 mt-3 border-t border-dark-700">
+          <p className="text-xs text-dark-500 font-medium uppercase tracking-wider px-3 mb-2">
+            Học tập & Thông tin
+          </p>
+          {INFO_ITEMS.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative group ${
+                  isActive
+                    ? 'text-brand bg-brand/10'
+                    : 'text-dark-400 hover:text-white hover:bg-dark-700'
+                }`}
+              >
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-brand rounded-r-full" />
+                )}
+                <item.icon
+                  className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-brand' : 'text-dark-500 group-hover:text-white'}`}
+                />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Bottom User Section */}
