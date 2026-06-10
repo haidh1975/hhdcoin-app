@@ -1,0 +1,123 @@
+// HHD-I Prisma schema
+// Để chuyển sang PostgreSQL: đổi provider thành "postgresql" và DATABASE_URL
+// thành chuỗi kết nối Postgres (vd: postgresql://user:pass@host:5432/hhdi).
+// Schema không dùng tính năng riêng của SQLite nên không cần sửa model.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum AssetType {
+  CRYPTO
+  STOCK
+}
+
+enum TransactionType {
+  BUY
+  SELL
+  DEPOSIT
+  WITHDRAW
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum DCAFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  name         String
+  role         Role          @default(USER)
+  status       UserStatus    @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  holdings     Holding[]
+  transactions Transaction[]
+  dcaSchedules DCASchedule[]
+  alerts       Alert[]
+}
+
+model Asset {
+  id           String        @id @default(cuid())
+  symbol       String        @unique
+  name         String
+  type         AssetType
+  enabled      Boolean       @default(true)
+  holdings     Holding[]
+  transactions Transaction[]
+  dcaSchedules DCASchedule[]
+}
+
+model Holding {
+  id          String @id @default(cuid())
+  userId      String
+  assetId     String
+  amount      Float
+  avgBuyPrice Float
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset       Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, assetId])
+}
+
+model Transaction {
+  id         String            @id @default(cuid())
+  userId     String
+  assetId    String?
+  type       TransactionType
+  amount     Float
+  price      Float
+  totalValue Float
+  status     TransactionStatus @default(COMPLETED)
+  createdAt  DateTime          @default(now())
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset      Asset?            @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+model DCASchedule {
+  id        String       @id @default(cuid())
+  userId    String
+  assetId   String
+  amountUsd Float
+  frequency DCAFrequency
+  nextRun   DateTime
+  active    Boolean      @default(true)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset     Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  severity  String   @default("info")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireUser } from '@/lib/auth';
 import { getAnthropicClient, hasAnthropicKey, MODEL_ID, SYSTEM_PROMPTS } from '@/lib/anthropic';
 import type { ChatMessage, Portfolio } from '@hhd-i/types';
 
@@ -10,6 +11,11 @@ interface AssistantRequest {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await requireUser();
+  if (!session) {
+    return NextResponse.json({ error: 'Chưa đăng nhập' }, { status: 401 });
+  }
+
   try {
     const body: AssistantRequest = await req.json();
     const { messages, portfolio } = body;

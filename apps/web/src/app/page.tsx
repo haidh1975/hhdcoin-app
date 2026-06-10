@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   TrendingUp,
@@ -11,11 +12,20 @@ import {
   Wallet,
   Activity,
   ArrowUpRight,
-  ArrowDownRight,
 } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { MarketTable } from '@/components/dashboard/MarketTable';
-import { mockPortfolio, mockMarketData, mockRiskScore, mockMarketOverview } from '@/lib/mockData';
+import { SourceBadge } from '@/components/dashboard/SourceBadge';
+import { useMarketPrices } from '@/hooks/useMarketPrices';
+import { mockRiskScore, mockMarketOverview, mockMarketData } from '@/lib/mockData';
+import type { PortfolioSummary } from '@hhd-i/types';
+
+const MARKET_SYMBOLS = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
+
+// Vốn hóa tham chiếu (Binance ticker không trả marketCap)
+const MARKET_CAPS: Record<string, number> = Object.fromEntries(
+  mockMarketData.map((c) => [c.symbol, c.marketCap])
+);
 
 const featureCards = [
   {
@@ -53,9 +63,35 @@ const featureCards = [
 ];
 
 export default function DashboardPage() {
-  const portfolio = mockPortfolio;
   const riskScore = mockRiskScore;
   const overview = mockMarketOverview;
+  const { prices, source, loading } = useMarketPrices(MARKET_SYMBOLS);
+  const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/portfolio')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data && !data.error) setPortfolio(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const marketRows = (prices.length > 0 ? prices : []).map((p) => ({
+    symbol: p.symbol,
+    name: p.name,
+    price: p.price,
+    change24h: p.change24h,
+    marketCap: MARKET_CAPS[p.symbol],
+    volume: p.volume24h,
+  }));
+
+  const btc = prices.find((p) => p.symbol === 'BTC');
+  const btcChange = btc?.change24h ?? 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -69,9 +105,12 @@ export default function DashboardPage() {
             Nền tảng đầu tư crypto thông minh — Phân tích AI, DCA tự động, quản lý rủi ro
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-dark-700 border border-dark-600 rounded-lg px-4 py-2">
-          <Activity className="w-4 h-4 text-green-400" />
-          <span className="text-sm text-green-400 font-medium">Thị trường đang mở</span>
+        <div className="flex items-center gap-3">
+          <SourceBadge source={source} />
+          <div className="flex items-center gap-2 bg-dark-700 border border-dark-600 rounded-lg px-4 py-2">
+            <Activity className="w-4 h-4 text-green-400" />
+            <span className="text-sm text-green-400 font-medium">Thị trường đang mở</span>
+          </div>
         </div>
       </div>
 
@@ -100,17 +139,25 @@ export default function DashboardPage() {
         <StatCard
           icon={Wallet}
           label="Tổng giá trị danh mục"
-          value={`$${portfolio.totalValue.toLocaleString('vi-VN', { minimumFractionDigits: 2 })}`}
-          change={portfolio.pnlPercent}
-          changeLabel={`+$${portfolio.pnl.toLocaleString('vi-VN', { minimumFractionDigits: 2 })}`}
+          value={
+            portfolio
+              ? `$${portfolio.totalValue.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : '...'
+          }
+          change={portfolio?.pnlPercent}
+          changeLabel={
+            portfolio
+              ? `${portfolio.pnl >= 0 ? '+' : '-'}$${Math.abs(portfolio.pnl).toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : 'Đang tải...'
+          }
         />
         <StatCard
-          icon={portfolio.coins[0].change24h >= 0 ? TrendingUp : TrendingDown}
-          label="Thay đổi 24h"
-          value={`${portfolio.coins[0].change24h >= 0 ? '+' : ''}${portfolio.coins[0].change24h.toFixed(2)}%`}
-          change={portfolio.coins[0].change24h}
+          icon={btcChange >= 0 ? TrendingUp : TrendingDown}
+          label="BTC thay đổi 24h"
+          value={loading && !btc ? '...' : `${btcChange >= 0 ? '+' : ''}${btcChange.toFixed(2)}%`}
+          change={btcChange}
           changeLabel="So với hôm qua"
-          valueColor={portfolio.coins[0].change24h >= 0 ? 'text-green-400' : 'text-red-400'}
+          valueColor={btcChange >= 0 ? 'text-green-400' : 'text-red-400'}
         />
         <StatCard
           icon={ShieldAlert}
@@ -139,7 +186,10 @@ export default function DashboardPage() {
       {/* Market Table */}
       <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-dark-600">
-          <h2 className="text-base font-semibold text-white">Thị trường hàng đầu</h2>
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-base font-semibold text-white">Thị trường hàng đầu</h2>
+            <SourceBadge source={source} />
+          </div>
           <Link
             href="/sentiment"
             className="text-xs text-brand hover:text-brand-dark transition-colors flex items-center gap-1"
@@ -147,7 +197,13 @@ export default function DashboardPage() {
             Xem phân tích tâm lý <ArrowUpRight className="w-3 h-3" />
           </Link>
         </div>
-        <MarketTable coins={mockMarketData} />
+        {loading && marketRows.length === 0 ? (
+          <div className="px-5 py-10 text-center text-sm text-dark-400">
+            Đang tải dữ liệu thị trường...
+          </div>
+        ) : (
+          <MarketTable coins={marketRows} />
+        )}
       </div>
 
       {/* Feature Cards */}

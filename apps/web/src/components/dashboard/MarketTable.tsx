@@ -1,18 +1,28 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import type { Coin } from '@hhd-i/types';
 
-interface MarketTableProps {
-  coins: Coin[];
+export interface MarketRow {
+  symbol: string;
+  name: string;
+  price: number;
+  change24h: number;
+  marketCap?: number;
+  volume?: number;
 }
 
-function formatMarketCap(value: number): string {
+interface MarketTableProps {
+  coins: MarketRow[];
+}
+
+function formatMarketCap(value?: number): string {
+  if (!value) return '—';
   if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
   if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
   if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
   return `$${value.toLocaleString()}`;
 }
 
-function formatVolume(value: number): string {
+function formatVolume(value?: number): string {
+  if (!value) return '—';
   if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
   if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
   return `$${value.toLocaleString()}`;
@@ -55,7 +65,7 @@ export function MarketTable({ coins }: MarketTableProps) {
             const isPositive = coin.change24h >= 0;
             return (
               <tr
-                key={coin.id}
+                key={coin.symbol}
                 className="border-b border-dark-600 last:border-0 hover:bg-dark-700/50 transition-colors cursor-pointer"
               >
                 <td className="px-5 py-3.5">

@@ -7,24 +7,36 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:generate": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "@hhd-i/types": "*",
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "lucide-react": "^0.378.0",
     "next": "14.2.3",
+    "next-auth": "^4.24.14",
+    "prisma": "^6.19.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@anthropic-ai/sdk": "^0.24.3",
-    "lucide-react": "^0.378.0",
-    "recharts": "^2.12.7",
-    "@hhd-i/types": "*"
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
+    "tsx": "^4.22.4",
     "typescript": "^5.4.5"
   }
 }
