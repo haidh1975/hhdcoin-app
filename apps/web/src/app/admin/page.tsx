@@ -1,4 +1,4 @@
-import { Users, UserCheck, ArrowLeftRight, DollarSign, Bot } from 'lucide-react';
+import { Users, UserCheck, ArrowLeftRight, DollarSign, Bot, Landmark, Rocket } from 'lucide-react';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -15,8 +15,16 @@ function formatUsd(value: number): string {
 }
 
 export default async function AdminDashboardPage() {
-  const [totalUsers, activeUsers, totalTransactions, volumeAgg, recentTx, recentUsers] =
-    await Promise.all([
+  const [
+    totalUsers,
+    activeUsers,
+    totalTransactions,
+    volumeAgg,
+    recentTx,
+    recentUsers,
+    activeProposals,
+    raisedAgg,
+  ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { status: 'ACTIVE' } }),
       prisma.transaction.count(),
@@ -37,6 +45,8 @@ export default async function AdminDashboardPage() {
         take: 5,
         select: { id: true, name: true, email: true, createdAt: true, role: true },
       }),
+      prisma.proposal.count({ where: { status: 'ACTIVE' } }),
+      prisma.saleRound.aggregate({ _sum: { raisedUsd: true } }),
     ]);
 
   const stats = [
@@ -44,6 +54,8 @@ export default async function AdminDashboardPage() {
     { icon: UserCheck, label: 'Đang hoạt động', value: activeUsers.toLocaleString('vi-VN'), color: 'text-green-400' },
     { icon: ArrowLeftRight, label: 'Tổng giao dịch', value: totalTransactions.toLocaleString('vi-VN'), color: 'text-blue-400' },
     { icon: DollarSign, label: 'Tổng khối lượng', value: formatUsd(volumeAgg._sum.totalValue ?? 0), color: 'text-white' },
+    { icon: Landmark, label: 'Đề xuất đang mở', value: activeProposals.toLocaleString('vi-VN'), color: 'text-brand' },
+    { icon: Rocket, label: 'Tổng vốn đã gọi', value: formatUsd(raisedAgg._sum.raisedUsd ?? 0), color: 'text-green-400' },
     { icon: Bot, label: 'Yêu cầu AI', value: '—', color: 'text-dark-400', note: 'Sắp có tracking' },
   ];
 

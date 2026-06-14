@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ArrowLeftRight, Coins } from 'lucide-react';
+import { LayoutDashboard, Users, ArrowLeftRight, Coins, Landmark, Rocket } from 'lucide-react';
 
 const ADMIN_NAV = [
   { href: '/admin', icon: LayoutDashboard, label: 'Tổng quan' },
   { href: '/admin/users', icon: Users, label: 'Người dùng' },
   { href: '/admin/transactions', icon: ArrowLeftRight, label: 'Giao dịch' },
   { href: '/admin/assets', icon: Coins, label: 'Tài sản' },
+  { href: '/admin/governance', icon: Landmark, label: 'Quản trị DAO' },
+  { href: '/admin/token-sale', icon: Rocket, label: 'Vòng bán' },
 ];
 
 export function AdminNav() {
