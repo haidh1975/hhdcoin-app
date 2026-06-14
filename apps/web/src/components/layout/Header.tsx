@@ -1,6 +1,7 @@
 'use client';
 
 import { Bell, Search, Wallet } from 'lucide-react';
+import { WalletButton } from '@/components/web3/WalletButton';
 
 interface HeaderProps {
   title?: string;
@@ -32,10 +33,13 @@ export function Header({ title }: HeaderProps) {
           </button>
 
           {/* Wallet Balance */}
-          <div className="flex items-center gap-2 bg-dark-700 border border-dark-600 rounded-lg px-3 py-1.5">
+          <div className="hidden lg:flex items-center gap-2 bg-dark-700 border border-dark-600 rounded-lg px-3 py-1.5">
             <Wallet className="w-3.5 h-3.5 text-brand" />
             <span className="text-sm font-semibold text-white">$198,542</span>
           </div>
+
+          {/* Web3 wallet connection */}
+          <WalletButton />
         </div>
       </div>
     </header>

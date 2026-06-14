@@ -19,6 +19,8 @@
     "@anthropic-ai/sdk": "^0.24.3",
     "@hhd-i/types": "*",
     "@prisma/client": "^6.19.3",
+    "@tanstack/react-query": "^5.101.0",
+    "@walletconnect/ethereum-provider": "^2.23.9",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^0.378.0",
     "next": "14.2.3",
@@ -26,7 +28,9 @@
     "prisma": "^6.19.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "^2.12.7"
+    "recharts": "^2.12.7",
+    "viem": "^2.52.2",
+    "wagmi": "^3.6.16"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

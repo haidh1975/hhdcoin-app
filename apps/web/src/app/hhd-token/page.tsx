@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Zap, Flame, Coins, ShieldCheck, ArrowRight, CreditCard, Vote, FlaskConical, Award, Droplets, Users, Bot, Rocket, Gift } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { HHD, TOKEN_ALLOCATION, TOKEN_UTILITY, SMART_CONTRACTS } from '@/lib/hhd';
+import { OnChainSection } from '@/components/web3/OnChainSection';
 
 const UTILITY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CreditCard, Coins, Vote, FlaskConical, Award, Droplets, Users, Bot, Rocket, Gift,
@@ -167,6 +168,9 @@ export default function HhdTokenPage() {
           })}
         </div>
       </div>
+
+      {/* On-chain connection */}
+      <OnChainSection />
 
       {/* Smart contracts */}
       <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
