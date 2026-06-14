@@ -46,6 +46,32 @@ enum DCAFrequency {
   MONTHLY
 }
 
+enum StakeTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+enum StakeStatus {
+  ACTIVE
+  UNSTAKED
+}
+
+enum ProposalStatus {
+  ACTIVE
+  PASSED
+  REJECTED
+  EXECUTED
+}
+
+enum SaleRoundStatus {
+  UPCOMING
+  ACTIVE
+  CLOSED
+}
+
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
@@ -54,10 +80,14 @@ model User {
   role         Role          @default(USER)
   status       UserStatus    @default(ACTIVE)
   createdAt    DateTime      @default(now())
-  holdings     Holding[]
-  transactions Transaction[]
-  dcaSchedules DCASchedule[]
-  alerts       Alert[]
+  holdings      Holding[]
+  transactions  Transaction[]
+  dcaSchedules  DCASchedule[]
+  alerts        Alert[]
+  stakes        Stake[]
+  votes         Vote[]
+  proposals     Proposal[]
+  salePurchases SalePurchase[]
 }
 
 model Asset {
@@ -120,4 +150,75 @@ model Alert {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Stake {
+  id            String      @id @default(cuid())
+  userId        String
+  tier          StakeTier
+  amount        Float
+  apy           Float
+  lockDays      Int
+  startAt       DateTime    @default(now())
+  unlockAt      DateTime
+  autoCompound  Boolean     @default(false)
+  status        StakeStatus @default(ACTIVE)
+  rewardClaimed Float       @default(0)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Proposal {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  status      ProposalStatus @default(ACTIVE)
+  votesFor    Float          @default(0)
+  votesAgainst Float         @default(0)
+  createdAt   DateTime       @default(now())
+  endsAt      DateTime
+  creatorId   String
+  creator     User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  votes       Vote[]
+}
+
+model Vote {
+  id         String   @id @default(cuid())
+  proposalId String
+  userId     String
+  support    Boolean
+  weight     Float
+  createdAt  DateTime @default(now())
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, userId])
+}
+
+model SaleRound {
+  id           String          @id @default(cuid())
+  name         String
+  priceUsd     Float
+  allocation   Float
+  hardCapUsd   Float
+  raisedUsd    Float           @default(0)
+  tgeUnlockPct Float
+  vestingNote  String
+  status       SaleRoundStatus
+  order        Int
+  purchases    SalePurchase[]
+}
+
+model SalePurchase {
+  id        String    @id @default(cuid())
+  userId    String
+  roundId   String
+  amountUsd Float
+  tokens    Float
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  round     SaleRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

@@ -16,6 +16,12 @@ import {
   Phone,
   Wallet,
   ShieldCheck,
+  Coins,
+  Lock,
+  Landmark,
+  Rocket,
+  Map as MapIcon,
+  FileText,
   LogOut,
 } from 'lucide-react';
 
@@ -26,6 +32,15 @@ const NAV_ITEMS = [
   { href: '/risk', icon: ShieldAlert, label: 'Quản lý rủi ro' },
   { href: '/sentiment', icon: BarChart2, label: 'Phân tích tâm lý' },
   { href: '/support', icon: MessageCircle, label: 'Hỗ trợ' },
+];
+
+const HHD_ITEMS = [
+  { href: '/hhd-token', icon: Coins, label: 'HHD Coin' },
+  { href: '/staking', icon: Lock, label: 'Staking' },
+  { href: '/governance', icon: Landmark, label: 'Quản trị DAO' },
+  { href: '/token-sale', icon: Rocket, label: 'Token Sale' },
+  { href: '/roadmap', icon: MapIcon, label: 'Lộ trình' },
+  { href: '/whitepaper', icon: FileText, label: 'Whitepaper' },
 ];
 
 const INFO_ITEMS = [
@@ -117,6 +132,21 @@ export function Sidebar() {
             />
           );
         })}
+
+        <div className="pt-3 mt-3 border-t border-dark-700">
+          <p className="text-xs text-dark-500 font-medium uppercase tracking-wider px-3 mb-2">
+            HHD Coin
+          </p>
+          {HHD_ITEMS.map((item) => (
+            <NavLink
+              key={item.href}
+              href={item.href}
+              icon={item.icon}
+              label={item.label}
+              isActive={pathname.startsWith(item.href)}
+            />
+          ))}
+        </div>
 
         <div className="pt-3 mt-3 border-t border-dark-700">
           <p className="text-xs text-dark-500 font-medium uppercase tracking-wider px-3 mb-2">

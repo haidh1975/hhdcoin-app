@@ -203,3 +203,82 @@ export interface AlertItem {
   read: boolean;
   createdAt: string;
 }
+
+// ---------------------------------------------------------------------------
+// HHD Coin — DeFi / Web3 (staking, governance, token sale, tokenomics)
+// ---------------------------------------------------------------------------
+
+export type StakeTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+export type StakeStatus = 'ACTIVE' | 'UNSTAKED';
+export type ProposalStatus = 'ACTIVE' | 'PASSED' | 'REJECTED' | 'EXECUTED';
+export type SaleRoundStatus = 'UPCOMING' | 'ACTIVE' | 'CLOSED';
+
+export interface StakeInfo {
+  id: string;
+  userId: string;
+  tier: StakeTier;
+  amount: number;
+  apy: number;
+  lockDays: number;
+  startAt: string; // ISO
+  unlockAt: string; // ISO
+  autoCompound: boolean;
+  status: StakeStatus;
+  rewardClaimed: number;
+}
+
+export interface StakeTierConfig {
+  tier: StakeTier;
+  label: string;
+  lockDays: number;
+  apy: number; // %
+  minStake: number; // HHD
+  benefits: string;
+}
+
+export interface ProposalInfo {
+  id: string;
+  title: string;
+  description: string;
+  status: ProposalStatus;
+  votesFor: number;
+  votesAgainst: number;
+  createdAt: string; // ISO
+  endsAt: string; // ISO
+  creatorId: string;
+  userVoted: boolean;
+  userSupport?: boolean | null;
+}
+
+export interface SaleRoundInfo {
+  id: string;
+  name: string;
+  priceUsd: number;
+  allocation: number; // HHD
+  hardCapUsd: number;
+  raisedUsd: number;
+  tgeUnlockPct: number;
+  vestingNote: string;
+  status: SaleRoundStatus;
+  order: number;
+}
+
+export interface SalePurchaseInfo {
+  id: string;
+  userId: string;
+  roundId: string;
+  roundName?: string;
+  amountUsd: number;
+  tokens: number;
+  createdAt: string; // ISO
+}
+
+export interface TokenAllocation {
+  category: string;
+  pct: number; // %
+  amount: number; // HHD
+  tgeUnlock: string;
+  vesting: string;
+  purpose: string;
+  color: string;
+}
