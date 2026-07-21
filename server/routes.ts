@@ -1031,7 +1031,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Handle the event with idempotency
       switch (event.type) {
-        case 'payment_intent.succeeded':
+        case 'payment_intent.succeeded': {
           const paymentIntent = event.data.object;
           log(`[WEBHOOK][${INSTANCE_ID}] Payment succeeded: ${paymentIntent.id}`);
           
@@ -1111,8 +1111,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             log(`[WEBHOOK][${INSTANCE_ID}] Package not found: ${transaction.packageId}`);
           }
           break;
-        
-        case 'payment_intent.payment_failed':
+        }
+
+        case 'payment_intent.payment_failed': {
           const failedPayment = event.data.object;
           log(`[WEBHOOK][${INSTANCE_ID}] Payment failed: ${failedPayment.id}`);
           
@@ -1130,6 +1131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           break;
+        }
 
         default:
           log(`[WEBHOOK][${INSTANCE_ID}] Unhandled event type: ${event.type}`);

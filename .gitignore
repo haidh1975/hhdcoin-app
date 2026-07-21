@@ -18,3 +18,5 @@ ios/App/build
 # Editor
 .vscode/settings.json
 *.log
+# Replit agent state (rac, khong thuoc source)
+.local/
