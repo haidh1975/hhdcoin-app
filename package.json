@@ -2,6 +2,7 @@
   "name": "hhd-i",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.9.7",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo run dev",
@@ -10,15 +11,12 @@
     "type-check": "turbo run type-check"
   },
   "devDependencies": {
+    "prettier": "^3.3.3",
     "turbo": "^2.0.0",
     "typescript": "^5.4.5"
   },
-  "resolutions": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
   "overrides": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }

@@ -96,20 +96,14 @@ export default function AssistantTab() {
         body: JSON.stringify({ messages: allMessages }),
       });
 
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error('No body');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const decoder = new TextDecoder();
-      let accumulated = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        accumulated += decoder.decode(value, { stream: true });
-        setMessages((prev) =>
-          prev.map((m) => (m.id === assistantId ? { ...m, content: accumulated } : m))
-        );
-      }
+      // React Native fetch không hỗ trợ res.body.getReader() — chờ toàn bộ
+      // response (server vẫn stream, RN buffer lại) rồi hiển thị một lần.
+      const text = await res.text();
+      setMessages((prev) =>
+        prev.map((m) => (m.id === assistantId ? { ...m, content: text } : m))
+      );
     } catch {
       setMessages((prev) =>
         prev.map((m) =>

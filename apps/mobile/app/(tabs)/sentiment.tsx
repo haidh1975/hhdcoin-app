@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react-native';
-import { mockSentimentData, mockMarketOverview } from '../../../src/lib/mockData';
+import { mockSentimentData, mockMarketOverview } from '../../src/lib/mockData';
 import type { SignalType } from '@hhd-i/types';
 
 const COLORS = {

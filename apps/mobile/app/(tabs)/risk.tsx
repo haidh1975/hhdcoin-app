@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ShieldAlert, AlertTriangle, BarChart2, TrendingDown, Droplets } from 'lucide-react-native';
-import { mockRiskScore, mockPortfolio } from '../../../src/lib/mockData';
+import { mockRiskScore, mockPortfolio } from '../../src/lib/mockData';
 
 const COLORS = {
   bg: '#0B0E11',

@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { TrendingUp, TrendingDown, Bot, ShieldAlert, BarChart2, MessageCircle } from 'lucide-react-native';
-import { mockPortfolio, mockMarketData, mockRiskScore } from '../../../src/lib/mockData';
+import { mockPortfolio, mockMarketData, mockRiskScore } from '../../src/lib/mockData';
 
 const COLORS = {
   bg: '#0B0E11',

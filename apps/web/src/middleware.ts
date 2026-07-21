@@ -9,6 +9,8 @@ export async function middleware(req: NextRequest) {
 
   const token = await getToken({
     req,
+    // Middleware chạy trên edge runtime nên đọc process.env trực tiếp;
+    // việc kiểm tra NEXTAUTH_SECRET (assertServerEnv) đã được làm trong src/lib/auth.ts.
     secret: process.env.NEXTAUTH_SECRET,
   });
 

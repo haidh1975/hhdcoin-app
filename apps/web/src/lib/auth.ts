@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { assertServerEnv } from '@/config/env';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
@@ -17,6 +18,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Mật khẩu', type: 'password' },
       },
       async authorize(credentials) {
+        assertServerEnv();
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Vui lòng nhập email và mật khẩu');
         }
@@ -49,6 +51,9 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // Kiểm tra env lười (không ở top-level) để `next build` không cần .env;
+      // production boot với secret thiếu/yếu sẽ fail ngay ở lần dùng auth đầu tiên.
+      assertServerEnv();
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: 'USER' | 'ADMIN' }).role ?? 'USER';
