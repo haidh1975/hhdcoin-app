@@ -1,15 +1,20 @@
 import { useState } from "react";
-import { Menu, X, ChevronDown, Package, UserCheck, Users, BarChart3, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, Package, UserCheck, Users, BarChart3, Settings, Coins, MapPin, Zap, Globe, FileText, GraduationCap } from "lucide-react";
+
+// HHD-I (HHDAI) macro-intelligence platform — deployed on its own subdomain
+const HHD_I_URL = "https://hhdai.hhdcoin.net";
 import { SiBitcoin } from "react-icons/si";
 import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
-import logoPath from "@assets/ChatGPT Image 11_42_25 23 thg 8, 2025_1757214723752.png";
+import logoPath from "@assets/hhd-coin-logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BitcoinPriceTicker } from "@/components/BitcoinPriceTicker";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,7 +30,7 @@ export default function Navigation() {
   };
 
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50" data-testid="header-navigation">
+    <header className="bg-white dark:bg-gray-900 shadow-lg dark:shadow-gray-800/50 sticky top-0 z-50 transition-colors duration-200" data-testid="header-navigation">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3" data-testid="logo-section">
@@ -94,23 +99,69 @@ export default function Navigation() {
               {t('nav.investment_management')}
             </Link>
             
-            <Link 
+            <Link
               href="/investment-guide"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-investment-guide"
             >
               {t('nav.investment_guide')}
             </Link>
-            
-            <Link 
+
+            {/* Dự án HHD dropdown — dùng group hover CSS tránh Radix cache issue */}
+            <div className="relative group">
+              <button className="flex items-center gap-1 text-dark-slate dark:text-gray-200 hover:text-bitcoin transition-colors font-medium outline-none">
+                <span className="text-bitcoin font-bold">HHD</span>&nbsp;Token
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-xl p-1 min-w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <Link href="/tokenomics" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-bitcoin">
+                  <Coins className="h-4 w-4 text-bitcoin flex-shrink-0" />
+                  <span className="text-sm font-medium">Tokenomics</span>
+                </Link>
+                <a href="/whitepaper.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-bitcoin">
+                  <FileText className="h-4 w-4 text-rose-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">Whitepaper</span>
+                </a>
+                <Link href="/roadmap" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-bitcoin">
+                  <MapPin className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">Lộ trình (Roadmap)</span>
+                </Link>
+                <Link href="/team" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-bitcoin">
+                  <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">Đội ngũ (Team)</span>
+                </Link>
+                <Link href="/research" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-bitcoin">
+                  <GraduationCap className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">Nghiên cứu (Research)</span>
+                </Link>
+                <Link href="/staking" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-bitcoin">
+                  <Zap className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">Staking</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* HHD-I — nền tảng phân tích vĩ mô (app riêng, subdomain) */}
+            <a
+              href={HHD_I_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+              data-testid="nav-link-hhd-i"
+            >
+              <Globe className="h-4 w-4" />
+              HHD-I
+            </a>
+
+            <Link
               href="/contact"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-contact"
             >
               {t('nav.contact')}
             </Link>
-            
-            <Link 
+
+            <Link
               href="/my-investments"
               className="text-dark-slate hover:text-bitcoin transition-colors font-medium"
               data-testid="nav-link-my-investments"
@@ -120,6 +171,12 @@ export default function Navigation() {
           </div>
           
           <div className="flex items-center space-x-4">
+            {/* Bitcoin price real-time ticker */}
+            <BitcoinPriceTicker className="hidden md:flex bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5" />
+
+            {/* Dark / Light mode toggle */}
+            <ThemeToggle className="hidden md:flex" />
+
             <div className="hidden md:flex items-center space-x-2" data-testid="language-switcher">
               <span 
                 className={`text-sm cursor-pointer transition-colors ${
@@ -149,8 +206,9 @@ export default function Navigation() {
                 EN
               </span>
             </div>
-            <button 
-              className="md:hidden text-dark-slate"
+            <ThemeToggle className="md:hidden" />
+            <button
+              className="md:hidden text-dark-slate dark:text-gray-200"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               data-testid="button-mobile-menu"
             >
@@ -227,6 +285,37 @@ export default function Navigation() {
               >
                 {t('nav.investment_guide')}
               </Link>
+              <div className="pt-2 pb-1 border-t border-gray-100">
+                <div className="text-xs font-semibold text-bitcoin mb-2">HHD TOKEN</div>
+              </div>
+              <Link href="/tokenomics" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                <Coins className="h-4 w-4 text-bitcoin" /> Tokenomics
+              </Link>
+              <a href="/whitepaper.pdf" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                <FileText className="h-4 w-4 text-rose-500" /> Whitepaper
+              </a>
+              <Link href="/roadmap" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                <MapPin className="h-4 w-4 text-blue-500" /> Lộ trình
+              </Link>
+              <Link href="/team" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                <Users className="h-4 w-4 text-purple-500" /> Đội ngũ
+              </Link>
+              <Link href="/research" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                <GraduationCap className="h-4 w-4 text-indigo-500" /> Nghiên cứu
+              </Link>
+              <Link href="/staking" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 text-dark-slate hover:text-bitcoin transition-colors font-medium">
+                <Zap className="h-4 w-4 text-green-500" /> Staking
+              </Link>
+              <a
+                href={HHD_I_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold w-fit"
+                data-testid="nav-link-mobile-hhd-i"
+              >
+                <Globe className="h-4 w-4" /> HHD-I — Phân tích vĩ mô
+              </a>
               <Link
                 href="/contact"
                 onClick={() => setIsMenuOpen(false)}

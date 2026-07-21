@@ -4,3 +4,17 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Secrets — không commit lên git
+.env
+.env.local
+.env.production
+
+# Mobile build output
+android/app/build
+ios/App/Pods
+ios/App/build
+
+# Editor
+.vscode/settings.json
+*.log

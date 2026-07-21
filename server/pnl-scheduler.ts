@@ -5,7 +5,9 @@ import type { UserInvestment, InvestmentHistory, InvestmentSummary } from '@shar
 export class PnLSchedulerService {
   private intervalId: NodeJS.Timeout | null = null;
   private isRunning = false;
+  private lastHistoryWrite = 0;
   private readonly CALCULATION_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  private readonly HISTORY_WRITE_INTERVAL_MS = 60 * 60 * 1000; // ghi history 1 lần/giờ — chống phình DB
   private readonly BATCH_SIZE = 50; // Process investments in batches to avoid overwhelming DB
 
   constructor() {
@@ -84,6 +86,12 @@ export class PnLSchedulerService {
         return;
       }
 
+      // Ghi history tối đa 1 lần/giờ — PnL vẫn cập nhật mỗi 5 phút
+      const shouldWriteHistory = Date.now() - this.lastHistoryWrite >= this.HISTORY_WRITE_INTERVAL_MS;
+      if (shouldWriteHistory) {
+        this.lastHistoryWrite = Date.now();
+      }
+
       // Process investments in batches to avoid overwhelming the database
       const batches = this.createBatches(activeInvestments, this.BATCH_SIZE);
       let processedCount = 0;
@@ -91,7 +99,7 @@ export class PnLSchedulerService {
 
       for (const batch of batches) {
         const batchResults = await Promise.allSettled(
-          batch.map(investment => this.calculateSingleInvestmentPnL(investment, currentBitcoinPrice))
+          batch.map(investment => this.calculateSingleInvestmentPnL(investment, currentBitcoinPrice, shouldWriteHistory))
         );
 
         // Count successful updates
@@ -122,7 +130,8 @@ export class PnLSchedulerService {
    */
   private async calculateSingleInvestmentPnL(
     investment: UserInvestment,
-    currentBitcoinPrice: number
+    currentBitcoinPrice: number,
+    writeHistory: boolean = true
   ): Promise<boolean> {
     try {
       const investmentAmount = parseFloat(investment.investmentAmount.toString());
@@ -157,21 +166,23 @@ export class PnLSchedulerService {
         return false;
       }
 
-      // Record in investment history for tracking
-      await storage.createInvestmentHistory({
-        userInvestmentId: investment.id,
-        bitcoinPrice: currentBitcoinPrice.toFixed(2),
-        currentValue: currentValue.toFixed(2),
-        profitLoss: profitLoss.toFixed(2),
-        profitLossPercentage: profitLossPercentage.toFixed(2),
-        metadata: JSON.stringify({
-          calculationTime: new Date().toISOString(),
-          originalInvestment: investmentAmount,
-          entryPrice: entryPrice,
-          priceRatio: priceRatio,
-          priceSource: 'bitcoinPriceService'
-        })
-      });
+      // Ghi history theo throttle (mặc định 1 lần/giờ) — chống phình DB
+      if (writeHistory) {
+        await storage.createInvestmentHistory({
+          userInvestmentId: investment.id,
+          bitcoinPrice: currentBitcoinPrice.toFixed(2),
+          currentValue: currentValue.toFixed(2),
+          profitLoss: profitLoss.toFixed(2),
+          profitLossPercentage: profitLossPercentage.toFixed(2),
+          metadata: JSON.stringify({
+            calculationTime: new Date().toISOString(),
+            originalInvestment: investmentAmount,
+            entryPrice: entryPrice,
+            priceRatio: priceRatio,
+            priceSource: 'bitcoinPriceService'
+          })
+        });
+      }
 
       return true;
 

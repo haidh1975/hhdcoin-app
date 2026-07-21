@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "wouter";
-import { Bitcoin, Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react";
+import { Bitcoin, Eye, EyeOff, UserPlus, AlertCircle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -59,7 +59,7 @@ export default function Register() {
     const success = await register({
       ...registerData,
       email: data.email || undefined,
-      role: "member", // Default role for registration
+      role: "investor", // Default role for registration
     });
     
     if (success) {
@@ -72,7 +72,11 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bitcoin/5 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-bitcoin/5 via-white to-emerald-50 flex items-center justify-center p-4 relative">
+      <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-bitcoin font-medium transition-colors" data-testid="link-back-home">
+        <ArrowLeft className="h-4 w-4" />
+        {t('register.back_home')}
+      </Link>
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-bitcoin rounded-xl flex items-center justify-center">

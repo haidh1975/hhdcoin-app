@@ -6,7 +6,7 @@ interface User {
   username: string;
   fullName: string;
   email?: string;
-  role: 'admin' | 'member';
+  role: 'admin' | 'manager' | 'investor';
   status: 'active' | 'inactive';
   lastLogin?: Date;
   createdAt: Date;
@@ -28,7 +28,7 @@ interface RegisterData {
   password: string;
   fullName: string;
   email?: string;
-  role?: 'admin' | 'member';
+  role?: 'admin' | 'manager' | 'investor';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

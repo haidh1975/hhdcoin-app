@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -81,7 +81,10 @@ export const paymentTransactions = pgTable("payment_transactions", {
   createdAt: timestamp("created_at").defaultNow(),
   completedAt: timestamp("completed_at"),
   metadata: text("metadata"), // JSON string for additional data
-});
+}, (table) => [
+  index("idx_payment_tx_user").on(table.userId),
+  index("idx_payment_tx_status").on(table.status),
+]);
 
 export const insertRealtUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -133,12 +136,17 @@ export const userInvestments = pgTable("user_investments", {
   profitLoss: decimal("profit_loss", { precision: 15, scale: 2 }),
   profitLossPercentage: decimal("profit_loss_percentage", { precision: 5, scale: 2 }),
   bitcoinCode: text("bitcoin_code").notNull(),
+  assetSymbol: varchar("asset_symbol", { length: 20 }).notNull().default("BTC"), // BTC, ETH, VN30, ...
   status: varchar("status", { length: 20 }).notNull().default("active"), // active, completed, cancelled
   startDate: timestamp("start_date").defaultNow(),
   endDate: timestamp("end_date"),
   lastUpdated: timestamp("last_updated").defaultNow(),
   metadata: text("metadata"), // JSON string for additional data
-});
+}, (table) => [
+  index("idx_user_inv_user").on(table.userId),
+  index("idx_user_inv_status").on(table.status),
+  index("idx_user_inv_asset").on(table.assetSymbol),
+]);
 
 export const insertUserInvestmentSchema = createInsertSchema(userInvestments).omit({
   id: true,
@@ -194,7 +202,10 @@ export const investmentHistory = pgTable("investment_history", {
   profitLossPercentage: decimal("profit_loss_percentage", { precision: 5, scale: 2 }).notNull(),
   recordedAt: timestamp("recorded_at").defaultNow(),
   metadata: text("metadata"), // JSON for additional tracking data
-});
+}, (table) => [
+  index("idx_inv_history_investment").on(table.userInvestmentId),
+  index("idx_inv_history_recorded").on(table.recordedAt),
+]);
 
 export const insertInvestmentHistorySchema = createInsertSchema(investmentHistory).omit({
   id: true,
@@ -250,3 +261,57 @@ export const insertManagerInvestorAssignmentSchema = createInsertSchema(managerI
 
 export type ManagerInvestorAssignment = typeof managerInvestorAssignments.$inferSelect;
 export type InsertManagerInvestorAssignment = z.infer<typeof insertManagerInvestorAssignmentSchema>;
+
+// ─── Assets Registry — đa tài sản: crypto, cổ phiếu, chỉ số ──────────────────
+export const assets = pgTable("assets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  symbol: varchar("symbol", { length: 20 }).notNull().unique(), // BTC, ETH, VNM, VN30...
+  name: text("name").notNull(),
+  type: varchar("type", { length: 20 }).notNull().default("crypto"), // crypto, stock, index, commodity
+  coingeckoId: varchar("coingecko_id", { length: 100 }), // for crypto price feed
+  currentPrice: decimal("current_price", { precision: 18, scale: 4 }),
+  change24h: decimal("change_24h", { precision: 8, scale: 2 }),
+  priceSource: varchar("price_source", { length: 30 }), // coingecko, binance, vnstock, manual
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  lastPriceUpdate: timestamp("last_price_update"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_assets_type").on(table.type),
+  index("idx_assets_active").on(table.isActive),
+]);
+
+export const insertAssetSchema = createInsertSchema(assets).omit({
+  id: true,
+  createdAt: true,
+  lastPriceUpdate: true,
+});
+
+export type Asset = typeof assets.$inferSelect;
+export type InsertAsset = z.infer<typeof insertAssetSchema>;
+
+// ─── Audit Logs — truy vết mọi thao tác quản trị (bắt buộc cho app tài chính) ─
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorId: varchar("actor_id").references(() => authUsers.id), // ai thực hiện
+  actorUsername: varchar("actor_username", { length: 50 }),    // snapshot — giữ được khi user bị xóa
+  actorRole: varchar("actor_role", { length: 20 }),
+  action: varchar("action", { length: 50 }).notNull(),         // user.create, user.delete, investment.update...
+  entityType: varchar("entity_type", { length: 50 }).notNull(),// user, investment, payment, package...
+  entityId: varchar("entity_id"),
+  details: text("details"),                                     // JSON: before/after, lý do
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_audit_actor").on(table.actorId),
+  index("idx_audit_action").on(table.action),
+  index("idx_audit_created").on(table.createdAt),
+]);
+
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;

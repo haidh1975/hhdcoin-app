@@ -2,6 +2,12 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { emailService } from "./email-service";
+import { marketDataService } from "./market-data-service";
+import { getMarketStats } from "./market-stats-service";
+import { getVnEconomy } from "./vn-economy-service";
+import { getOrcidProfile } from "./orcid-service";
+import { generateOnce, aiProvidersConfigured } from "./ai-router";
 import { 
   insertContactMessageSchema, 
   insertInvestorSchema, 
@@ -40,6 +46,7 @@ import Stripe from "stripe";
 import { insertPaymentTransactionSchema } from "@shared/schema";
 import { log } from "./vite";
 import { analyzeMarketWithAI, generateTradingRecommendation, analyzeSentiment } from "./ai-services";
+import { chatWithAI, type ChatMessage } from "./chat-service";
 import { bitcoinPriceService } from "./bitcoin-price-service";
 import { googleDriveService } from "./google-drive-service";
 import rateLimit from "express-rate-limit";
@@ -177,6 +184,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const token = generateToken(user);
       const { password: _, ...safeUser } = user;
 
+      // Gửi email chào mừng (non-blocking)
+      if (user.email) {
+        emailService.sendWelcomeEmail({
+          to: user.email,
+          fullName: user.fullName,
+          username: user.username,
+        }).catch(() => {}); // không để lỗi email ảnh hưởng response
+      }
+
       res.json({
         success: true,
         message: "Đăng ký thành công!",
@@ -237,6 +253,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactMessageSchema.parse(req.body);
       const message = await storage.createContactMessage(validatedData);
+
+      // Email xác nhận cho người gửi (non-blocking)
+      if (validatedData.email) {
+        emailService.sendContactConfirmationEmail({
+          to: validatedData.email,
+          name: validatedData.name,
+          subject: validatedData.subject,
+          message: validatedData.message,
+        }).catch(() => {});
+      }
+
       res.json({ success: true, message: "Tin nhắn đã được gửi thành công!" });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -511,6 +538,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // HHD AI Assistant — chatbot công khai (rate-limited)
+  app.post("/api/chat", aiRateLimit, async (req, res) => {
+    try {
+      const raw = Array.isArray(req.body?.messages) ? req.body.messages : [];
+      // Lọc & giới hạn: chỉ role user/assistant, tối đa 12 lượt gần nhất, mỗi tin ≤ 2000 ký tự
+      const messages: ChatMessage[] = raw
+        .filter((m: any) => (m?.role === "user" || m?.role === "assistant") && typeof m?.content === "string")
+        .slice(-12)
+        .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, 2000) }));
+
+      if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
+        return res.status(400).json({ error: "Cần ít nhất một tin nhắn từ người dùng." });
+      }
+
+      let liveBtc: string | undefined;
+      try {
+        const p = await bitcoinPriceService.getCurrentPrice(false);
+        liveBtc = `$${p.price.toLocaleString("en-US")} (${p.change24h >= 0 ? "+" : ""}${p.change24h.toFixed(2)}% 24h)`;
+      } catch { /* bỏ qua nếu lỗi giá */ }
+
+      const result = await chatWithAI(messages, liveBtc);
+      res.json({ reply: result.reply });
+    } catch (err: any) {
+      log(`[Chat] route error: ${err.message}`);
+      res.status(500).json({ error: "Lỗi trợ lý AI" });
+    }
+  });
+
   // AI Trading Recommendations endpoint
   app.get("/api/trading-recommendations", aiRateLimit, authenticateToken, async (req: AuthRequest, res) => {
     try {
@@ -652,11 +707,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", authenticateToken, requireAdmin, async (req, res) => {
+  app.post("/api/users", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
     try {
       const validatedData = insertAuthUserSchema.parse(req.body);
       const user = await storage.createAuthUser(validatedData);
       const { password, ...safeUser } = user;
+
+      await storage.createAuditLog({
+        actorId: req.user!.id,
+        actorUsername: req.user!.username,
+        actorRole: req.user!.role,
+        action: 'user.create',
+        entityType: 'user',
+        entityId: user.id,
+        details: JSON.stringify({ username: user.username, role: user.role }),
+        ipAddress: req.ip,
+      });
+
       res.json({ success: true, user: safeUser });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -667,21 +734,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/users/:id", authenticateToken, requireAdmin, async (req, res) => {
+  app.patch("/api/users/:id", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
     try {
       const userId = req.params.id;
       const updates = req.body;
-      
+
       // Remove empty password field to avoid updating with empty string
       if (updates.password === "") {
         delete updates.password;
       }
-      
+
       const updatedUser = await storage.updateAuthUser(userId, updates);
       if (!updatedUser) {
         return res.status(404).json({ message: "Không tìm thấy tài khoản" });
       }
-      
+
+      await storage.createAuditLog({
+        actorId: req.user!.id,
+        actorUsername: req.user!.username,
+        actorRole: req.user!.role,
+        action: 'user.update',
+        entityType: 'user',
+        entityId: userId,
+        details: JSON.stringify({
+          fields: Object.keys(updates).filter(k => k !== 'password'),
+          passwordChanged: 'password' in updates,
+        }),
+        ipAddress: req.ip,
+      });
+
       const { password, ...safeUser } = updatedUser;
       res.json({ success: true, user: safeUser });
     } catch (error) {
@@ -689,13 +770,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/users/:id", authenticateToken, requireAdmin, async (req, res) => {
+  app.delete("/api/users/:id", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
     try {
       const userId = req.params.id;
+      const targetUser = await storage.getAuthUser(userId);
       const success = await storage.deleteAuthUser(userId);
       if (!success) {
         return res.status(404).json({ message: "Không tìm thấy tài khoản" });
       }
+
+      await storage.createAuditLog({
+        actorId: req.user!.id,
+        actorUsername: req.user!.username,
+        actorRole: req.user!.role,
+        action: 'user.delete',
+        entityType: 'user',
+        entityId: userId,
+        details: JSON.stringify({ deletedUsername: targetUser?.username, deletedRole: targetUser?.role }),
+        ipAddress: req.ip,
+      });
+
       res.json({ success: true, message: "Tài khoản đã được xóa" });
     } catch (error) {
       res.status(500).json({ message: "Có lỗi xảy ra khi xóa tài khoản" });
@@ -941,9 +1035,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const paymentIntent = event.data.object;
           log(`[WEBHOOK][${INSTANCE_ID}] Payment succeeded: ${paymentIntent.id}`);
           
-          // Find the transaction with idempotency check
-          const transactions = await storage.getPaymentTransactions();
-          const transaction = transactions.find(t => t.stripePaymentIntentId === paymentIntent.id);
+          // Indexed lookup — không quét cả bảng (quan trọng khi data lớn)
+          const transaction = await storage.getPaymentTransactionByIntentId(paymentIntent.id);
           
           if (!transaction) {
             log(`[WEBHOOK][${INSTANCE_ID}] Transaction not found for payment intent: ${paymentIntent.id}`);
@@ -997,6 +1090,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               });
               
               log(`[WEBHOOK][${INSTANCE_ID}] Created user investment ${investment.id} for user: ${transaction.userId}`);
+
+              // Email xác nhận thanh toán (non-blocking)
+              const txUser = await storage.getAuthUser(transaction.userId);
+              if (txUser?.email) {
+                emailService.sendPaymentConfirmationEmail({
+                  to: txUser.email,
+                  fullName: txUser.fullName,
+                  packageName: selectedPackage.name,
+                  amount: parseFloat(transaction.amount),
+                  currency: transaction.currency,
+                  transactionId: transaction.id,
+                  paymentDate: new Date(),
+                }).catch(() => {});
+              }
             } else {
               log(`[WEBHOOK][${INSTANCE_ID}] User investment already exists for transaction: ${transaction.id}`);
             }
@@ -1009,8 +1116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const failedPayment = event.data.object;
           log(`[WEBHOOK][${INSTANCE_ID}] Payment failed: ${failedPayment.id}`);
           
-          const failedTransactions = await storage.getPaymentTransactions();
-          const failedTransaction = failedTransactions.find(t => t.stripePaymentIntentId === failedPayment.id);
+          const failedTransaction = await storage.getPaymentTransactionByIntentId(failedPayment.id);
           
           if (failedTransaction && failedTransaction.status !== "failed") {
             await storage.updatePaymentTransaction(failedTransaction.id, {
@@ -1362,7 +1468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update investment summaries for affected users
-      const userIds = [...new Set(activeInvestments.map(inv => inv.userId))];
+      const userIds = Array.from(new Set(activeInvestments.map(inv => inv.userId)));
       for (const userId of userIds) {
         try {
           const userInvestments = await storage.getUserInvestmentsByUserId(userId);
@@ -1376,7 +1482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalProfitLoss: totalProfitLoss.toString(),
             totalProfitLossPercentage: totalInvested > 0 ? ((totalProfitLoss / totalInvested) * 100).toString() : '0',
             activeInvestments: userInvestments.filter(inv => inv.status === 'active').length,
-            lastUpdated: new Date()
+            lastCalculated: new Date()
           });
         } catch (summaryError: any) {
           errors.push(`Summary for user ${userId}: ${summaryError.message}`);
@@ -1444,11 +1550,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      const history = await storage.getInvestmentHistoryByIds(
-        investmentIds, 
-        parseInt(limit as string), 
-        parseInt(offset as string)
-      );
+      // Fetch history for each investment and merge
+      const limitNum = parseInt(limit as string);
+      const offsetNum = parseInt(offset as string);
+      const allHistory = (await Promise.all(
+        investmentIds.map(id => storage.getInvestmentHistory(id))
+      )).flat();
+      const history = allHistory
+        .sort((a, b) => new Date(b.recordedAt ?? 0).getTime() - new Date(a.recordedAt ?? 0).getTime())
+        .slice(offsetNum, offsetNum + limitNum);
       
       res.json(history);
     } catch (error: any) {
@@ -1459,6 +1569,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ===== GOOGLE DRIVE BACKUP ENDPOINTS =====
   
+  // ===== MULTI-ASSET MARKET DATA =====
+
+  // Giá tất cả tài sản (crypto batch + stocks) — public, cache 60s
+  app.get("/api/assets", async (_req, res) => {
+    try {
+      const prices = await marketDataService.getAllPrices();
+      res.json({ assets: prices, timestamp: new Date() });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching market data: " + error.message });
+    }
+  });
+
+  // Dashboard nâng cao: Fear&Greed, BTC Dominance, Top Gainers/Losers, AI Signal
+  app.get("/api/market-stats", async (_req, res) => {
+    try {
+      res.json(await getMarketStats());
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching market stats: " + error.message });
+    }
+  });
+
+  // Kinh tế Việt Nam (World Bank)
+  app.get("/api/vn-economy", async (_req, res) => {
+    try {
+      res.json(await getVnEconomy());
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching VN economy: " + error.message });
+    }
+  });
+
+  // Hồ sơ khoa học (ORCID) tích hợp trực tiếp
+  app.get("/api/orcid-works", async (_req, res) => {
+    try {
+      res.json(await getOrcidProfile());
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching ORCID: " + error.message });
+    }
+  });
+
+  // HHD AI Research Assistant — hỏi đáp học thuật/kinh tế qua AI Router
+  app.post("/api/research-assist", aiRateLimit, async (req, res) => {
+    try {
+      const question = String(req.body?.question ?? "").slice(0, 1500).trim();
+      if (!question) return res.status(400).json({ error: "Cần nhập câu hỏi nghiên cứu." });
+      const system =
+        "Bạn là HHD AI Research Assistant — trợ lý nghiên cứu học thuật của HHD Foundation, chuyên kinh tế, tài chính, blockchain, AI và chuyển đổi số. " +
+        "Trả lời chính xác, súc tích, có cấu trúc (gạch đầu dòng khi cần), giọng học thuật nhưng dễ hiểu, bằng tiếng Việt. " +
+        "Khi phù hợp, gợi ý hướng nghiên cứu, phương pháp hoặc nguồn tham khảo. Nếu không chắc chắn, nói rõ giới hạn.";
+      const result = await generateOnce(system, question, 900);
+      if (result?.text) return res.json({ answer: result.text, provider: result.provider });
+      return res.json({
+        answer: "Trợ lý nghiên cứu AI hiện chưa sẵn sàng (chưa cấu hình nhà cung cấp AI). Vui lòng thử lại sau khi quản trị viên kích hoạt Gemini/Claude/OpenAI.",
+        provider: "none",
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Lỗi trợ lý nghiên cứu" });
+    }
+  });
+
+  // Trạng thái nhà cung cấp AI đã cấu hình
+  app.get("/api/ai-status", (_req, res) => {
+    res.json({ providers: aiProvidersConfigured() });
+  });
+
+  // Giá 1 tài sản theo symbol
+  app.get("/api/assets/:symbol", async (req, res) => {
+    try {
+      const price = await marketDataService.getPrice(req.params.symbol);
+      if (!price) {
+        return res.status(404).json({ message: `Asset ${req.params.symbol} not found` });
+      }
+      res.json(price);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching asset price: " + error.message });
+    }
+  });
+
+  // ===== ADMIN OPERATIONS (vận hành 1000+ users) =====
+
+  // Dashboard thống kê tổng hợp — aggregate trong SQL
+  app.get("/api/admin/stats", authenticateToken, requireAdmin, async (_req: AuthRequest, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json({ ...stats, timestamp: new Date() });
+    } catch (error: any) {
+      log(`[API][${INSTANCE_ID}] Error fetching admin stats: ${error.message}`);
+      res.status(500).json({ message: "Error fetching admin stats: " + error.message });
+    }
+  });
+
+  // Danh sách users phân trang (thay /api/users khi data lớn)
+  app.get("/api/admin/users", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const limit = parseInt((req.query.limit as string) ?? '50');
+      const offset = parseInt((req.query.offset as string) ?? '0');
+      const { users: userList, total } = await storage.getAuthUsersPaginated({ limit, offset });
+      const safeUsers = userList.map(({ password: _p, ...u }) => u);
+      res.json({ users: safeUsers, total, limit, offset });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching users: " + error.message });
+    }
+  });
+
+  // Audit logs — truy vết thao tác quản trị
+  app.get("/api/admin/audit-logs", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const logs = await storage.getAuditLogs({
+        limit: parseInt((req.query.limit as string) ?? '50'),
+        offset: parseInt((req.query.offset as string) ?? '0'),
+        action: req.query.action as string | undefined,
+      });
+      res.json({ logs });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching audit logs: " + error.message });
+    }
+  });
+
+  // Dọn dữ liệu history cũ (Admin chạy thủ công hoặc qua cron)
+  app.post("/api/admin/prune-history", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const keepDays = Math.max(parseInt(req.body?.keepDays ?? '90'), 7);
+      const deleted = await storage.pruneInvestmentHistory(keepDays);
+      await storage.createAuditLog({
+        actorId: req.user!.id,
+        actorUsername: req.user!.username,
+        actorRole: req.user!.role,
+        action: 'history.prune',
+        entityType: 'investment_history',
+        details: JSON.stringify({ keepDays, deleted }),
+        ipAddress: req.ip,
+      });
+      res.json({ success: true, deleted, keepDays });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error pruning history: " + error.message });
+    }
+  });
+
+  // Email service health check (Admin only)
+  app.get("/api/admin/email/status", authenticateToken, requireAdmin, async (_req: AuthRequest, res) => {
+    const ok = await emailService.verifyEmailConnection();
+    res.json({
+      configured: !!process.env.RESEND_API_KEY || !!process.env.SMTP_HOST,
+      connected: ok,
+      provider: process.env.RESEND_API_KEY ? "resend" : (process.env.SMTP_HOST ? "smtp" : null),
+      from: process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? null,
+    });
+  });
+
   // Get backup service status (Admin only)
   app.get("/api/admin/backup/status", authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
     try {
@@ -1470,7 +1728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recentBackups: recentBackups.map(backup => ({
           id: backup.id,
           name: backup.name,
-          size: backup.size ? parseInt(backup.size) : 0,
+          size: backup.size ?? 0,
           createdTime: backup.createdTime
         })),
         timestamp: new Date()
@@ -1534,8 +1792,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         backups: backups.map(backup => ({
           id: backup.id,
           name: backup.name,
-          size: backup.size ? parseInt(backup.size) : 0,
-          sizeFormatted: backup.size ? `${Math.round(parseInt(backup.size) / 1024 / 1024 * 100) / 100} MB` : 'Unknown',
+          size: backup.size ?? 0,
+          sizeFormatted: backup.size ? `${Math.round(backup.size / 1024 / 1024 * 100) / 100} MB` : 'Unknown',
           createdTime: backup.createdTime,
           type: backup.name.includes('database') ? 'database' : 
                 backup.name.includes('web') ? 'web' : 

@@ -10,23 +10,26 @@ import { Capacitor } from '@capacitor/core';
 export const API_CONFIG = {
   // Base URL for API requests
   getBaseUrl(): string {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
+
     // Check if running in Capacitor (mobile native environment)
     if (Capacitor.isNativePlatform()) {
       // Production mobile app - use deployed API server
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      
       if (!apiBaseUrl) {
         throw new Error(
           'VITE_API_BASE_URL environment variable is required for mobile builds. ' +
           'Please set it to your deployed backend URL (e.g., https://api.hhdcoin.com)'
         );
       }
-      
+
       return apiBaseUrl;
     }
-    
-    // Web environment - use relative URLs (proxied by Vite)
-    return '';
+
+    // Web environment:
+    // - If VITE_API_BASE_URL is set (static frontend on cPanel + backend on Railway),
+    //   call the remote API directly.
+    // - Otherwise use relative URLs (local dev / full-stack same-origin deploy).
+    return apiBaseUrl || '';
   },
 
   // Build full API URL

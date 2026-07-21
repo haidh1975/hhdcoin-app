@@ -1,7 +1,7 @@
 import { SiBitcoin, SiFacebook, SiTelegram, SiYoutube } from "react-icons/si";
 import { FaTwitter } from "react-icons/fa";
 import { useLanguage } from "@/contexts/LanguageContext";
-import logoPath from "@assets/ChatGPT Image 11_42_25 23 thg 8, 2025_1757214723752.png";
+import logoPath from "@assets/hhd-coin-logo.png";
 
 export default function Footer() {
   const { t } = useLanguage();

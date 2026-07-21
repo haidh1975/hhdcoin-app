@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.env
+.env.*
+android
+ios
+attached_assets/*
+!attached_assets/hhd-coin-logo.png
+!attached_assets/founder-hai.jpg
+public_html_wp_backup_*
+*.log
+*.tar.gz
+*.zip
+.DS_Store

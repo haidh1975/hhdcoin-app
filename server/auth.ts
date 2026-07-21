@@ -143,7 +143,8 @@ export const hasDataAccess = (userRole: string, operation: 'read' | 'write' | 'd
     investor: { investors: [], users: [], payments: ['read'] }
   };
 
-  return permissions[userRole as keyof typeof permissions]?.[dataType]?.includes(operation) || false;
+  const perms = permissions[userRole as keyof typeof permissions]?.[dataType] as string[] | undefined;
+  return perms?.includes(operation) ?? false;
 };
 
 // Extract user info from token without throwing errors

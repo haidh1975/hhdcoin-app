@@ -1,11 +1,13 @@
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ChatWidget from "@/components/chat-widget";
 import React, { lazy, Suspense } from 'react';
 import LoadingSpinner from "@/components/loading-spinner";
 
@@ -28,6 +30,11 @@ const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Checkout = lazy(() => import("@/pages/checkout"));
 const PaymentSuccess = lazy(() => import("@/pages/payment-success"));
 const InvestmentPurchase = lazy(() => import("@/pages/investment-purchase"));
+const Tokenomics = lazy(() => import("@/pages/tokenomics"));
+const Roadmap = lazy(() => import("@/pages/roadmap"));
+const Staking = lazy(() => import("@/pages/staking"));
+const Team = lazy(() => import("@/pages/team"));
+const Research = lazy(() => import("@/pages/research"));
 
 // Redirect components for reorganized content
 
@@ -86,6 +93,11 @@ function Router() {
       <Route path="/investment-guide" component={InvestmentGuide} />
       <Route path="/investment-utilities" component={RedirectToInvestmentGuide} />
       
+      <Route path="/tokenomics" component={Tokenomics} />
+      <Route path="/roadmap" component={Roadmap} />
+      <Route path="/staking" component={Staking} />
+      <Route path="/team" component={Team} />
+      <Route path="/research" component={Research} />
       {/* Keep original pages for now - can be removed later */}
       <Route path="/investment-purchase" component={InvestmentPurchase} />
       <Route component={NotFound} />
@@ -140,20 +152,23 @@ class LazyErrorBoundary extends React.Component<LazyErrorBoundaryProps, LazyErro
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <LanguageProvider>
-          <TooltipProvider>
-            <LazyErrorBoundary>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Router />
-              </Suspense>
-            </LazyErrorBoundary>
-            <Toaster />
-          </TooltipProvider>
-        </LanguageProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <LanguageProvider>
+            <TooltipProvider>
+              <LazyErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Router />
+                </Suspense>
+              </LazyErrorBoundary>
+              <ChatWidget />
+              <Toaster />
+            </TooltipProvider>
+          </LanguageProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

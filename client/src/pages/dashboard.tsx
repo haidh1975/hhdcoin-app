@@ -24,7 +24,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-dark-slate" data-testid="text-dashboard-title">
-                {t('dashboard.welcome', { name: user?.fullName })}
+                {t('dashboard.welcome', { name: user?.fullName ?? '' })}
               </h1>
               <p className="text-gray-600">{t('dashboard.subtitle')}</p>
             </div>

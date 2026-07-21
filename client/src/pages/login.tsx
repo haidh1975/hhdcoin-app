@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "wouter";
-import { Bitcoin, Eye, EyeOff, Shield, AlertCircle } from "lucide-react";
+import { Bitcoin, Eye, EyeOff, Shield, AlertCircle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -53,7 +53,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bitcoin/5 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-bitcoin/5 via-white to-emerald-50 flex items-center justify-center p-4 relative">
+      <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-bitcoin font-medium transition-colors" data-testid="link-back-home">
+        <ArrowLeft className="h-4 w-4" />
+        {t('login.back_home')}
+      </Link>
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-bitcoin rounded-xl flex items-center justify-center">
@@ -175,13 +179,6 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-2">{t('login.demo_accounts')}</h4>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div><strong>{t('login.admin_demo')}</strong> admin / admin123</div>
-              <div><strong>{t('login.member_demo')}</strong> member1 / member123</div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

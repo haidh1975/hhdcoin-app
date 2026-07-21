@@ -20,7 +20,7 @@ import { Plus, Edit, Trash2, Users, Shield, Eye, EyeOff, Key } from "lucide-reac
 const userSchema = z.object({
   username: z.string().min(3, "Username tối thiểu 3 ký tự"),
   password: z.string().min(6, "Password tối thiểu 6 ký tự"),
-  role: z.enum(["admin", "member"]),
+  role: z.enum(["admin", "manager", "investor"]),
   fullName: z.string().min(1, "Họ tên không được để trống"),
   email: z.string().email("Email không hợp lệ").optional(),
   status: z.enum(["active", "inactive"]).default("active"),
@@ -29,7 +29,7 @@ const userSchema = z.object({
 type AuthUser = {
   id: string;
   username: string;
-  role: "admin" | "member";
+  role: "admin" | "manager" | "investor";
   fullName: string;
   email?: string;
   status: "active" | "inactive";
@@ -118,7 +118,7 @@ export default function AuthManagement() {
     defaultValues: {
       username: "",
       password: "",
-      role: "member",
+      role: "investor",
       fullName: "",
       email: "",
       status: "active",
@@ -132,7 +132,7 @@ export default function AuthManagement() {
     defaultValues: {
       username: "",
       password: "",
-      role: "member",
+      role: "investor",
       fullName: "",
       email: "",
       status: "active",
@@ -168,8 +168,10 @@ export default function AuthManagement() {
     }
   };
 
-  const roleColors = {
+  const roleColors: Record<string, string> = {
     admin: "bg-red-100 text-red-800",
+    manager: "bg-purple-100 text-purple-800",
+    investor: "bg-blue-100 text-blue-800",
     member: "bg-blue-100 text-blue-800",
   };
 
@@ -291,7 +293,8 @@ export default function AuthManagement() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="member">Member</SelectItem>
+                              <SelectItem value="investor">Investor</SelectItem>
+                              <SelectItem value="manager">Manager</SelectItem>
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>
@@ -354,9 +357,9 @@ export default function AuthManagement() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Member</p>
+                    <p className="text-sm text-gray-600">Investor</p>
                     <p className="text-2xl font-bold text-dark-slate">
-                      {users.filter(u => u.role === 'member').length}
+                      {users.filter(u => u.role === 'investor').length}
                     </p>
                   </div>
                   <Users className="h-8 w-8 text-blue-500" />
@@ -416,8 +419,8 @@ export default function AuthManagement() {
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge className={roleColors[user.role]}>
-                              {user.role === 'admin' ? 'Admin' : 'Member'}
+                            <Badge className={roleColors[user.role] ?? roleColors.member}>
+                              {user.role === 'admin' ? 'Admin' : user.role === 'manager' ? 'Manager' : 'Investor'}
                             </Badge>
                           </td>
                           <td className="py-3 px-4">
@@ -549,7 +552,8 @@ export default function AuthManagement() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="member">Member</SelectItem>
+                            <SelectItem value="investor">Investor</SelectItem>
+                            <SelectItem value="manager">Manager</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>

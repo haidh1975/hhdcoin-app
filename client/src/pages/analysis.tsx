@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import Navigation from "@/components/navigation";
 import MarketAnalysis from "@/components/market-analysis";
 import BitcoinChart from "@/components/bitcoin-chart";
+import { MarketOverview } from "@/components/MarketOverview";
+import MarketDashboard from "@/components/market-dashboard";
+import VnEconomy from "@/components/vn-economy";
 import Footer from "@/components/footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,9 +223,26 @@ export default function Analysis() {
         </div>
       </section>
 
+      {/* Dashboard nâng cao: Fear&Greed, Dominance, AI Signal, Top Gainers/Losers */}
+      <section className="py-8" data-testid="section-market-dashboard">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold text-dark-slate dark:text-white mb-6 flex items-center gap-2">
+            <Activity className="h-6 w-6 text-bitcoin" /> Bảng điều khiển thị trường
+          </h2>
+          <MarketDashboard />
+        </div>
+      </section>
+
       {/* Bitcoin Chart Section */}
       <BitcoinChart />
-      
+
+      {/* Multi-Asset Market Overview */}
+      <section className="py-8" data-testid="section-market-overview">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <MarketOverview />
+        </div>
+      </section>
+
       {/* AI Insights Section */}
       <section className="py-16 bg-gray-50" data-testid="section-ai-insights">
         <div className="container mx-auto px-4">

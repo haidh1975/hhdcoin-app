@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Shield, Bot, Clock, TrendingUp, Play, BarChart3 } from "lucide-react";
+import { Shield, Bot, Clock, TrendingUp, Coins, FileText, UserPlus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+// Whitepaper: trỏ tới PDF đã host (xem /whitepaper.pdf trên public_html)
+const WHITEPAPER_URL = "/whitepaper.pdf";
 
 interface BitcoinData {
   price?: number;
@@ -20,13 +24,6 @@ export default function HeroSection() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <section id="home" className="bg-gradient-to-br from-dark-slate via-gray-800 to-dark-slate text-white py-20" data-testid="section-hero">
       <div className="container mx-auto px-4">
@@ -39,23 +36,36 @@ export default function HeroSection() {
               {t('hero.description')}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Button 
-                onClick={() => scrollToSection("investment")}
-                className="bg-bitcoin hover:bg-bitcoin-light text-white px-8 py-4 rounded-lg font-semibold text-lg"
-                data-testid="button-start-investing"
-              >
-                <BarChart3 className="mr-2 h-5 w-5" />
-                {t('hero.cta.invest')}
-              </Button>
-              <Button 
-                variant="outline"
-                className="border border-gray-400 text-white hover:bg-white hover:text-dark-slate px-8 py-4 rounded-lg font-semibold text-lg"
-                data-testid="button-demo-ai"
-              >
-                <Play className="mr-2 h-5 w-5" />
-                {t('hero.cta.demo')}
-              </Button>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8">
+              <Link href="/tokenomics">
+                <Button
+                  className="w-full sm:w-auto bg-bitcoin hover:bg-bitcoin-light text-white px-7 py-4 rounded-lg font-semibold text-lg shadow-lg shadow-bitcoin/30"
+                  data-testid="button-explore"
+                >
+                  <Coins className="mr-2 h-5 w-5" />
+                  {t('hero.cta.explore')}
+                </Button>
+              </Link>
+              <a href={WHITEPAPER_URL} target="_blank" rel="noopener noreferrer">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto border-2 border-white/70 bg-white/5 text-white hover:bg-white hover:text-dark-slate px-7 py-4 rounded-lg font-semibold text-lg"
+                  data-testid="button-whitepaper"
+                >
+                  <FileText className="mr-2 h-5 w-5" />
+                  {t('hero.cta.whitepaper')}
+                </Button>
+              </a>
+              <Link href="/register">
+                <Button
+                  className="w-full sm:w-auto bg-white text-dark-slate hover:bg-gray-100 px-7 py-4 rounded-lg font-semibold text-lg"
+                  data-testid="button-register-hero"
+                >
+                  <UserPlus className="mr-2 h-5 w-5" />
+                  {t('hero.cta.register')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
             
             <div className="flex flex-wrap gap-6 text-sm">

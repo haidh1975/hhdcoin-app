@@ -21,6 +21,8 @@ import {
   type InsertInvestmentSummary,
   type ManagerInvestorAssignment,
   type InsertManagerInvestorAssignment,
+  type AuditLog,
+  type InsertAuditLog,
   users,
   authUsers,
   contactMessages,
@@ -31,12 +33,13 @@ import {
   userInvestments,
   investmentHistory,
   investmentSummary,
-  managerInvestorAssignments
+  managerInvestorAssignments,
+  auditLogs
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { hashPassword } from "./auth";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -107,10 +110,11 @@ export class DatabaseStorage implements IStorage {
   private initialized = false;
 
   constructor() {
-    this.initData(); // Initialize async data
+    // KHÔNG seed ở constructor — db chưa sẵn sàng (initDb chạy sau).
+    // index.ts gọi storage.initData() sau khi initDb() xong.
   }
 
-  private async initData() {
+  async initData() {
     if (this.initialized) return;
     try {
       await this.initializeInvestmentPackages();
@@ -351,6 +355,10 @@ export class DatabaseStorage implements IStorage {
   // Auth User Methods
   private async initializeSampleAuthUsers() {
     try {
+      // SECURITY: tài khoản mẫu password yếu — CHỈ seed ở development.
+      // Production dùng `npm run setup:admin` với password từ env.
+      if (process.env.NODE_ENV === 'production') return;
+
       // Check if auth users already exist
       const existingUsers = await db.select().from(authUsers).limit(1);
       if (existingUsers.length > 0) return;
@@ -370,7 +378,7 @@ export class DatabaseStorage implements IStorage {
         {
           username: "member1",
           password: await hashPassword("member123"),
-          role: "member",
+          role: "investor",
           fullName: "Nguyễn Văn A",
           email: "member1@gmail.com",
           status: "active",
@@ -832,11 +840,138 @@ export class DatabaseStorage implements IStorage {
           eq(managerInvestorAssignments.isActive, true)
         ));
 
-      return assignments.map(a => a.investorId);
+      return assignments.map((a: { investorId: string }) => a.investorId);
     } catch (error) {
       console.error('Error getting manager assignments:', error);
       return [];
     }
+  }
+
+  // ─── Indexed lookups — thay thế full-table scan ─────────────────────────
+
+  /** Tra cứu transaction theo Stripe payment intent — dùng index, O(1) */
+  async getPaymentTransactionByIntentId(intentId: string): Promise<PaymentTransaction | undefined> {
+    const result = await db.select().from(paymentTransactions)
+      .where(eq(paymentTransactions.stripePaymentIntentId, intentId))
+      .limit(1);
+    return result[0];
+  }
+
+  // ─── Audit Logs ──────────────────────────────────────────────────────────
+
+  async createAuditLog(entry: InsertAuditLog): Promise<void> {
+    try {
+      await db.insert(auditLogs).values(entry);
+    } catch (error) {
+      // Audit log không được làm hỏng nghiệp vụ chính — chỉ ghi console
+      console.error('Error writing audit log:', error);
+    }
+  }
+
+  async getAuditLogs(opts: { limit?: number; offset?: number; action?: string } = {}): Promise<AuditLog[]> {
+    const limit = Math.min(opts.limit ?? 50, 200);
+    const offset = opts.offset ?? 0;
+    if (opts.action) {
+      return await db.select().from(auditLogs)
+        .where(eq(auditLogs.action, opts.action))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(limit).offset(offset);
+    }
+    return await db.select().from(auditLogs)
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit).offset(offset);
+  }
+
+  // ─── Admin Operations Stats — aggregate trong SQL, không kéo data về JS ──
+
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    usersByRole: Record<string, number>;
+    totalInvestments: number;
+    activeInvestments: number;
+    totalInvestedAmount: number;
+    totalCurrentValue: number;
+    totalTransactions: number;
+    completedTransactions: number;
+    pendingTransactions: number;
+    revenueByDay: Array<{ date: string; amount: number; count: number }>;
+  }> {
+    const [userStats] = await db.execute(sql`
+      SELECT
+        COUNT(*)::int AS total_users,
+        COUNT(*) FILTER (WHERE status = 'active')::int AS active_users,
+        COUNT(*) FILTER (WHERE role = 'admin')::int AS admins,
+        COUNT(*) FILTER (WHERE role = 'manager')::int AS managers,
+        COUNT(*) FILTER (WHERE role = 'investor')::int AS investors
+      FROM auth_users
+    `).then((r: any) => r.rows as any[]);
+
+    const [invStats] = await db.execute(sql`
+      SELECT
+        COUNT(*)::int AS total_investments,
+        COUNT(*) FILTER (WHERE status = 'active')::int AS active_investments,
+        COALESCE(SUM(investment_amount) FILTER (WHERE status = 'active'), 0)::float AS total_invested,
+        COALESCE(SUM(current_value) FILTER (WHERE status = 'active'), 0)::float AS total_current_value
+      FROM user_investments
+    `).then((r: any) => r.rows as any[]);
+
+    const [txStats] = await db.execute(sql`
+      SELECT
+        COUNT(*)::int AS total_tx,
+        COUNT(*) FILTER (WHERE status = 'completed')::int AS completed_tx,
+        COUNT(*) FILTER (WHERE status = 'pending')::int AS pending_tx
+      FROM payment_transactions
+    `).then((r: any) => r.rows as any[]);
+
+    const revenueRows = await db.execute(sql`
+      SELECT
+        TO_CHAR(created_at::date, 'YYYY-MM-DD') AS date,
+        COALESCE(SUM(amount), 0)::float AS amount,
+        COUNT(*)::int AS count
+      FROM payment_transactions
+      WHERE status = 'completed' AND created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY created_at::date
+      ORDER BY created_at::date
+    `).then((r: any) => r.rows as any[]);
+
+    return {
+      totalUsers: userStats?.total_users ?? 0,
+      activeUsers: userStats?.active_users ?? 0,
+      usersByRole: {
+        admin: userStats?.admins ?? 0,
+        manager: userStats?.managers ?? 0,
+        investor: userStats?.investors ?? 0,
+      },
+      totalInvestments: invStats?.total_investments ?? 0,
+      activeInvestments: invStats?.active_investments ?? 0,
+      totalInvestedAmount: invStats?.total_invested ?? 0,
+      totalCurrentValue: invStats?.total_current_value ?? 0,
+      totalTransactions: txStats?.total_tx ?? 0,
+      completedTransactions: txStats?.completed_tx ?? 0,
+      pendingTransactions: txStats?.pending_tx ?? 0,
+      revenueByDay: revenueRows.map((r: any) => ({ date: r.date, amount: r.amount, count: r.count })),
+    };
+  }
+
+  /** Lấy danh sách users phân trang — thay cho getAuthUsers() khi data lớn */
+  async getAuthUsersPaginated(opts: { limit?: number; offset?: number } = {}): Promise<{ users: AuthUser[]; total: number }> {
+    const limit = Math.min(opts.limit ?? 50, 200);
+    const offset = opts.offset ?? 0;
+    const [usersList, [countRow]] = await Promise.all([
+      db.select().from(authUsers).orderBy(desc(authUsers.createdAt)).limit(limit).offset(offset),
+      db.execute(sql`SELECT COUNT(*)::int AS count FROM auth_users`).then((r: any) => r.rows as any[]),
+    ]);
+    return { users: usersList, total: countRow?.count ?? 0 };
+  }
+
+  /** Xóa history cũ hơn N ngày — chống phình DB (chạy định kỳ) */
+  async pruneInvestmentHistory(keepDays: number = 90): Promise<number> {
+    const result = await db.execute(sql`
+      DELETE FROM investment_history
+      WHERE recorded_at < NOW() - (${keepDays} * INTERVAL '1 day')
+    `);
+    return result.rowCount ?? 0;
   }
 }
 

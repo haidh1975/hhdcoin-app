@@ -1,0 +1,1172 @@
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HHDcoin - Nền tảng Đầu tư Bitcoin Hàng đầu Việt Nam</title>
+    <meta name="description" content="HHDcoin - Nền tảng đầu tư Bitcoin chuyên nghiệp với AI dự báo, phân tích chuyên sâu và cập nhật nhanh nhất thị trường">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'bitcoin': '#F7931A',
+                    'bitcoin-light': '#FFB946',
+                    'dark-slate': '#1E293B',
+                    'success': '#10B981',
+                    'danger': '#EF4444'
+                },
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif']
+                }
+            }
+        }
+    };
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="font-inter bg-gray-50">
+    <!-- @COMPONENT: Header [navigation, logo, language switcher] -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-full flex items-center justify-center">
+                        <i class="fab fa-bitcoin text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-dark-slate">HHDcoin</h1>
+                        <p class="text-xs text-gray-500">Bitcoin Investment Platform</p>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-dark-slate hover:text-bitcoin transition-colors font-medium">Trang chủ</a>
+                    <a href="#investment" class="text-dark-slate hover:text-bitcoin transition-colors font-medium">Đầu tư</a>
+                    <a href="#news" class="text-dark-slate hover:text-bitcoin transition-colors font-medium">Tin tức</a>
+                    <a href="#analysis" class="text-dark-slate hover:text-bitcoin transition-colors font-medium">Phân tích</a>
+                    <a href="#community" class="text-dark-slate hover:text-bitcoin transition-colors font-medium">Cộng đồng</a>
+                    <a href="#contact" class="text-dark-slate hover:text-bitcoin transition-colors font-medium">Liên hệ</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">VI</span>
+                        <div class="w-8 h-5 bg-gray-300 rounded-full p-1 cursor-pointer">
+                            <div class="w-3 h-3 bg-white rounded-full shadow transform transition-transform"></div>
+                        </div>
+                        <span class="text-sm text-gray-400">EN</span>
+                    </div>
+                    <button class="md:hidden text-dark-slate">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: Hero Section [main value proposition, live Bitcoin price] -->
+    <section id="home" class="bg-gradient-to-br from-dark-slate via-gray-800 to-dark-slate text-white py-20">
+        <div class="container mx-auto px-4">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                        Đầu tư Bitcoin <span class="text-bitcoin">Thông minh</span> với AI
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+                        Nền tảng đầu tư Bitcoin hàng đầu Việt Nam với công nghệ AI dự báo, 
+                        phân tích chuyên sâu và cập nhật real-time 24/7.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                        <button class="bg-bitcoin hover:bg-bitcoin-light text-white px-8 py-4 rounded-lg font-semibold transition-colors text-lg">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            Bắt đầu đầu tư
+                        </button>
+                        <button class="border border-gray-400 text-white hover:bg-white hover:text-dark-slate px-8 py-4 rounded-lg font-semibold transition-all text-lg">
+                            <i class="fas fa-play mr-2"></i>
+                            Xem demo AI
+                        </button>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-6 text-sm">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-success mr-2"></i>
+                            <span>Bảo mật tuyệt đối</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-robot text-bitcoin mr-2"></i>
+                            <span>AI dự báo chính xác</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-blue-400 mr-2"></i>
+                            <span>Cập nhật 24/7</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">Giá Bitcoin hiện tại</h3>
+                        <div class="text-4xl font-bold text-bitcoin mb-2" data-bind="bitcoin.price">$43,250.67</div>
+                        <div class="flex items-center justify-center text-success">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            <span data-bind="bitcoin.change">+2.45%</span>
+                            <span class="text-gray-300 ml-2">(24h)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Prediction Widget -->
+                    <div class="bg-gradient-to-r from-bitcoin/20 to-bitcoin-light/20 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium">Dự báo AI (7 ngày)</span>
+                            <i class="fas fa-robot text-bitcoin"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-bitcoin">$46,800</div>
+                        <div class="text-sm text-gray-300">Độ tin cậy: 87%</div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="text-gray-400">Cao nhất 24h</div>
+                            <div class="font-semibold" data-bind="bitcoin.high24h">$44,120</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400">Thấp nhất 24h</div>
+                            <div class="font-semibold" data-bind="bitcoin.low24h">$42,890</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400">Khối lượng</div>
+                            <div class="font-semibold" data-bind="bitcoin.volume">28.5B</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400">Market Cap</div>
+                            <div class="font-semibold" data-bind="bitcoin.marketCap">847B</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Hero Section -->
+
+    <!-- @COMPONENT: Investment Calculator [real-time calculation form] -->
+    <section id="investment" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-dark-slate mb-4">Máy tính đầu tư thông minh</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Tính toán lợi nhuận đầu tư Bitcoin với AI dự báo và phân tích rủi ro tự động
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <!-- Calculator Form -->
+                <div class="bg-gray-50 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-dark-slate mb-6">Tính toán đầu tư</h3>
+                    
+                    <form class="space-y-6" data-event="input:calculateInvestment">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Số tiền đầu tư (VNĐ)</label>
+                            <input type="number" 
+                                   placeholder="Nhập số tiền..." 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                                   data-bind="investment.amount"
+                                   value="50000000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian đầu tư</label>
+                            <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent" data-bind="investment.duration">
+                                <option value="3">3 tháng</option>
+                                <option value="6" selected>6 tháng</option>
+                                <option value="12">12 tháng</option>
+                                <option value="24">24 tháng</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gói đầu tư</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" class="p-3 border border-gray-300 rounded-lg text-center hover:border-bitcoin transition-colors" data-package="basic">
+                                    <div class="font-medium">Cơ bản</div>
+                                    <div class="text-sm text-gray-500">5-8%</div>
+                                </button>
+                                <button type="button" class="p-3 border-2 border-bitcoin bg-bitcoin/10 rounded-lg text-center" data-package="premium">
+                                    <div class="font-medium">Cao cấp</div>
+                                    <div class="text-sm text-bitcoin">8-12%</div>
+                                </button>
+                                <button type="button" class="p-3 border border-gray-300 rounded-lg text-center hover:border-bitcoin transition-colors" data-package="vip">
+                                    <div class="font-medium">VIP</div>
+                                    <div class="text-sm text-gray-500">12-18%</div>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Mức độ rủi ro</span>
+                                <span class="text-sm font-medium text-yellow-600">Trung bình</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-success to-yellow-500 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Results -->
+                <div class="bg-gradient-to-br from-bitcoin to-bitcoin-light text-white rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold mb-6">Kết quả dự báo</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-white/20 rounded-lg p-4">
+                            <div class="text-sm opacity-90 mb-1">Tổng đầu tư</div>
+                            <div class="text-3xl font-bold" data-bind="calculation.investment">50,000,000 VNĐ</div>
+                        </div>
+                        
+                        <div class="bg-white/20 rounded-lg p-4">
+                            <div class="text-sm opacity-90 mb-1">Lợi nhuận ước tính</div>
+                            <div class="text-3xl font-bold" data-bind="calculation.profit">+5,000,000 VNĐ</div>
+                            <div class="text-sm opacity-75" data-bind="calculation.profitPercent">(+10% sau 6 tháng)</div>
+                        </div>
+                        
+                        <div class="bg-white/20 rounded-lg p-4">
+                            <div class="text-sm opacity-90 mb-1">Tổng nhận về</div>
+                            <div class="text-3xl font-bold" data-bind="calculation.total">55,000,000 VNĐ</div>
+                        </div>
+                        
+                        <div class="bg-white/10 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm">Dự báo AI</span>
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="text-lg font-semibold">Xu hướng tăng mạnh</div>
+                            <div class="text-sm opacity-75">Độ tin cậy: 89%</div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-white text-bitcoin font-bold py-4 rounded-lg mt-6 hover:bg-gray-50 transition-colors" data-event="click:startInvestment">
+                        <i class="fas fa-rocket mr-2"></i>
+                        Bắt đầu đầu tư ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Investment Calculator -->
+
+    <!-- @COMPONENT: Investment Packages [comparison table] -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-dark-slate mb-4">Gói đầu tư HHDcoin</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Chọn gói đầu tư phù hợp với mục tiêu tài chính của bạn
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Basic Package -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-dark-slate mb-2">Gói Cơ bản</h3>
+                        <div class="text-4xl font-bold text-bitcoin mb-2">5-8%</div>
+                        <div class="text-gray-600">Lợi nhuận/năm</div>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Đầu tư tối thiểu: 10M VNĐ</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Phân tích thị trường cơ bản</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Hỗ trợ email 24/7</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Rút vốn linh hoạt</span>
+                        </div>
+                        <div class="flex items-center text-gray-400">
+                            <i class="fas fa-times mr-3"></i>
+                            <span>Dự báo AI</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full border-2 border-bitcoin text-bitcoin hover:bg-bitcoin hover:text-white py-3 rounded-lg font-semibold transition-colors">
+                        Chọn gói này
+                    </button>
+                </div>
+                
+                <!-- Premium Package -->
+                <div class="bg-gradient-to-br from-bitcoin to-bitcoin-light text-white rounded-2xl p-8 shadow-xl transform scale-105 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-bitcoin px-4 py-2 rounded-full text-sm font-bold">
+                        PHỔ BIẾN NHẤT
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">Gói Cao cấp</h3>
+                        <div class="text-4xl font-bold mb-2">8-12%</div>
+                        <div class="opacity-90">Lợi nhuận/năm</div>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Đầu tư tối thiểu: 50M VNĐ</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>AI dự báo chuyên sâu</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Tư vấn 1-1 với chuyên gia</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Báo cáo tuần</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Ưu tiên rút vốn</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-white text-bitcoin hover:bg-gray-50 py-3 rounded-lg font-semibold transition-colors">
+                        Chọn gói này
+                    </button>
+                </div>
+                
+                <!-- VIP Package -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-200">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-dark-slate mb-2">Gói VIP</h3>
+                        <div class="text-4xl font-bold text-bitcoin mb-2">12-18%</div>
+                        <div class="text-gray-600">Lợi nhuận/năm</div>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Đầu tư tối thiểu: 200M VNĐ</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>AI dự báo độc quyền</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Quản lý danh mục cá nhân</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Báo cáo hàng ngày</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-success mr-3"></i>
+                            <span>Hotline riêng 24/7</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-bitcoin hover:bg-bitcoin-light text-white py-3 rounded-lg font-semibold transition-colors">
+                        Chọn gói này
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Investment Packages -->
+
+    <!-- @COMPONENT: Features Section [unique selling points] -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-dark-slate mb-4">Tại sao chọn HHDcoin?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Những điểm khác biệt vượt trội giúp HHDcoin dẫn đầu thị trường đầu tư Bitcoin Việt Nam
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark-slate mb-4">AI Dự báo Thông minh</h3>
+                    <p class="text-gray-600">
+                        Công nghệ AI độc quyền phân tích 50+ chỉ số thị trường để đưa ra dự báo chính xác đến 89%
+                    </p>
+                </div>
+                
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-r from-success to-green-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-bolt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark-slate mb-4">Cập nhật Siêu nhanh</h3>
+                    <p class="text-gray-600">
+                        Hệ thống real-time cập nhật giá Bitcoin và tin tức thị trường trong vòng 0.1 giây
+                    </p>
+                </div>
+                
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark-slate mb-4">Phân tích Chuyên sâu</h3>
+                    <p class="text-gray-600">
+                        Đội ngũ chuyên gia 10+ năm kinh nghiệm cung cấp phân tích kỹ thuật và cơ bản chi tiết
+                    </p>
+                </div>
+                
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-gift text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark-slate mb-4">Hoàn toàn Miễn phí</h3>
+                    <p class="text-gray-600">
+                        Tất cả tính năng cơ bản hoàn toàn miễn phí, không phí ẩn, cam kết minh bạch
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Features Section -->
+
+    <!-- @COMPONENT: News & Analysis [latest updates] -->
+    <section id="news" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-12">
+                <div>
+                    <h2 class="text-4xl font-bold text-dark-slate mb-4">Tin tức & Phân tích</h2>
+                    <p class="text-xl text-gray-600">Cập nhật mới nhất từ thị trường Bitcoin</p>
+                </div>
+                <button class="mt-4 lg:mt-0 bg-bitcoin text-white px-6 py-3 rounded-lg font-semibold hover:bg-bitcoin-light transition-colors">
+                    Xem tất cả
+                </button>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Featured Article -->
+                <div class="lg:col-span-2 bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                    <!-- Bitcoin market analysis illustration -->
+                    <img src="https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" 
+                         alt="Bitcoin market analysis and trading charts" 
+                         class="w-full h-64 object-cover">
+                    
+                    <div class="p-8">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <span class="bg-bitcoin text-white px-3 py-1 rounded-full text-sm font-medium">Phân tích chuyên sâu</span>
+                            <span class="text-gray-500 text-sm">2 giờ trước</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark-slate mb-4">
+                            Bitcoin vượt mốc $44K: Tín hiệu tăng trưởng mạnh hay bẫy bull trap?
+                        </h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            Phân tích kỹ thuật cho thấy Bitcoin đã phá vỡ ngưỡng kháng cự quan trọng tại $43,500. 
+                            AI dự báo của HHDcoin chỉ ra khả năng tiếp tục tăng trưởng trong 7 ngày tới với độ tin cậy 87%...
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-bitcoin rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold text-sm">AI</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-dark-slate">Hệ thống AI HHDcoin</div>
+                                    <div class="text-sm text-gray-500">Chuyên gia phân tích</div>
+                                </div>
+                            </div>
+                            <button class="text-bitcoin hover:text-bitcoin-light font-medium">
+                                Đọc tiếp <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- News List -->
+                <div class="space-y-6">
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                        <div class="flex items-start space-x-4">
+                            <!-- Cryptocurrency news and updates visualization -->
+                            <img src="https://images.unsplash.com/photo-1640340434855-6084b1f4901c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100" 
+                                 alt="Cryptocurrency news and market updates" 
+                                 class="w-20 h-16 rounded-lg object-cover flex-shrink-0">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-dark-slate mb-2">ETF Bitcoin tiếp tục thu hút dòng vốn khủng</h4>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <span>1 giờ trước</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-success">Tích cực</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                        <div class="flex items-start space-x-4">
+                            <!-- Financial trading and investment concept -->
+                            <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100" 
+                                 alt="Financial trading and investment analysis" 
+                                 class="w-20 h-16 rounded-lg object-cover flex-shrink-0">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-dark-slate mb-2">Fed có thể cắt giảm lãi suất sớm hơn dự kiến</h4>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <span>3 giờ trước</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-bitcoin">Quan trọng</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                        <div class="flex items-start space-x-4">
+                            <!-- Technology and blockchain innovation -->
+                            <img src="https://images.unsplash.com/photo-1639322537228-f710d846310a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100" 
+                                 alt="Blockchain technology and innovation" 
+                                 class="w-20 h-16 rounded-lg object-cover flex-shrink-0">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-dark-slate mb-2">Công nghệ Lightning Network đạt kỷ lục mới</h4>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <span>5 giờ trước</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-blue-500">Công nghệ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                        <div class="flex items-start space-x-4">
+                            <!-- Global economy and financial markets -->
+                            <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=100" 
+                                 alt="Global financial markets and economy" 
+                                 class="w-20 h-16 rounded-lg object-cover flex-shrink-0">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-dark-slate mb-2">Thị trường châu Á phản ứng tích cực với Bitcoin</h4>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <span>8 giờ trước</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-green-500">Thị trường</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: News & Analysis -->
+
+    <!-- @COMPONENT: Market Analysis [charts and data] -->
+    <section id="analysis" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-dark-slate mb-4">Phân tích thị trường</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Biểu đồ và chỉ số chi tiết để đưa ra quyết định đầu tư thông minh
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Main Chart -->
+                <div class="lg:col-span-2 bg-gray-50 rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-dark-slate">Biểu đồ giá Bitcoin</h3>
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-bitcoin text-white rounded-lg text-sm font-medium">1D</button>
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">7D</button>
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">1M</button>
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">1Y</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Placeholder -->
+                    <div class="relative h-80 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
+                        <!-- @FUNCTIONALITY: Implement interactive Bitcoin price chart using Chart.js or similar library -->
+                        <div class="text-center">
+                            <i class="fas fa-chart-line text-bitcoin text-4xl mb-4"></i>
+                            <p class="text-gray-600">Biểu đồ giá Bitcoin real-time sẽ được hiển thị tại đây</p>
+                            <p class="text-sm text-gray-500 mt-2">Tích hợp với API CoinGecko hoặc Binance</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Controls -->
+                    <div class="mt-6 grid grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-success">+2.45%</div>
+                            <div class="text-sm text-gray-600">24h Change</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-dark-slate">$44,120</div>
+                            <div class="text-sm text-gray-600">24h High</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-dark-slate">$42,890</div>
+                            <div class="text-sm text-gray-600">24h Low</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-dark-slate">28.5B</div>
+                            <div class="text-sm text-gray-600">Volume</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Indicators -->
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-bitcoin to-bitcoin-light text-white rounded-xl p-6">
+                        <h4 class="text-lg font-bold mb-4">AI Market Sentiment</h4>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold mb-2">89%</div>
+                            <div class="text-sm opacity-90">Tích cực</div>
+                        </div>
+                        <div class="mt-4 bg-white/20 rounded-full h-2">
+                            <div class="bg-white h-2 rounded-full" style="width: 89%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-xl p-6">
+                        <h4 class="text-lg font-bold text-dark-slate mb-4">Chỉ số Fear & Greed</h4>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-success mb-2">72</div>
+                            <div class="text-sm text-gray-600">Greed (Tham lam)</div>
+                        </div>
+                        <div class="mt-4 bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-danger via-yellow-500 to-success h-2 rounded-full" style="width: 72%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-xl p-6">
+                        <h4 class="text-lg font-bold text-dark-slate mb-4">Top Indicators</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">RSI (14)</span>
+                                <span class="font-semibold text-success">65.2</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">MACD</span>
+                                <span class="font-semibold text-success">+450</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">MA 50/200</span>
+                                <span class="font-semibold text-bitcoin">Golden Cross</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">Volume</span>
+                                <span class="font-semibold text-success">+15%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Market Analysis -->
+
+    <!-- @COMPONENT: Community Section [social features] -->
+    <section id="community" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-dark-slate mb-4">Cộng đồng HHDcoin</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Kết nối với hàng nghìn nhà đầu tư Bitcoin, chia sẻ kinh nghiệm và học hỏi từ các chuyên gia
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Community Stats -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-bold text-dark-slate mb-6">Thống kê cộng đồng</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-users text-bitcoin text-xl"></i>
+                                <span class="text-gray-700">Thành viên</span>
+                            </div>
+                            <span class="text-2xl font-bold text-dark-slate" data-bind="community.members">15,847</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-comments text-success text-xl"></i>
+                                <span class="text-gray-700">Tin nhắn hôm nay</span>
+                            </div>
+                            <span class="text-2xl font-bold text-dark-slate" data-bind="community.messages">1,234</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-star text-yellow-500 text-xl"></i>
+                                <span class="text-gray-700">Chuyên gia</span>
+                            </div>
+                            <span class="text-2xl font-bold text-dark-slate" data-bind="community.experts">47</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-globe text-blue-500 text-xl"></i>
+                                <span class="text-gray-700">Quốc gia</span>
+                            </div>
+                            <span class="text-2xl font-bold text-dark-slate" data-bind="community.countries">23</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-8 bg-bitcoin text-white py-3 rounded-lg font-semibold hover:bg-bitcoin-light transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Tham gia cộng đồng
+                    </button>
+                </div>
+                
+                <!-- Recent Discussions -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-8 shadow-lg">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-dark-slate">Thảo luận gần đây</h3>
+                        <button class="text-bitcoin hover:text-bitcoin-light font-medium">Xem tất cả</button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- @MAP: discussions.map(discussion => ( -->
+                        <div class="border-b border-gray-100 pb-6 last:border-b-0" data-mock="true">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold">NH</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="font-semibold text-dark-slate" data-bind="user.name">Nguyễn Hoàng</span>
+                                        <span class="text-sm text-gray-500" data-bind="user.level">VIP Member</span>
+                                        <span class="text-sm text-gray-400" data-bind="post.time">2 giờ trước</span>
+                                    </div>
+                                    <h4 class="font-semibold text-dark-slate mb-2" data-bind="post.title">
+                                        Có nên DCA Bitcoin trong tình hình hiện tại?
+                                    </h4>
+                                    <p class="text-gray-600 mb-3" data-bind="post.preview">
+                                        Với việc giá Bitcoin đang dao động quanh mức $43K, mọi người nghĩ sao về chiến lược DCA...
+                                    </p>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                        <span><i class="fas fa-thumbs-up mr-1"></i><span data-bind="post.likes">23</span> likes</span>
+                                        <span><i class="fas fa-comment mr-1"></i><span data-bind="post.replies">8</span> replies</span>
+                                        <span class="text-bitcoin cursor-pointer hover:text-bitcoin-light">Trả lời</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-b border-gray-100 pb-6 last:border-b-0" data-mock="true">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-success to-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold">AI</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="font-semibold text-dark-slate">HHDcoin AI Assistant</span>
+                                        <span class="bg-bitcoin text-white px-2 py-1 rounded-full text-xs">BOT</span>
+                                        <span class="text-sm text-gray-400">1 giờ trước</span>
+                                    </div>
+                                    <h4 class="font-semibold text-dark-slate mb-2">
+                                        Báo cáo phân tích thị trường tuần này
+                                    </h4>
+                                    <p class="text-gray-600 mb-3">
+                                        AI phân tích cho thấy Bitcoin có 78% khả năng tăng giá trong 7 ngày tới dựa trên...
+                                    </p>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                        <span><i class="fas fa-thumbs-up mr-1"></i>156 likes</span>
+                                        <span><i class="fas fa-comment mr-1"></i>45 replies</span>
+                                        <span class="text-bitcoin cursor-pointer hover:text-bitcoin-light">Xem báo cáo đầy đủ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-b border-gray-100 pb-6 last:border-b-0" data-mock="true">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold">LT</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="font-semibold text-dark-slate">Lê Thành</span>
+                                        <span class="text-sm text-gray-500">Expert Trader</span>
+                                        <span class="text-sm text-gray-400">5 giờ trước</span>
+                                    </div>
+                                    <h4 class="font-semibold text-dark-slate mb-2">
+                                        Phân tích kỹ thuật: Mô hình cờ bull đang hình thành
+                                    </h4>
+                                    <p class="text-gray-600 mb-3">
+                                        Quan sát biểu đồ 4H của Bitcoin, tôi thấy mô hình bull flag rất rõ ràng. Target ngắn hạn...
+                                    </p>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                        <span><i class="fas fa-thumbs-up mr-1"></i>89 likes</span>
+                                        <span><i class="fas fa-comment mr-1"></i>32 replies</span>
+                                        <span class="text-bitcoin cursor-pointer hover:text-bitcoin-light">Trả lời</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Community Section -->
+
+    <!-- @COMPONENT: Contact & Support [comprehensive contact information] -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-dark-slate mb-4">Liên hệ & Hỗ trợ</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Đội ngũ chuyên gia HHDcoin luôn sẵn sàng hỗ trợ bạn 24/7
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <!-- Contact Information -->
+                <div class="space-y-8">
+                    <div class="bg-gradient-to-br from-bitcoin to-bitcoin-light text-white rounded-2xl p-8">
+                        <h3 class="text-2xl font-bold mb-6">Thông tin liên hệ</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-envelope text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold mb-1">Email</div>
+                                    <a href="mailto:haidh1975@gmail.com" class="opacity-90 hover:opacity-100">haidh1975@gmail.com</a>
+                                    <div class="text-sm opacity-75">Phản hồi trong vòng 2 giờ</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-phone text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold mb-1">Điện thoại</div>
+                                    <a href="tel:+84888151975" class="opacity-90 hover:opacity-100">+84 888 151 975</a>
+                                    <div class="text-sm opacity-75">Hỗ trợ 24/7</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold mb-1">Địa chỉ</div>
+                                    <div class="opacity-90">Số 25, ngõ 155 đường Cầu Giấy</div>
+                                    <div class="opacity-90">Phường Quan Giấy, TP. Hà Nội</div>
+                                    <div class="text-sm opacity-75">Giờ làm việc: 8:00 - 22:00</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fab fa-facebook text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold mb-1">Facebook</div>
+                                    <a href="https://www.facebook.com/profile.php?id=100067837153049" 
+                                       target="_blank" 
+                                       class="opacity-90 hover:opacity-100">
+                                        HHDcoin Official
+                                    </a>
+                                    <div class="text-sm opacity-75">Cập nhật tin tức mới nhất</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Support Options -->
+                    <div class="bg-gray-50 rounded-2xl p-8">
+                        <h3 class="text-2xl font-bold text-dark-slate mb-6">Tùy chọn hỗ trợ</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:border-bitcoin transition-colors">
+                                <i class="fas fa-comments text-bitcoin text-2xl mb-2"></i>
+                                <div class="font-semibold text-dark-slate">Live Chat</div>
+                                <div class="text-sm text-gray-600">Trực tuyến</div>
+                            </button>
+                            
+                            <button class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:border-bitcoin transition-colors">
+                                <i class="fas fa-video text-bitcoin text-2xl mb-2"></i>
+                                <div class="font-semibold text-dark-slate">Video Call</div>
+                                <div class="text-sm text-gray-600">Đặt lịch</div>
+                            </button>
+                            
+                            <button class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:border-bitcoin transition-colors">
+                                <i class="fas fa-question-circle text-bitcoin text-2xl mb-2"></i>
+                                <div class="font-semibold text-dark-slate">FAQ</div>
+                                <div class="text-sm text-gray-600">Câu hỏi thường gặp</div>
+                            </button>
+                            
+                            <button class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:border-bitcoin transition-colors">
+                                <i class="fas fa-book text-bitcoin text-2xl mb-2"></i>
+                                <div class="font-semibold text-dark-slate">Hướng dẫn</div>
+                                <div class="text-sm text-gray-600">Tài liệu chi tiết</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Form -->
+                <div class="bg-gray-50 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-dark-slate mb-6">Gửi tin nhắn</h3>
+                    
+                    <form class="space-y-6" data-event="submit:sendContactForm">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
+                                <input type="text" 
+                                       placeholder="Nhập họ tên..." 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                                       data-bind="contact.name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
+                                <input type="tel" 
+                                       placeholder="Nhập số điện thoại..." 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                                       data-bind="contact.phone">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" 
+                                   placeholder="Nhập email..." 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                                   data-bind="contact.email">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Chủ đề</label>
+                            <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent" data-bind="contact.subject">
+                                <option value="">Chọn chủ đề...</option>
+                                <option value="investment">Tư vấn đầu tư</option>
+                                <option value="technical">Hỗ trợ kỹ thuật</option>
+                                <option value="partnership">Hợp tác kinh doanh</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
+                            <textarea rows="5" 
+                                      placeholder="Nhập nội dung tin nhắn..." 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent resize-none"
+                                      data-bind="contact.message"></textarea>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" 
+                                   id="privacy" 
+                                   class="w-5 h-5 text-bitcoin border-gray-300 rounded focus:ring-bitcoin">
+                            <label for="privacy" class="text-sm text-gray-600">
+                                Tôi đồng ý với <a href="#" class="text-bitcoin hover:text-bitcoin-light">chính sách bảo mật</a> 
+                                và <a href="#" class="text-bitcoin hover:text-bitcoin-light">điều khoản sử dụng</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full bg-bitcoin text-white py-4 rounded-lg font-semibold hover:bg-bitcoin-light transition-colors"
+                                data-implementation="Should validate form and send email via backend API">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Gửi tin nhắn
+                        </button>
+                    </form>
+                    
+                    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                            <div class="text-sm text-blue-700">
+                                <strong>Lưu ý:</strong> Chúng tôi cam kết phản hồi mọi tin nhắn trong vòng 2 giờ làm việc. 
+                                Đối với các vấn đề khẩn cấp, vui lòng gọi trực tiếp hotline.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Contact & Support -->
+
+    <!-- @COMPONENT: Footer [company information, links, social] -->
+    <footer class="bg-dark-slate text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid lg:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-bitcoin to-bitcoin-light rounded-full flex items-center justify-center">
+                            <i class="fab fa-bitcoin text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">HHDcoin</h3>
+                            <p class="text-gray-400 text-sm">Bitcoin Investment Platform</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        HHDcoin là nền tảng đầu tư Bitcoin hàng đầu Việt Nam, cung cấp công nghệ AI dự báo tiên tiến, 
+                        phân tích thị trường chuyên sâu và dịch vụ tư vấn đầu tư chuyên nghiệp.
+                    </p>
+                    
+                    <div class="flex space-x-4">
+                        <a href="https://www.facebook.com/profile.php?id=100067837153049" 
+                           target="_blank"
+                           class="w-10 h-10 bg-gray-700 hover:bg-bitcoin rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-facebook text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-bitcoin rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-twitter text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-bitcoin rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-telegram text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-bitcoin rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-youtube text-white"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-xl font-bold mb-6">Liên kết nhanh</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="text-gray-300 hover:text-bitcoin transition-colors">Trang chủ</a></li>
+                        <li><a href="#investment" class="text-gray-300 hover:text-bitcoin transition-colors">Đầu tư</a></li>
+                        <li><a href="#news" class="text-gray-300 hover:text-bitcoin transition-colors">Tin tức</a></li>
+                        <li><a href="#analysis" class="text-gray-300 hover:text-bitcoin transition-colors">Phân tích</a></li>
+                        <li><a href="#community" class="text-gray-300 hover:text-bitcoin transition-colors">Cộng đồng</a></li>
+                        <li><a href="#contact" class="text-gray-300 hover:text-bitcoin transition-colors">Liên hệ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div>
+                    <h4 class="text-xl font-bold mb-6">Hỗ trợ</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-300 hover:text-bitcoin transition-colors">Hướng dẫn đầu tư</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-bitcoin transition-colors">FAQ</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-bitcoin transition-colors">Bảo mật</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-bitcoin transition-colors">Điều khoản</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-bitcoin transition-colors">Chính sách</a></li>
+                        <li><a href="mailto:haidh1975@gmail.com" class="text-gray-300 hover:text-bitcoin transition-colors">Liên hệ hỗ trợ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-12 pt-8">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                    <div class="text-gray-400 text-sm mb-4 lg:mb-0">
+                        © 2024 HHDcoin. Tất cả quyền được bảo lưu.
+                    </div>
+                    <div class="flex flex-wrap gap-6 text-sm text-gray-400">
+                        <a href="#" class="hover:text-bitcoin transition-colors">Chính sách bảo mật</a>
+                        <a href="#" class="hover:text-bitcoin transition-colors">Điều khoản sử dụng</a>
+                        <a href="#" class="hover:text-bitcoin transition-colors">Chính sách cookie</a>
+                        <a href="#" class="hover:text-bitcoin transition-colors">Sitemap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+    (function() {
+        // Investment Calculator Logic
+        function calculateInvestment() {
+            const amount = document.querySelector('[data-bind="investment.amount"]')?.value || 50000000;
+            const duration = document.querySelector('[data-bind="investment.duration"]')?.value || 6;
+            const packageType = document.querySelector('[data-package].border-bitcoin')?.dataset.package || 'premium';
+            
+            // Calculate based on package type
+            let rate;
+            switch(packageType) {
+                case 'basic': rate = 0.065; break;
+                case 'premium': rate = 0.10; break;
+                case 'vip': rate = 0.15; break;
+                default: rate = 0.10;
+            }
+            
+            const monthlyRate = rate / 12;
+            const profit = amount * monthlyRate * duration;
+            const total = parseInt(amount) + profit;
+            
+            // Update UI
+            const investmentDisplay = document.querySelector('[data-bind="calculation.investment"]');
+            const profitDisplay = document.querySelector('[data-bind="calculation.profit"]');
+            const totalDisplay = document.querySelector('[data-bind="calculation.total"]');
+            const profitPercentDisplay = document.querySelector('[data-bind="calculation.profitPercent"]');
+            
+            if (investmentDisplay) investmentDisplay.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+            if (profitDisplay) profitDisplay.textContent = '+' + new Intl.NumberFormat('vi-VN').format(profit) + ' VNĐ';
+            if (totalDisplay) totalDisplay.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ';
+            if (profitPercentDisplay) profitPercentDisplay.textContent = `(+${(rate * 100).toFixed(1)}% sau ${duration} tháng)`;
+        }
+        
+        // Package Selection
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('[data-package]')) {
+                // Remove active state from all packages
+                document.querySelectorAll('[data-package]').forEach(pkg => {
+                    pkg.classList.remove('border-bitcoin', 'border-2', 'bg-bitcoin/10');
+                    pkg.classList.add('border-gray-300');
+                });
+                
+                // Add active state to clicked package
+                const clickedPackage = e.target.closest('[data-package]');
+                clickedPackage.classList.remove('border-gray-300');
+                clickedPackage.classList.add('border-bitcoin', 'border-2', 'bg-bitcoin/10');
+                
+                calculateInvestment();
+            }
+        });
+        
+        // Form input changes
+        document.addEventListener('input', function(e) {
+            if (e.target.matches('[data-bind="investment.amount"], [data-bind="investment.duration"]')) {
+                calculateInvestment();
+            }
+        });
+        
+        // Smooth scrolling for navigation links
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('a[href^="#"]')) {
+                e.preventDefault();
+                const target = document.querySelector(e.target.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+        
+        // Initialize calculator
+        calculateInvestment();
+        
+        // TODO: Implement real-time Bitcoin price updates
+        // TODO: Implement form submission handlers
+        // TODO: Implement real chart integration
+        // TODO: Implement community features
+        // TODO: Implement AI prediction API
+    })();
+    </script>
+</body>
+</html>
