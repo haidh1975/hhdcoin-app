@@ -1,5 +1,7 @@
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
+import OrcidPublications from "@/components/orcid-publications";
+import ResearchAssistant from "@/components/research-assistant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,6 +65,12 @@ export default function Research() {
             );
           })}
         </div>
+
+        {/* HHD AI Research Assistant */}
+        <ResearchAssistant />
+
+        {/* Công bố khoa học trực tiếp từ ORCID */}
+        <OrcidPublications />
 
         <Card className="dark:bg-gray-900 dark:border-gray-700">
           <CardHeader>

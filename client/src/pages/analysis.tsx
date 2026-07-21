@@ -233,6 +233,16 @@ export default function Analysis() {
         </div>
       </section>
 
+      {/* Kinh tế Việt Nam (World Bank, real-time có cache) */}
+      <section className="py-8 bg-white dark:bg-gray-900" data-testid="section-vn-economy">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold text-dark-slate dark:text-white mb-6 flex items-center gap-2">
+            <BarChart3 className="h-6 w-6 text-bitcoin" /> Kinh tế Việt Nam
+          </h2>
+          <VnEconomy />
+        </div>
+      </section>
+
       {/* Bitcoin Chart Section */}
       <BitcoinChart />
 
