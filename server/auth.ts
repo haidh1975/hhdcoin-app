@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type { Request, Response, NextFunction } from 'express';
+import { env } from './config/env';
 import { storage } from './storage';
 import type { AuthUser } from '@shared/schema';
 
@@ -10,17 +11,17 @@ export interface AuthRequest extends Request {
 
 // JWT token generation
 export const generateToken = (user: AuthUser): string => {
-  if (!process.env.JWT_SECRET) {
+  if (!env.JWT_SECRET) {
     throw new Error('JWT_SECRET is not configured');
   }
-  
+
   return jwt.sign(
-    { 
-      userId: user.id, 
-      username: user.username, 
-      role: user.role 
+    {
+      userId: user.id,
+      username: user.username,
+      role: user.role
     },
-    process.env.JWT_SECRET,
+    env.JWT_SECRET,
     { expiresIn: '7d' } // Token expires in 7 days
   );
 };
@@ -46,13 +47,13 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 
   try {
-    if (!process.env.JWT_SECRET) {
+    if (!env.JWT_SECRET) {
       throw new Error('JWT_SECRET is not configured');
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    const decoded = jwt.verify(token, env.JWT_SECRET) as any;
     const user = await storage.getAuthUser(decoded.userId);
-    
+
     if (!user || user.status !== 'active') {
       return res.status(401).json({ message: 'User not found or inactive', code: 'USER_INACTIVE' });
     }
@@ -150,11 +151,11 @@ export const hasDataAccess = (userRole: string, operation: 'read' | 'write' | 'd
 // Extract user info from token without throwing errors
 export const getUserFromToken = async (token: string): Promise<AuthUser | null> => {
   try {
-    if (!process.env.JWT_SECRET) {
+    if (!env.JWT_SECRET) {
       return null;
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    const decoded = jwt.verify(token, env.JWT_SECRET) as any;
     const user = await storage.getAuthUser(decoded.userId);
     
     return user && user.status === 'active' ? user : null;

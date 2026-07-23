@@ -1,9 +1,10 @@
 import { readFileSync, readdirSync } from "fs";
 import { fileURLToPath } from "url";
 import { join, dirname } from "path";
+import { env } from "./config/env";
 import * as schema from "@shared/schema";
 
-const dbUrl = process.env.DATABASE_URL;
+const dbUrl = env.DATABASE_URL;
 const isPlaceholder = !dbUrl || dbUrl.includes("ep-xxx-yyy") || dbUrl.includes("user:password@ep-xxx");
 // Neon dùng serverless WebSocket driver; Postgres chuẩn (Railway, local) dùng node-postgres.
 const isNeon = !!dbUrl && /\.neon\.tech/.test(dbUrl);

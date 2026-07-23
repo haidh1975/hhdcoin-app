@@ -1,5 +1,6 @@
 // Automated Backup Scheduler for Google Drive
 import cron, { ScheduledTask } from 'node-cron';
+import { env } from './config/env';
 import { googleDriveService } from './google-drive-service';
 import { log } from './vite';
 
@@ -21,12 +22,12 @@ class BackupScheduler {
   constructor() {
     // Default configuration
     this.config = {
-      enabled: process.env.BACKUP_SCHEDULER_ENABLED === 'true',
-      schedule: process.env.BACKUP_SCHEDULE || '0 2 * * *', // Daily at 2 AM
+      enabled: env.BACKUP_SCHEDULER_ENABLED === 'true',
+      schedule: env.BACKUP_SCHEDULE || '0 2 * * *', // Daily at 2 AM
       includeDatabase: true,
       includeWebFiles: true,
       includeUserUploads: true,
-      keepBackups: parseInt(process.env.BACKUP_KEEP_COUNT || '7'),
+      keepBackups: parseInt(env.BACKUP_KEEP_COUNT || '7'),
       autoCleanup: true
     };
 

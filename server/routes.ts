@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
+import { env, isProd } from "./config/env";
 import { storage } from "./storage";
 import { emailService } from "./email-service";
 import { marketDataService } from "./market-data-service";
@@ -52,7 +53,7 @@ import { googleDriveService } from "./google-drive-service";
 import rateLimit from "express-rate-limit";
 
 // Initialize Stripe with conditional validation (no crash if missing)
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const stripeSecretKey = env.STRIPE_SECRET_KEY;
 const INSTANCE_ID = `pid:${process.pid}`;
 const stripeAvailable = !!stripeSecretKey && /^sk_(test|live)_/.test(stripeSecretKey);
 
@@ -807,8 +808,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if Stripe is available
       if (!stripe) {
         log(`[PAYMENT][${INSTANCE_ID}] Stripe not available, checking environment...`);
-        log(`[PAYMENT][${INSTANCE_ID}] NODE_ENV: ${process.env.NODE_ENV}`);
-        log(`[PAYMENT][${INSTANCE_ID}] STRIPE_SECRET_KEY available: ${!!process.env.STRIPE_SECRET_KEY}`);
+        log(`[PAYMENT][${INSTANCE_ID}] NODE_ENV: ${env.NODE_ENV}`);
+        log(`[PAYMENT][${INSTANCE_ID}] STRIPE_SECRET_KEY available: ${!!env.STRIPE_SECRET_KEY}`);
         log(`[PAYMENT][${INSTANCE_ID}] Stripe variable initialized: ${!!stripe}`);
         return res.status(503).json({ error: "Payment service temporarily unavailable - Stripe not configured" });
       }
@@ -1007,8 +1008,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Verify webhook signature for security
-        const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-        const isProduction = process.env.NODE_ENV === 'production';
+        const endpointSecret = env.STRIPE_WEBHOOK_SECRET;
+        const isProduction = isProd;
         
         if (endpointSecret && sig) {
           event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
@@ -1712,10 +1713,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/email/status", authenticateToken, requireAdmin, async (_req: AuthRequest, res) => {
     const ok = await emailService.verifyEmailConnection();
     res.json({
-      configured: !!process.env.RESEND_API_KEY || !!process.env.SMTP_HOST,
+      configured: !!env.RESEND_API_KEY || !!env.SMTP_HOST,
       connected: ok,
-      provider: process.env.RESEND_API_KEY ? "resend" : (process.env.SMTP_HOST ? "smtp" : null),
-      from: process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? null,
+      provider: env.RESEND_API_KEY ? "resend" : (env.SMTP_HOST ? "smtp" : null),
+      from: env.EMAIL_FROM ?? env.SMTP_USER ?? null,
     });
   });
 

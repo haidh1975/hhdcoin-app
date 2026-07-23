@@ -1,4 +1,6 @@
-import { log } from "./vite";
+import { logger } from "./core/logger";
+import { fetchJson } from "./core/http-client";
+import { TtlCache } from "./core/cache";
 
 // Dữ liệu kinh tế Việt Nam từ World Bank API (miễn phí, không cần key). Cache 6h.
 const INDICATORS: { key: string; code: string; label: string; unit: string }[] = [
@@ -15,19 +17,13 @@ const INDICATORS: { key: string; code: string; label: string; unit: string }[] =
 export interface VnIndicator { key: string; label: string; unit: string; value: number | null; year: string | null }
 export interface VnEconomy { country: string; indicators: VnIndicator[]; updatedAt: string; source: "live" | "cache" | "mock" }
 
-let cache: VnEconomy | null = null;
-let cacheAt = 0;
-const TTL = 6 * 60 * 60 * 1000;
+const cache = new TtlCache<VnEconomy>(6 * 60 * 60 * 1000); // 6h
 
 async function fetchIndicator(code: string): Promise<{ value: number | null; year: string | null }> {
   try {
-    const url = `https://api.worldbank.org/v2/country/VNM/indicator/${code}?format=json&mrnev=1`;
-    const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 8000);
-    const res = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(to);
-    if (!res.ok) return { value: null, year: null };
-    const data: any = await res.json();
+    const data = await fetchJson<any>(
+      `https://api.worldbank.org/v2/country/VNM/indicator/${code}?format=json&mrnev=1`,
+    );
     const row = data?.[1]?.[0];
     return { value: row?.value ?? null, year: row?.date ?? null };
   } catch {
@@ -43,7 +39,8 @@ const MOCK: Record<string, { value: number; year: string }> = {
 };
 
 export async function getVnEconomy(): Promise<VnEconomy> {
-  if (cache && Date.now() - cacheAt < TTL) return { ...cache, source: "cache" };
+  const cached = cache.fresh;
+  if (cached) return { ...cached, source: "cache" };
   try {
     const results = await Promise.all(INDICATORS.map((i) => fetchIndicator(i.code)));
     let liveCount = 0;
@@ -59,11 +56,12 @@ export async function getVnEconomy(): Promise<VnEconomy> {
       updatedAt: new Date().toISOString(),
       source: liveCount > 0 ? "live" : "mock",
     };
-    cache = eco; cacheAt = Date.now();
+    cache.set(eco);
     return eco;
   } catch (err: any) {
-    log(`[VnEconomy] error: ${err.message}`);
-    if (cache) return { ...cache, source: "cache" };
+    logger.error("VnEconomy", err, "market");
+    const stale = cache.any;
+    if (stale) return { ...stale, source: "cache" };
     return {
       country: "Việt Nam", source: "mock", updatedAt: new Date().toISOString(),
       indicators: INDICATORS.map((i) => ({ key: i.key, label: i.label, unit: i.unit, value: MOCK[i.key].value, year: MOCK[i.key].year })),

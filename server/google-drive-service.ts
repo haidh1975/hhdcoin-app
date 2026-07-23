@@ -5,6 +5,7 @@ import path from 'path';
 import archiver from 'archiver';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { env } from './config/env';
 import { log } from './vite';
 
 const execAsync = promisify(exec);
@@ -34,9 +35,9 @@ class GoogleDriveBackupService {
   private async initializeService() {
     try {
       // Check for Google Drive credentials in environment
-      const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-      const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-      const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+      const clientEmail = env.GOOGLE_CLIENT_EMAIL;
+      const privateKey = env.GOOGLE_PRIVATE_KEY;
+      const folderId = env.GOOGLE_DRIVE_FOLDER_ID;
 
       if (!clientEmail || !privateKey || !folderId) {
         log('[GoogleDrive] Missing credentials - backup service disabled');
@@ -121,7 +122,7 @@ class GoogleDriveBackupService {
   // Create database backup
   private async createDatabaseBackup(backupDir: string): Promise<string | null> {
     try {
-      const dbUrl = process.env.DATABASE_URL;
+      const dbUrl = env.DATABASE_URL;
       if (!dbUrl) {
         log('[GoogleDrive] DATABASE_URL not found, skipping database backup');
         return null;

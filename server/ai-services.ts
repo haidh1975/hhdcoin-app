@@ -1,9 +1,10 @@
 import OpenAI from "openai";
+import { env } from "./config/env";
 import { log } from "./vite";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const openai = env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: env.OPENAI_API_KEY })
   : null as unknown as OpenAI;
 const INSTANCE_ID = `pid:${process.pid}`;
 
@@ -34,7 +35,7 @@ export interface TradingRecommendation {
 export async function analyzeMarketWithAI(bitcoinData: any): Promise<MarketAnalysisAI> {
   try {
     // Check if OpenAI API key is available
-    if (!process.env.OPENAI_API_KEY) {
+    if (!env.OPENAI_API_KEY) {
       log(`[AI][${INSTANCE_ID}] OpenAI API key not available, using fallback analysis`);
       throw new Error("OpenAI API key not configured");
     }

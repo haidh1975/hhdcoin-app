@@ -37,6 +37,7 @@ import {
   auditLogs
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { isProd } from "./config/env";
 import { hashPassword } from "./auth";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -357,7 +358,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // SECURITY: tài khoản mẫu password yếu — CHỈ seed ở development.
       // Production dùng `npm run setup:admin` với password từ env.
-      if (process.env.NODE_ENV === 'production') return;
+      if (isProd) return;
 
       // Check if auth users already exist
       const existingUsers = await db.select().from(authUsers).limit(1);

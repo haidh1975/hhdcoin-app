@@ -1,7 +1,10 @@
-import { log } from "./vite";
+import { env } from "./config/env";
+import { logger } from "./core/logger";
+import { fetchJson } from "./core/http-client";
+import { TtlCache } from "./core/cache";
 
 // Tích hợp hồ sơ khoa học trực tiếp qua ORCID Public API (miễn phí, không cần key). Cache 12h.
-const ORCID_ID = process.env.ORCID_ID ?? "0000-0001-5811-7154";
+const ORCID_ID = env.ORCID_ID;
 
 export interface Publication { title: string; year: string | null; type: string; journal: string | null; url: string | null }
 export interface OrcidProfile {
@@ -12,22 +15,15 @@ export interface OrcidProfile {
   source: "live" | "cache" | "unavailable";
 }
 
-let cache: OrcidProfile | null = null;
-let cacheAt = 0;
-const TTL = 12 * 60 * 60 * 1000;
+const cache = new TtlCache<OrcidProfile>(12 * 60 * 60 * 1000); // 12h
 
 export async function getOrcidProfile(): Promise<OrcidProfile> {
-  if (cache && Date.now() - cacheAt < TTL) return { ...cache, source: "cache" };
+  const cached = cache.fresh;
+  if (cached) return { ...cached, source: "cache" };
   try {
-    const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 9000);
-    const res = await fetch(`https://pub.orcid.org/v3.0/${ORCID_ID}/works`, {
-      headers: { accept: "application/json" },
-      signal: ctrl.signal,
+    const data = await fetchJson<any>(`https://pub.orcid.org/v3.0/${ORCID_ID}/works`, {
+      timeoutMs: 9000,
     });
-    clearTimeout(to);
-    if (!res.ok) throw new Error(`${res.status}`);
-    const data: any = await res.json();
 
     const groups: any[] = data?.group ?? [];
     const pubs: Publication[] = groups.map((g) => {
@@ -49,11 +45,12 @@ export async function getOrcidProfile(): Promise<OrcidProfile> {
       updatedAt: new Date().toISOString(),
       source: "live",
     };
-    cache = profile; cacheAt = Date.now();
+    cache.set(profile);
     return profile;
   } catch (err: any) {
-    log(`[ORCID] error: ${err.message}`);
-    if (cache) return { ...cache, source: "cache" };
+    logger.error("ORCID", err, "research");
+    const stale = cache.any;
+    if (stale) return { ...stale, source: "cache" };
     return { orcidId: ORCID_ID, total: 0, publications: [], updatedAt: new Date().toISOString(), source: "unavailable" };
   }
 }
