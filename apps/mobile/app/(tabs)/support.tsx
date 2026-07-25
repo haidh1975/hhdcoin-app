@@ -13,17 +13,7 @@ import {
 } from 'react-native';
 import { Send, Bot, User, MessageCircle } from 'lucide-react-native';
 import type { ChatMessage } from '@hhd-i/types';
-
-const COLORS = {
-  bg: '#0B0E11',
-  card: '#131722',
-  border: '#2B3139',
-  brand: '#F0B90B',
-  text: '#EAECEF',
-  muted: '#707A8A',
-  dark700: '#1E2329',
-  success: '#0ECB81',
-};
+import { COLORS } from '../../src/theme';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 

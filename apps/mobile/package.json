@@ -16,7 +16,8 @@
     "react-native": "0.74.1",
     "@react-navigation/native": "^6.1.17",
     "lucide-react-native": "^0.378.0",
-    "@hhd-i/types": "*"
+    "@hhd-i/types": "*",
+    "@hhd-i/ui-tokens": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",

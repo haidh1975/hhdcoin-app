@@ -4,7 +4,8 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@hhd-i/types": ["../../packages/types/src/index.ts"]
+      "@hhd-i/types": ["../../packages/types/src/index.ts"],
+      "@hhd-i/ui-tokens": ["../../packages/ui-tokens/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]

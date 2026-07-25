@@ -1,3 +1,10 @@
+// Single source of truth for the palette: packages/ui-tokens.
+// This config is CommonJS and is evaluated by Node (PostCSS/Next), which cannot
+// `require()` the package's TypeScript entrypoint — so we require the raw JSON
+// palette that `@hhd-i/ui-tokens` itself builds its typed `colors` export from.
+// Same bytes, one place, no build step.
+const tokens = require('@hhd-i/ui-tokens/src/palette.json')
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -9,17 +16,17 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#F0B90B',
-          dark: '#d4a309',
-          light: '#f5cc3d',
+          DEFAULT: tokens.brand,
+          dark: tokens.brandDark,
+          light: tokens.brandLight,
         },
         dark: {
-          900: '#0B0E11',
-          800: '#131722',
-          700: '#1E2329',
-          600: '#2B3139',
-          500: '#474D57',
-          400: '#707A8A',
+          900: tokens.background,
+          800: tokens.surface,
+          700: tokens.elevated,
+          600: tokens.border,
+          500: tokens.borderStrong,
+          400: tokens.textMuted,
         },
       },
       fontFamily: {

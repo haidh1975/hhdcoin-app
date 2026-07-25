@@ -8,24 +8,13 @@ import {
 import { useRouter } from 'expo-router';
 import { TrendingUp, TrendingDown, Bot, ShieldAlert, BarChart2, MessageCircle } from 'lucide-react-native';
 import { mockPortfolio, mockMarketData, mockRiskScore } from '../../src/lib/mockData';
-
-const COLORS = {
-  bg: '#0B0E11',
-  card: '#131722',
-  border: '#2B3139',
-  brand: '#F0B90B',
-  text: '#EAECEF',
-  muted: '#707A8A',
-  success: '#0ECB81',
-  danger: '#F6465D',
-  dark700: '#1E2329',
-};
+import { COLORS, withAlpha } from '../../src/theme';
 
 const FEATURES = [
-  { href: '/assistant', icon: Bot, label: 'Trợ lý AI', color: '#F0B90B', bg: 'rgba(240,185,11,0.1)' },
-  { href: '/risk', icon: ShieldAlert, label: 'Rủi ro', color: '#F6465D', bg: 'rgba(246,70,93,0.1)' },
-  { href: '/sentiment', icon: BarChart2, label: 'Tâm lý TT', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
-  { href: '/support', icon: MessageCircle, label: 'Hỗ trợ', color: '#0ECB81', bg: 'rgba(14,203,129,0.1)' },
+  { href: '/assistant', icon: Bot, label: 'Trợ lý AI', color: COLORS.brand, bg: withAlpha(COLORS.brand, 0.1) },
+  { href: '/risk', icon: ShieldAlert, label: 'Rủi ro', color: COLORS.danger, bg: withAlpha(COLORS.danger, 0.1) },
+  { href: '/sentiment', icon: BarChart2, label: 'Tâm lý TT', color: COLORS.info, bg: withAlpha(COLORS.info, 0.1) },
+  { href: '/support', icon: MessageCircle, label: 'Hỗ trợ', color: COLORS.success, bg: withAlpha(COLORS.success, 0.1) },
 ];
 
 export default function DashboardTab() {
@@ -121,7 +110,7 @@ export default function DashboardTab() {
                     ? coin.price.toLocaleString('en-US', { minimumFractionDigits: 2 })
                     : coin.price.toFixed(coin.price >= 1 ? 2 : 4)}
                 </Text>
-                <View style={[styles.changeBadge, { backgroundColor: isPos ? 'rgba(14,203,129,0.1)' : 'rgba(246,70,93,0.1)' }]}>
+                <View style={[styles.changeBadge, { backgroundColor: isPos ? withAlpha(COLORS.success, 0.1) : withAlpha(COLORS.danger, 0.1) }]}>
                   <Text style={[styles.changeText, { color: isPos ? COLORS.success : COLORS.danger }]}>
                     {isPos ? '+' : ''}{coin.change24h.toFixed(2)}%
                   </Text>

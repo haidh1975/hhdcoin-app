@@ -1,13 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Home, Bot, ShieldAlert, BarChart2, MessageCircle } from 'lucide-react-native';
-
-const DARK = {
-  background: '#131722',
-  border: '#2B3139',
-  inactive: '#474D57',
-  active: '#F0B90B',
-  text: '#EAECEF',
-};
+import { TAB_COLORS as DARK } from '../../src/theme';
 
 export default function TabLayout() {
   return (

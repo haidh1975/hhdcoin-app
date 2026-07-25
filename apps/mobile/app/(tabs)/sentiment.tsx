@@ -2,31 +2,20 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react-native';
 import { mockSentimentData, mockMarketOverview } from '../../src/lib/mockData';
 import type { SignalType } from '@hhd-i/types';
-
-const COLORS = {
-  bg: '#0B0E11',
-  card: '#131722',
-  border: '#2B3139',
-  brand: '#F0B90B',
-  text: '#EAECEF',
-  muted: '#707A8A',
-  dark700: '#1E2329',
-  success: '#0ECB81',
-  danger: '#F6465D',
-};
+import { COLORS, SCORE_COLORS, withAlpha } from '../../src/theme';
 
 function getFearGreedColor(index: number): string {
-  if (index <= 20) return '#8B0000';
+  if (index <= 20) return SCORE_COLORS.extreme;
   if (index <= 40) return COLORS.danger;
   if (index <= 60) return COLORS.brand;
   if (index <= 80) return COLORS.success;
-  return '#0ECB81';
+  return COLORS.success;
 }
 
 function SignalIndicator({ type }: { type: SignalType }) {
   if (type === 'bullish') {
     return (
-      <View style={[styles.signalBadge, { backgroundColor: 'rgba(14,203,129,0.15)' }]}>
+      <View style={[styles.signalBadge, { backgroundColor: withAlpha(COLORS.success, 0.15) }]}>
         <TrendingUp size={10} color={COLORS.success} />
         <Text style={[styles.signalText, { color: COLORS.success }]}>Tăng</Text>
       </View>
@@ -34,14 +23,14 @@ function SignalIndicator({ type }: { type: SignalType }) {
   }
   if (type === 'bearish') {
     return (
-      <View style={[styles.signalBadge, { backgroundColor: 'rgba(246,70,93,0.15)' }]}>
+      <View style={[styles.signalBadge, { backgroundColor: withAlpha(COLORS.danger, 0.15) }]}>
         <TrendingDown size={10} color={COLORS.danger} />
         <Text style={[styles.signalText, { color: COLORS.danger }]}>Giảm</Text>
       </View>
     );
   }
   return (
-    <View style={[styles.signalBadge, { backgroundColor: 'rgba(71,77,87,0.4)' }]}>
+    <View style={[styles.signalBadge, { backgroundColor: withAlpha(COLORS.dark500, 0.4) }]}>
       <Minus size={10} color={COLORS.muted} />
       <Text style={[styles.signalText, { color: COLORS.muted }]}>Trung lập</Text>
     </View>

@@ -1,0 +1,24 @@
+{
+  "brand": "#F0B90B",
+  "brandDark": "#d4a309",
+  "brandLight": "#f5cc3d",
+
+  "background": "#0B0E11",
+  "surface": "#131722",
+  "elevated": "#1E2329",
+  "border": "#2B3139",
+  "borderStrong": "#474D57",
+  "textMuted": "#707A8A",
+  "text": "#EAECEF",
+
+  "success": "#0ECB81",
+  "danger": "#F6465D",
+  "info": "#3B82F6",
+
+  "score": {
+    "low": "#0ECB81",
+    "medium": "#F0B90B",
+    "high": "#F6465D",
+    "extreme": "#8B0000"
+  }
+}

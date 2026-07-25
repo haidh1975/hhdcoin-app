@@ -1,24 +1,13 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ShieldAlert, AlertTriangle, BarChart2, TrendingDown, Droplets } from 'lucide-react-native';
 import { mockRiskScore, mockPortfolio } from '../../src/lib/mockData';
-
-const COLORS = {
-  bg: '#0B0E11',
-  card: '#131722',
-  border: '#2B3139',
-  brand: '#F0B90B',
-  text: '#EAECEF',
-  muted: '#707A8A',
-  dark700: '#1E2329',
-  success: '#0ECB81',
-  danger: '#F6465D',
-};
+import { COLORS, SCORE_COLORS, withAlpha } from '../../src/theme';
 
 function getRiskColor(score: number): string {
   if (score < 30) return COLORS.success;
   if (score < 60) return COLORS.brand;
   if (score < 80) return COLORS.danger;
-  return '#8B0000';
+  return SCORE_COLORS.extreme;
 }
 
 function getRiskLevelText(level: string): string {
@@ -278,7 +267,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(240,185,11,0.2)',
+    backgroundColor: withAlpha(COLORS.brand, 0.2),
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
