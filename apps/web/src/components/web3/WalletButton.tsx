@@ -23,6 +23,8 @@ import {
 import { formatUnits } from 'viem';
 import { bsc, HHD_TOKEN_ADDRESS, BEP20_ABI } from '@/lib/wagmi';
 import { useWalletLink } from './useWalletLink';
+import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
+import { Card } from '@/shared/components/ui/Card';
 
 function truncate(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
@@ -59,7 +61,8 @@ export function WalletButton() {
   const { switchChain } = useSwitchChain();
 
   const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copiedKey, copy } = useCopyToClipboard(1500);
+  const copied = copiedKey !== null;
   const ref = useOutsideClose(open, () => setOpen(false));
 
   const { data: bnbBalance } = useBalance({
@@ -114,7 +117,7 @@ export function WalletButton() {
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-2 w-64 bg-dark-800 border border-dark-600 rounded-xl shadow-xl p-2 z-50">
+          <Card className="absolute right-0 mt-2 w-64 shadow-xl p-2 z-50">
             <p className="text-xs text-dark-400 px-2 py-1.5">Chọn ví để kết nối</p>
 
             {!hasInjected && (
@@ -165,7 +168,7 @@ export function WalletButton() {
                 Không thể kết nối ví. Vui lòng thử lại.
               </p>
             )}
-          </div>
+          </Card>
         )}
       </div>
     );
@@ -179,16 +182,6 @@ export function WalletButton() {
           maximumFractionDigits: 4,
         })
       : null;
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* noop */
-    }
-  };
 
   return (
     <div className="relative" ref={ref}>
@@ -204,7 +197,7 @@ export function WalletButton() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-72 bg-dark-800 border border-dark-600 rounded-xl shadow-xl p-2 z-50">
+        <Card className="absolute right-0 mt-2 w-72 shadow-xl p-2 z-50">
           <div className="px-3 py-2">
             <p className="text-xs text-dark-400">Đã kết nối với</p>
             <p className="text-sm font-semibold text-white">{chainName(chainId)}</p>
@@ -259,7 +252,7 @@ export function WalletButton() {
           )}
 
           <button
-            onClick={handleCopy}
+            onClick={() => copy(address)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-700 text-sm text-white transition-colors"
           >
             {copied ? (
@@ -279,7 +272,7 @@ export function WalletButton() {
           >
             <LogOut className="w-4 h-4" /> Ngắt kết nối
           </button>
-        </div>
+        </Card>
       )}
     </div>
   );

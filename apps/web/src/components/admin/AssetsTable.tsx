@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
 import type { Asset } from '@hhd-i/types';
+import { Spinner } from '@/shared/components/ui/Spinner';
 
 export function AssetsTable({ assets }: { assets: Asset[] }) {
   const router = useRouter();
@@ -88,7 +88,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
                 <td className="px-5 py-3.5">
                   <div className="flex items-center justify-end">
                     {busyId === a.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-dark-400" />
+                      <Spinner className="w-4 h-4 text-dark-400" />
                     ) : (
                       <button
                         onClick={() => toggleAsset(a)}

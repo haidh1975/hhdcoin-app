@@ -1,5 +1,6 @@
 import { Map as MapIcon } from 'lucide-react';
 import { ROADMAP } from '@/lib/hhd';
+import { Card } from '@/shared/components/ui/Card';
 
 export default function RoadmapPage() {
   return (
@@ -25,7 +26,7 @@ export default function RoadmapPage() {
                 <div key={i} className="relative">
                   {/* marker */}
                   <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-brand border-4 border-dark-900" />
-                  <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+                  <Card padded>
                     <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
                       <span className="text-xs font-semibold text-brand bg-brand/10 px-2.5 py-1 rounded-lg">
                         {item.quarter}
@@ -33,7 +34,7 @@ export default function RoadmapPage() {
                       <span className="text-xs text-dark-400">{item.targets}</span>
                     </div>
                     <p className="text-sm text-white leading-relaxed">{item.title}</p>
-                  </div>
+                  </Card>
                 </div>
               ))}
             </div>

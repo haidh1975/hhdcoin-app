@@ -1,21 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Lock, Loader2, AlertCircle, Calculator, Flame, Coins, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { AlertCircle, Calculator, Coins, Flame, Lock, TrendingUp } from 'lucide-react';
 import { STAKE_TIERS, STAKE_TIER_ORDER, STAKING_CONFIG } from '@/lib/hhd';
 import type { StakeInfo, StakeTier } from '@hhd-i/types';
-
-function fmt(n: number, digits = 0): string {
-  return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
-}
-
-const TIER_BADGE: Record<StakeTier, string> = {
-  BRONZE: 'text-orange-300 bg-orange-500/10',
-  SILVER: 'text-gray-300 bg-gray-500/10',
-  GOLD: 'text-brand bg-brand/10',
-  PLATINUM: 'text-cyan-300 bg-cyan-500/10',
-  DIAMOND: 'text-purple-300 bg-purple-500/10',
-};
+import { Card } from '@/shared/components/ui/Card';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { STAKE_TIER_BADGE_CLASSES } from '@/shared/constants/status';
+import { useResource } from '@/shared/hooks/useResource';
+import { formatDate, formatNumber, formatPercent } from '@/shared/utils/format';
 
 function estReward(amount: number, apy: number, lockDays: number): number {
   return amount * (apy / 100) * (lockDays / 365);
@@ -29,8 +24,19 @@ function accruedReward(stake: StakeInfo): number {
 }
 
 export default function StakingPage() {
-  const [stakes, setStakes] = useState<StakeInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: stakes,
+    loading,
+    refresh: load,
+  } = useResource<StakeInfo[]>(
+    async () => {
+      const res = await fetch('/api/staking');
+      if (!res.ok) throw new Error('Không thể tải danh sách stake');
+      const data = await res.json();
+      return data.stakes ?? [];
+    },
+    { initialData: [] }
+  );
 
   // form
   const [formTier, setFormTier] = useState<StakeTier>('BRONZE');
@@ -42,24 +48,6 @@ export default function StakingPage() {
   // calculator
   const [calcTier, setCalcTier] = useState<StakeTier>('GOLD');
   const [calcAmount, setCalcAmount] = useState('25000');
-
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch('/api/staking');
-      if (res.ok) {
-        const data = await res.json();
-        setStakes(data.stakes ?? []);
-      }
-    } catch {
-      // giữ dữ liệu cũ
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   async function handleStake(e: React.FormEvent) {
     e.preventDefault();
@@ -116,24 +104,24 @@ export default function StakingPage() {
           <Lock className="w-6 h-6 text-brand" /> Staking HHD
         </h1>
         <p className="text-dark-400 mt-1 text-sm">
-          Khóa HHD để nhận APY 8–55% và quyền lợi theo tier. Quỹ phần thưởng {fmt(STAKING_CONFIG.rewardsPool)} HHD.
+          Khóa HHD để nhận APY 8–55% và quyền lợi theo tier. Quỹ phần thưởng {formatNumber(STAKING_CONFIG.rewardsPool, 0)} HHD.
         </p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Tổng đang stake</p>
-          <p className="text-2xl font-bold text-white">{fmt(totalStaked)} HHD</p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+          <p className="text-2xl font-bold text-white">{formatNumber(totalStaked, 0)} HHD</p>
+        </Card>
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Phần thưởng tích lũy (ước tính)</p>
-          <p className="text-2xl font-bold text-green-400">+{fmt(totalReward, 2)} HHD</p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+          <p className="text-2xl font-bold text-green-400">+{formatNumber(totalReward, 2)} HHD</p>
+        </Card>
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Khoản stake đang hoạt động</p>
           <p className="text-2xl font-bold text-white">{activeStakes.length} / {STAKING_CONFIG.maxConcurrentStakes}</p>
-        </div>
+        </Card>
       </div>
 
       {/* Tier cards */}
@@ -148,12 +136,16 @@ export default function StakingPage() {
                 highlight ? 'bg-brand/5 border-brand/40' : 'bg-dark-800 border-dark-600'
               }`}
             >
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded ${TIER_BADGE[tier]}`}>{c.label}</span>
+              <StatusBadge
+                label={c.label}
+                colorClasses={STAKE_TIER_BADGE_CLASSES[tier]}
+                variant="chip"
+              />
               <p className="text-3xl font-bold text-brand mt-3">{c.apy}%</p>
               <p className="text-xs text-dark-400">APY</p>
               <div className="mt-4 space-y-1.5 text-xs text-dark-400">
                 <p>Khóa: <span className="text-white">{c.lockDays} ngày</span></p>
-                <p>Tối thiểu: <span className="text-white">{fmt(c.minStake)} HHD</span></p>
+                <p>Tối thiểu: <span className="text-white">{formatNumber(c.minStake, 0)} HHD</span></p>
                 <p className="pt-1 border-t border-dark-700 mt-2">{c.benefits}</p>
               </div>
             </div>
@@ -163,7 +155,7 @@ export default function StakingPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator */}
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Calculator className="w-4 h-4 text-brand" /> Máy tính phần thưởng
           </h2>
@@ -195,15 +187,15 @@ export default function StakingPage() {
             <div className="bg-dark-700 border border-dark-600 rounded-lg p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-dark-400">Phần thưởng ước tính sau {calcConfig.lockDays} ngày</p>
-                <p className="text-2xl font-bold text-green-400 mt-1">+{fmt(calcResult, 2)} HHD</p>
+                <p className="text-2xl font-bold text-green-400 mt-1">+{formatNumber(calcResult, 2)} HHD</p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-400/40" />
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Stake form */}
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Coins className="w-4 h-4 text-brand" /> Stake HHD
           </h2>
@@ -223,7 +215,7 @@ export default function StakingPage() {
               >
                 {STAKE_TIER_ORDER.map((t) => (
                   <option key={t} value={t}>
-                    {STAKE_TIERS[t].label} — tối thiểu {fmt(STAKE_TIERS[t].minStake)} HHD
+                    {STAKE_TIERS[t].label} — tối thiểu {formatNumber(STAKE_TIERS[t].minStake, 0)} HHD
                   </option>
                 ))}
               </select>
@@ -237,7 +229,7 @@ export default function StakingPage() {
                 step="any"
                 value={formAmount}
                 onChange={(e) => setFormAmount(e.target.value)}
-                placeholder={`Tối thiểu ${fmt(STAKE_TIERS[formTier].minStake)}`}
+                placeholder={`Tối thiểu ${formatNumber(STAKE_TIERS[formTier].minStake, 0)}`}
                 className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2.5 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-brand transition-colors"
               />
               <p className="text-xs text-dark-500 mt-1.5">
@@ -258,15 +250,15 @@ export default function StakingPage() {
               disabled={submitting}
               className="w-full bg-brand hover:bg-brand-dark text-black font-semibold rounded-lg py-2.5 text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {submitting && <Spinner />}
               {submitting ? 'Đang xử lý...' : 'Stake HHD'}
             </button>
           </form>
-        </div>
+        </Card>
       </div>
 
       {/* User stakes */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="px-5 py-4 border-b border-dark-600 flex items-center justify-between">
           <h2 className="text-base font-semibold text-white">Các khoản stake của bạn</h2>
           <p className="text-xs text-dark-500 flex items-center gap-1.5">
@@ -274,9 +266,9 @@ export default function StakingPage() {
           </p>
         </div>
         {loading ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">Đang tải...</div>
+          <EmptyState>Đang tải...</EmptyState>
         ) : stakes.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">Bạn chưa có khoản stake nào.</div>
+          <EmptyState>Bạn chưa có khoản stake nào.</EmptyState>
         ) : (
           <div className="divide-y divide-dark-600">
             {stakes.map((s) => {
@@ -290,13 +282,15 @@ export default function StakingPage() {
                 <div key={s.id} className="px-5 py-4">
                   <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded ${TIER_BADGE[s.tier]}`}>
-                        {STAKE_TIERS[s.tier].label}
-                      </span>
+                      <StatusBadge
+                        label={STAKE_TIERS[s.tier].label}
+                        colorClasses={STAKE_TIER_BADGE_CLASSES[s.tier]}
+                        variant="chip"
+                      />
                       <div>
-                        <p className="text-sm font-semibold text-white">{fmt(s.amount)} HHD · {s.apy}% APY</p>
+                        <p className="text-sm font-semibold text-white">{formatNumber(s.amount, 0)} HHD · {s.apy}% APY</p>
                         <p className="text-xs text-dark-500">
-                          Mở khóa: {new Date(s.unlockAt).toLocaleDateString('vi-VN')}
+                          Mở khóa: {formatDate(s.unlockAt)}
                           {s.autoCompound ? ' · Auto-compound' : ''}
                         </p>
                       </div>
@@ -304,7 +298,7 @@ export default function StakingPage() {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-xs text-dark-400">{s.status === 'ACTIVE' ? 'Thưởng tích lũy' : 'Đã nhận'}</p>
-                        <p className="text-sm font-semibold text-green-400">+{fmt(reward, 2)} HHD</p>
+                        <p className="text-sm font-semibold text-green-400">+{formatNumber(reward, 2)} HHD</p>
                       </div>
                       {s.status === 'ACTIVE' ? (
                         <button
@@ -327,7 +321,7 @@ export default function StakingPage() {
                       <div className="flex-1 h-1.5 rounded-full bg-dark-700 overflow-hidden">
                         <div className="h-full bg-brand rounded-full transition-all" style={{ width: `${progress}%` }} />
                       </div>
-                      <span className="text-xs text-dark-400 w-12 text-right">{progress.toFixed(0)}%</span>
+                      <span className="text-xs text-dark-400 w-12 text-right">{formatPercent(progress, 0)}</span>
                     </div>
                   )}
                 </div>
@@ -335,7 +329,7 @@ export default function StakingPage() {
             })}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

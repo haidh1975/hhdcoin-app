@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { formatPrice } from '@/shared/utils/format';
 
 export interface MarketRow {
   symbol: string;
@@ -26,12 +27,6 @@ function formatVolume(value?: number): string {
   if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
   if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
   return `$${value.toLocaleString()}`;
-}
-
-function formatPrice(price: number): string {
-  if (price >= 1000) return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  if (price >= 1) return `$${price.toFixed(2)}`;
-  return `$${price.toFixed(4)}`;
 }
 
 const COIN_ICONS: Record<string, string> = {

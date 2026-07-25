@@ -5,14 +5,12 @@ import { Zap, Flame, Coins, ShieldCheck, ArrowRight, CreditCard, Vote, FlaskConi
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { HHD, TOKEN_ALLOCATION, TOKEN_UTILITY, SMART_CONTRACTS } from '@/lib/hhd';
 import { OnChainSection } from '@/components/web3/OnChainSection';
+import { Card } from '@/shared/components/ui/Card';
+import { formatNumber } from '@/shared/utils/format';
 
 const UTILITY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CreditCard, Coins, Vote, FlaskConical, Award, Droplets, Users, Bot, Rocket, Gift,
 };
-
-function formatNum(n: number): string {
-  return n.toLocaleString('en-US');
-}
 
 // Giả lập dữ liệu on-chain (chưa có tracking thật)
 const BURNED = 4_200_000;
@@ -22,11 +20,11 @@ export default function HhdTokenPage() {
   const pieData = TOKEN_ALLOCATION.map((a) => ({ name: a.category, value: a.pct, color: a.color }));
 
   const metrics = [
-    { label: 'Tổng cung tối đa', value: `${formatNum(HHD.maxSupply)} HHD` },
-    { label: 'Đã đốt (burn)', value: `${formatNum(BURNED)} HHD` },
-    { label: 'Cung lưu hành', value: `${formatNum(CIRCULATING)} HHD` },
-    { label: 'FDV khi ra mắt', value: `$${formatNum(HHD.launchFdvUsd)}` },
-    { label: 'Vốn hóa (ước tính)', value: `$${formatNum(Math.round(CIRCULATING * HHD.presalePriceUsd))}` },
+    { label: 'Tổng cung tối đa', value: `${formatNumber(HHD.maxSupply)} HHD` },
+    { label: 'Đã đốt (burn)', value: `${formatNumber(BURNED)} HHD` },
+    { label: 'Cung lưu hành', value: `${formatNumber(CIRCULATING)} HHD` },
+    { label: 'FDV khi ra mắt', value: `$${formatNumber(HHD.launchFdvUsd)}` },
+    { label: 'Vốn hóa (ước tính)', value: `$${formatNumber(Math.round(CIRCULATING * HHD.presalePriceUsd))}` },
   ];
 
   return (
@@ -56,16 +54,16 @@ export default function HhdTokenPage() {
       {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {metrics.map((m) => (
-          <div key={m.label} className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+          <Card key={m.label} padded>
             <p className="text-xs text-dark-400 mb-1">{m.label}</p>
             <p className="text-lg font-bold text-white">{m.value}</p>
-          </div>
+          </Card>
         ))}
       </div>
 
       {/* Allocation */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Coins className="w-4 h-4 text-brand" /> Phân bổ token (1 tỷ HHD)
           </h2>
@@ -82,9 +80,9 @@ export default function HhdTokenPage() {
               />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </Card>
 
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-base font-semibold text-white mb-4">Cơ chế đốt (Burn) giảm phát</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3 bg-dark-700 border border-dark-600 rounded-lg p-4">
@@ -109,11 +107,11 @@ export default function HhdTokenPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Allocation table */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="px-5 py-4 border-b border-dark-600">
           <h2 className="text-base font-semibold text-white">Chi tiết phân bổ</h2>
         </div>
@@ -139,7 +137,7 @@ export default function HhdTokenPage() {
                     </div>
                   </td>
                   <td className="px-3 py-3 text-right text-sm font-semibold text-brand">{a.pct}%</td>
-                  <td className="px-3 py-3 text-right text-sm text-white">{formatNum(a.amount)}</td>
+                  <td className="px-3 py-3 text-right text-sm text-white">{formatNumber(a.amount)}</td>
                   <td className="px-3 py-3 text-center text-sm text-dark-400 hidden md:table-cell">{a.tgeUnlock}</td>
                   <td className="px-3 py-3 text-left text-xs text-dark-400 hidden lg:table-cell">{a.vesting}</td>
                   <td className="px-5 py-3 text-left text-xs text-dark-400 hidden xl:table-cell">{a.purpose}</td>
@@ -148,10 +146,10 @@ export default function HhdTokenPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {/* Utility grid */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+      <Card className="p-6">
         <h2 className="text-base font-semibold text-white mb-4">Tiện ích token (10 vector)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {TOKEN_UTILITY.map((u) => {
@@ -167,13 +165,13 @@ export default function HhdTokenPage() {
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {/* On-chain connection */}
       <OnChainSection />
 
       {/* Smart contracts */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="px-5 py-4 border-b border-dark-600 flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-brand" />
           <h2 className="text-base font-semibold text-white">Bộ hợp đồng thông minh</h2>
@@ -204,7 +202,7 @@ export default function HhdTokenPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {/* CTA */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

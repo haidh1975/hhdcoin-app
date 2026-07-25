@@ -1,18 +1,10 @@
 import { Users, UserCheck, ArrowLeftRight, DollarSign, Bot, Landmark, Rocket } from 'lucide-react';
 import { prisma } from '@/lib/db';
+import { Card } from '@/shared/components/ui/Card';
+import { TX_TYPE_LABELS } from '@/shared/constants/status';
+import { formatDate, formatDateTime, formatUsd } from '@/shared/utils/format';
 
 export const dynamic = 'force-dynamic';
-
-const TX_LABELS: Record<string, string> = {
-  BUY: 'Mua',
-  SELL: 'Bán',
-  DEPOSIT: 'Nạp tiền',
-  WITHDRAW: 'Rút tiền',
-};
-
-function formatUsd(value: number): string {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 export default async function AdminDashboardPage() {
   const [
@@ -64,7 +56,7 @@ export default async function AdminDashboardPage() {
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+          <Card key={s.label} padded>
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 rounded-lg bg-dark-700">
                 <s.icon className="w-4 h-4 text-brand" />
@@ -73,13 +65,13 @@ export default async function AdminDashboardPage() {
             <p className="text-xs text-dark-400 mb-1">{s.label}</p>
             <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
             {s.note && <p className="text-xs text-dark-500 mt-1">{s.note}</p>}
-          </div>
+          </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent transactions */}
-        <div className="xl:col-span-2 bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+        <Card className="xl:col-span-2 overflow-hidden">
           <div className="px-5 py-4 border-b border-dark-600">
             <h2 className="text-base font-semibold text-white">Giao dịch gần đây</h2>
           </div>
@@ -110,7 +102,7 @@ export default async function AdminDashboardPage() {
                             : 'bg-red-500/10 text-red-400'
                         }`}
                       >
-                        {TX_LABELS[tx.type] ?? tx.type}
+                        {TX_TYPE_LABELS[tx.type] ?? tx.type}
                         {tx.asset ? ` ${tx.asset.symbol}` : ''}
                       </span>
                     </td>
@@ -118,17 +110,17 @@ export default async function AdminDashboardPage() {
                       {formatUsd(tx.totalValue)}
                     </td>
                     <td className="px-5 py-3 text-right text-xs text-dark-400 hidden md:table-cell">
-                      {tx.createdAt.toLocaleString('vi-VN')}
+                      {formatDateTime(tx.createdAt)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
         {/* Recent signups */}
-        <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="px-5 py-4 border-b border-dark-600">
             <h2 className="text-base font-semibold text-white">Đăng ký mới</h2>
           </div>
@@ -145,12 +137,12 @@ export default async function AdminDashboardPage() {
                   <p className="text-xs text-dark-500 truncate">{u.email}</p>
                 </div>
                 <p className="text-xs text-dark-400 flex-shrink-0">
-                  {u.createdAt.toLocaleDateString('vi-VN')}
+                  {formatDate(u.createdAt)}
                 </p>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

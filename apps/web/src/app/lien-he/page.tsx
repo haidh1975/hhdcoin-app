@@ -13,6 +13,7 @@ import {
   MessageSquare,
   ExternalLink,
 } from 'lucide-react';
+import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 
 const BANK_ACCOUNTS = [
   {
@@ -38,15 +39,9 @@ const BANK_ACCOUNTS = [
 ];
 
 export default function LienHePage() {
-  const [copied, setCopied] = useState<string | null>(null);
+  const { copiedKey: copied, copy } = useCopyToClipboard();
   const [formState, setFormState] = useState({ name: '', email: '', phone: '', message: '' });
   const [sent, setSent] = useState(false);
-
-  function copyToClipboard(text: string, key: string) {
-    navigator.clipboard.writeText(text);
-    setCopied(key);
-    setTimeout(() => setCopied(null), 2000);
-  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -85,7 +80,7 @@ export default function LienHePage() {
                 copyKey="phone"
                 copyValue="0888151975"
                 copied={copied}
-                onCopy={copyToClipboard}
+                onCopy={copy}
               />
               <ContactRow
                 icon={Mail}
@@ -94,7 +89,7 @@ export default function LienHePage() {
                 copyKey="email"
                 copyValue="haidh1975@gmail.com"
                 copied={copied}
-                onCopy={copyToClipboard}
+                onCopy={copy}
               />
               <ContactRow
                 icon={MapPin}
@@ -103,7 +98,7 @@ export default function LienHePage() {
                 copyKey=""
                 copyValue=""
                 copied={copied}
-                onCopy={copyToClipboard}
+                onCopy={copy}
               />
             </div>
 
@@ -159,7 +154,7 @@ export default function LienHePage() {
                     value={acc.accountNumber}
                     copyKey={`acc-${idx}`}
                     copied={copied}
-                    onCopy={copyToClipboard}
+                    onCopy={copy}
                     accent={acc.accent}
                     large
                   />
@@ -168,7 +163,7 @@ export default function LienHePage() {
                     value={acc.accountName}
                     copyKey={`name-${idx}`}
                     copied={copied}
-                    onCopy={copyToClipboard}
+                    onCopy={copy}
                     accent="text-white"
                   />
                 </div>

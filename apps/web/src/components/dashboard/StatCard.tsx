@@ -1,4 +1,6 @@
 import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
+import { formatPercent } from '@/shared/utils/format';
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -20,7 +22,7 @@ export function StatCard({
   const isPositive = change !== undefined ? change >= 0 : null;
 
   return (
-    <div className="bg-dark-800 border border-dark-600 rounded-xl p-5 hover:border-dark-500 transition-colors">
+    <Card className="p-5 hover:border-dark-500 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="p-2 rounded-lg bg-dark-700">
           <Icon className="w-4 h-4 text-brand" />
@@ -38,7 +40,7 @@ export function StatCard({
             ) : (
               <TrendingDown className="w-3 h-3" />
             )}
-            {Math.abs(change).toFixed(2)}%
+            {formatPercent(Math.abs(change))}
           </div>
         )}
       </div>
@@ -47,6 +49,6 @@ export function StatCard({
       {changeLabel && (
         <p className="text-xs text-dark-500 mt-1">{changeLabel}</p>
       )}
-    </div>
+    </Card>
   );
 }

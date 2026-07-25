@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Ban, CheckCircle2, ShieldCheck, ShieldOff, Loader2 } from 'lucide-react';
+import { Ban, CheckCircle2, ShieldCheck, ShieldOff } from 'lucide-react';
 import type { AppUser } from '@hhd-i/types';
+import { Spinner } from '@/shared/components/ui/Spinner';
 
 export function UsersTable({ users }: { users: AppUser[] }) {
   const router = useRouter();
@@ -92,7 +93,7 @@ export function UsersTable({ users }: { users: AppUser[] }) {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-2">
                       {busy ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-dark-400" />
+                        <Spinner className="w-4 h-4 text-dark-400" />
                       ) : isSelf ? (
                         <span className="text-xs text-dark-500">Tài khoản của bạn</span>
                       ) : (

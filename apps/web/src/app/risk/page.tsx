@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { ShieldAlert, RefreshCw, AlertTriangle, TrendingDown, Droplets, BarChart2 } from 'lucide-react';
 import { RiskGauge } from '@/components/risk/RiskGauge';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { mockRiskScore, mockPortfolio } from '@/lib/mockData';
 import type { RiskScore } from '@hhd-i/types';
+import { Card } from '@/shared/components/ui/Card';
+import { useResource } from '@/shared/hooks/useResource';
+import { getRiskColor } from '@/shared/utils/colors';
+import { formatTime } from '@/shared/utils/format';
 
 const COLORS = ['#F0B90B', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'];
 
@@ -36,45 +39,33 @@ const BREAKDOWN_ITEMS = [
   },
 ];
 
-function getRiskColor(score: number): string {
-  if (score < 30) return '#0ECB81';
-  if (score < 60) return '#F0B90B';
-  if (score < 80) return '#F6465D';
-  return '#8B0000';
-}
-
 function getRiskBarWidth(score: number): string {
   return `${score}%`;
 }
 
 export default function RiskPage() {
-  const [riskScore, setRiskScore] = useState<RiskScore>(mockRiskScore);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const {
+    data: riskScore,
+    refreshing: isAnalyzing,
+    refresh: handleAnalyze,
+  } = useResource<RiskScore>(
+    async (previous) => {
+      const res = await fetch('/api/ai/risk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ portfolio: mockPortfolio }),
+      });
+      if (!res.ok) return previous;
+      return (await res.json()) as RiskScore;
+    },
+    { initialData: mockRiskScore, immediate: false }
+  );
 
   const portfolioAllocation = mockPortfolio.coins.map((coin, i) => ({
     name: coin.symbol,
     value: parseFloat(coin.allocation.toFixed(1)),
     color: COLORS[i % COLORS.length],
   }));
-
-  const handleAnalyze = async () => {
-    setIsAnalyzing(true);
-    try {
-      const res = await fetch('/api/ai/risk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ portfolio: mockPortfolio }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setRiskScore(data);
-      }
-    } catch (err) {
-      console.error('Risk analysis failed:', err);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
 
   const riskLevelLabel =
     riskScore.level === 'low'
@@ -108,7 +99,7 @@ export default function RiskPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Risk Score Gauge */}
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 flex flex-col items-center">
+        <Card className="p-6 flex flex-col items-center">
           <h2 className="text-sm font-semibold text-white mb-4">Điểm rủi ro tổng thể</h2>
           <RiskGauge score={riskScore.score} />
           <div className="mt-4 text-center">
@@ -122,17 +113,13 @@ export default function RiskPage() {
           </div>
           {riskScore.analyzedAt && (
             <p className="text-xs text-dark-500 mt-3">
-              Cập nhật:{' '}
-              {new Date(riskScore.analyzedAt).toLocaleTimeString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              Cập nhật: {formatTime(riskScore.analyzedAt)}
             </p>
           )}
-        </div>
+        </Card>
 
         {/* Risk Breakdown */}
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 space-y-4">
+        <Card className="p-6 space-y-4">
           <h2 className="text-sm font-semibold text-white">Phân tích chi tiết rủi ro</h2>
           {BREAKDOWN_ITEMS.map((item) => {
             const score = riskScore.breakdown[item.key];
@@ -161,10 +148,10 @@ export default function RiskPage() {
               </div>
             );
           })}
-        </div>
+        </Card>
 
         {/* Portfolio Allocation Pie Chart */}
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-sm font-semibold text-white mb-4">Phân bổ danh mục</h2>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
@@ -198,12 +185,12 @@ export default function RiskPage() {
               />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </Card>
       </div>
 
       {/* AI Recommendations */}
       {riskScore.recommendations && riskScore.recommendations.length > 0 && (
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-brand" />
             Khuyến nghị từ AI
@@ -223,7 +210,7 @@ export default function RiskPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

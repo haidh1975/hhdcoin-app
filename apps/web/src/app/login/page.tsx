@@ -4,7 +4,9 @@ import { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import { Zap, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
+import { Spinner } from '@/shared/components/ui/Spinner';
 
 function LoginForm() {
   const router = useRouter();
@@ -51,7 +53,7 @@ function LoginForm() {
         </div>
       </div>
 
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+      <Card className="p-6">
         <h1 className="text-xl font-bold text-white mb-1">Đăng nhập</h1>
         <p className="text-sm text-dark-400 mb-6">
           Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục.
@@ -100,7 +102,7 @@ function LoginForm() {
             disabled={loading}
             className="w-full bg-brand hover:bg-brand-dark text-black font-semibold rounded-lg py-2.5 text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading && <Spinner />}
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
@@ -111,7 +113,7 @@ function LoginForm() {
             Đăng ký ngay
           </Link>
         </p>
-      </div>
+      </Card>
 
       {/* Demo accounts */}
       <div className="bg-dark-800/50 border border-dark-700 rounded-xl p-4 mt-4">

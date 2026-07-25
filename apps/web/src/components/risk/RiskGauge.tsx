@@ -1,19 +1,14 @@
 'use client';
 
+import { getRiskColor } from '@/shared/utils/colors';
+
 interface RiskGaugeProps {
   score: number; // 0-100
 }
 
-function getColor(score: number): string {
-  if (score < 30) return '#0ECB81';
-  if (score < 60) return '#F0B90B';
-  if (score < 80) return '#F6465D';
-  return '#8B0000';
-}
-
 export function RiskGauge({ score }: RiskGaugeProps) {
   const clampedScore = Math.max(0, Math.min(100, score));
-  const color = getColor(clampedScore);
+  const color = getRiskColor(clampedScore);
 
   // SVG arc gauge (180-degree semicircle)
   const radius = 70;

@@ -1,19 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Landmark, Loader2, ThumbsUp, ThumbsDown, Clock, CheckCircle2, XCircle } from 'lucide-react';
-import type { ProposalInfo, ProposalStatus } from '@hhd-i/types';
+import { useState } from 'react';
+import { Landmark, ThumbsUp, ThumbsDown, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import type { ProposalInfo } from '@hhd-i/types';
+import { Card } from '@/shared/components/ui/Card';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { PROPOSAL_STATUS_META } from '@/shared/constants/status';
+import { useResource } from '@/shared/hooks/useResource';
+import { formatDate, formatNumber, formatPercent } from '@/shared/utils/format';
 
-function fmt(n: number): string {
-  return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+interface GovernanceData {
+  proposals: ProposalInfo[];
+  votingPower: number;
 }
-
-const STATUS_BADGE: Record<ProposalStatus, { label: string; cls: string }> = {
-  ACTIVE: { label: 'Đang bỏ phiếu', cls: 'text-brand bg-brand/10' },
-  PASSED: { label: 'Đã thông qua', cls: 'text-green-400 bg-green-500/10' },
-  REJECTED: { label: 'Bị từ chối', cls: 'text-red-400 bg-red-500/10' },
-  EXECUTED: { label: 'Đã thực thi', cls: 'text-blue-400 bg-blue-500/10' },
-};
 
 function timeRemaining(endsAt: string): string {
   const ms = new Date(endsAt).getTime() - Date.now();
@@ -25,30 +26,22 @@ function timeRemaining(endsAt: string): string {
 }
 
 export default function GovernancePage() {
-  const [proposals, setProposals] = useState<ProposalInfo[]>([]);
-  const [votingPower, setVotingPower] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  const load = useCallback(async () => {
-    try {
+  const {
+    data: { proposals, votingPower },
+    loading,
+    refresh: load,
+  } = useResource<GovernanceData>(
+    async () => {
       const res = await fetch('/api/governance');
-      if (res.ok) {
-        const data = await res.json();
-        setProposals(data.proposals ?? []);
-        setVotingPower(data.votingPower ?? 0);
-      }
-    } catch {
-      // giữ dữ liệu cũ
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+      if (!res.ok) throw new Error('Không thể tải danh sách đề xuất');
+      const data = await res.json();
+      return { proposals: data.proposals ?? [], votingPower: data.votingPower ?? 0 };
+    },
+    { initialData: { proposals: [], votingPower: 0 } }
+  );
 
   async function handleVote(proposalId: string, support: boolean) {
     setError('');
@@ -88,18 +81,18 @@ export default function GovernancePage() {
 
       {/* DAO stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Tổng đề xuất</p>
           <p className="text-2xl font-bold text-white">{proposals.length}</p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        </Card>
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Đang bỏ phiếu</p>
           <p className="text-2xl font-bold text-brand">{activeCount}</p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        </Card>
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Quyền biểu quyết của bạn</p>
-          <p className="text-2xl font-bold text-white">{fmt(votingPower)} phiếu</p>
-        </div>
+          <p className="text-2xl font-bold text-white">{formatNumber(votingPower, 0)} phiếu</p>
+        </Card>
       </div>
 
       {error && (
@@ -120,24 +113,27 @@ export default function GovernancePage() {
 
       {/* Proposals */}
       {loading ? (
-        <div className="bg-dark-800 border border-dark-600 rounded-xl px-5 py-10 text-center text-sm text-dark-400">
-          Đang tải đề xuất...
-        </div>
+        <Card>
+          <EmptyState>Đang tải đề xuất...</EmptyState>
+        </Card>
       ) : (
         <div className="space-y-4">
           {proposals.map((p) => {
             const total = p.votesFor + p.votesAgainst;
             const forPct = total > 0 ? (p.votesFor / total) * 100 : 0;
             const againstPct = total > 0 ? (p.votesAgainst / total) * 100 : 0;
-            const badge = STATUS_BADGE[p.status];
+            const badge = PROPOSAL_STATUS_META[p.status];
             const canVote = p.status === 'ACTIVE' && !p.userVoted && votingPower > 0;
             return (
-              <div key={p.id} className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+              <Card key={p.id} className="p-6">
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <h3 className="text-base font-semibold text-white">{p.title}</h3>
-                  <span className={`text-xs font-semibold px-2 py-1 rounded flex-shrink-0 ${badge.cls}`}>
-                    {badge.label}
-                  </span>
+                  <StatusBadge
+                    label={badge.label}
+                    tone={badge.tone}
+                    variant="tagStrong"
+                    className="flex-shrink-0"
+                  />
                 </div>
                 <p className="text-sm text-dark-400 mb-4 leading-relaxed">{p.description}</p>
 
@@ -145,10 +141,10 @@ export default function GovernancePage() {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-green-400 flex items-center gap-1">
-                      <ThumbsUp className="w-3 h-3" /> Đồng ý {fmt(p.votesFor)} ({forPct.toFixed(0)}%)
+                      <ThumbsUp className="w-3 h-3" /> Đồng ý {formatNumber(p.votesFor, 0)} ({formatPercent(forPct, 0)})
                     </span>
                     <span className="text-red-400 flex items-center gap-1">
-                      Phản đối {fmt(p.votesAgainst)} ({againstPct.toFixed(0)}%) <ThumbsDown className="w-3 h-3" />
+                      Phản đối {formatNumber(p.votesAgainst, 0)} ({formatPercent(againstPct, 0)}) <ThumbsDown className="w-3 h-3" />
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-dark-700 overflow-hidden flex">
@@ -166,12 +162,12 @@ export default function GovernancePage() {
                     ) : p.status === 'PASSED' || p.status === 'EXECUTED' ? (
                       <>
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-400" /> Kết thúc{' '}
-                        {new Date(p.endsAt).toLocaleDateString('vi-VN')}
+                        {formatDate(p.endsAt)}
                       </>
                     ) : (
                       <>
                         <XCircle className="w-3.5 h-3.5 text-red-400" /> Kết thúc{' '}
-                        {new Date(p.endsAt).toLocaleDateString('vi-VN')}
+                        {formatDate(p.endsAt)}
                       </>
                     )}
                   </p>
@@ -187,7 +183,7 @@ export default function GovernancePage() {
                         onClick={() => handleVote(p.id, true)}
                         className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        {voting === p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
+                        {voting === p.id ? <Spinner className="w-3.5 h-3.5" /> : <ThumbsUp className="w-3.5 h-3.5" />}
                         Đồng ý
                       </button>
                       <button
@@ -200,7 +196,7 @@ export default function GovernancePage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

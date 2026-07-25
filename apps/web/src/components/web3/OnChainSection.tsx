@@ -6,6 +6,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { formatUnits } from 'viem';
 import { bsc, HHD_TOKEN_ADDRESS, BEP20_ABI } from '@/lib/wagmi';
 import { WalletButton } from './WalletButton';
+import { Card } from '@/shared/components/ui/Card';
 
 const HHD_SYMBOL = 'HHD';
 const HHD_DECIMALS_FALLBACK = 18;
@@ -61,7 +62,7 @@ export function OnChainSection() {
   };
 
   return (
-    <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+    <Card className="overflow-hidden">
       <div className="px-5 py-4 border-b border-dark-600 flex items-center gap-2">
         <LinkIcon className="w-4 h-4 text-brand" />
         <h2 className="text-base font-semibold text-white">Kết nối On-chain</h2>
@@ -148,6 +149,6 @@ export function OnChainSection() {
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

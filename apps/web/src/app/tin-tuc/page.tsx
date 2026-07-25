@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Newspaper, TrendingUp, TrendingDown, RefreshCw, ExternalLink, Clock, Zap, Tag } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
 
 const NEWS_DATA = [
   {
@@ -159,9 +160,9 @@ export default function TinTucPage() {
           const sentStyle = SENTIMENT_STYLE[news.sentiment];
           const SentIcon = sentStyle.icon;
           return (
-            <div
+            <Card
               key={news.id}
-              className="bg-dark-800 border border-dark-600 rounded-xl p-5 hover:border-dark-500 transition-colors group"
+              className="p-5 hover:border-dark-500 transition-colors group"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-2">
@@ -192,7 +193,7 @@ export default function TinTucPage() {
                 </div>
                 <ExternalLink className="w-4 h-4 text-dark-600 group-hover:text-brand flex-shrink-0 mt-1 transition-colors" />
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>

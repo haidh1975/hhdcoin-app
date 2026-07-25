@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import { Card, cardClass } from '@/shared/components/ui/Card';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { PROPOSAL_STATUS_META } from '@/shared/constants/status';
 
 export interface AdminProposal {
   id: string;
@@ -24,13 +29,10 @@ const STATUS_OPTIONS: { value: AdminProposal['status']; label: string }[] = [
   { value: 'EXECUTED', label: 'Đã thực thi' },
 ];
 
-const STATUS_BADGE: Record<AdminProposal['status'], string> = {
-  ACTIVE: 'bg-brand/10 text-brand',
-  PASSED: 'bg-green-500/10 text-green-400',
-  REJECTED: 'bg-red-500/10 text-red-400',
-  EXECUTED: 'bg-blue-500/10 text-blue-400',
-};
-
+/**
+ * Nhãn riêng của trang quản trị — KHÁC trang /governance ở trạng thái ACTIVE
+ * ('Đang mở' vs 'Đang bỏ phiếu') nên cố ý không gộp. Màu thì dùng chung.
+ */
 const STATUS_LABEL: Record<AdminProposal['status'], string> = {
   ACTIVE: 'Đang mở',
   PASSED: 'Đã thông qua',
@@ -123,7 +125,7 @@ export function ProposalsAdmin({ proposals }: { proposals: AdminProposal[] }) {
       {/* Form tạo đề xuất */}
       <form
         onSubmit={createProposal}
-        className="bg-dark-800 border border-dark-600 rounded-xl p-5 space-y-4"
+        className={cardClass('p-5 space-y-4')}
       >
         <h3 className="text-base font-semibold text-white flex items-center gap-2">
           <Plus className="w-4 h-4 text-brand" /> Tạo đề xuất mới
@@ -167,13 +169,13 @@ export function ProposalsAdmin({ proposals }: { proposals: AdminProposal[] }) {
           disabled={creating}
           className="flex items-center gap-2 bg-brand text-black text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-60"
         >
-          {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          {creating ? <Spinner /> : <Plus className="w-4 h-4" />}
           Tạo đề xuất
         </button>
       </form>
 
       {/* Bảng đề xuất */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="px-5 py-4 border-b border-dark-600">
           <h3 className="text-base font-semibold text-white">Đề xuất ({proposals.length})</h3>
         </div>
@@ -183,7 +185,7 @@ export function ProposalsAdmin({ proposals }: { proposals: AdminProposal[] }) {
           </div>
         )}
         {proposals.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">Chưa có đề xuất nào.</div>
+          <EmptyState>Chưa có đề xuất nào.</EmptyState>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -216,11 +218,10 @@ export function ProposalsAdmin({ proposals }: { proposals: AdminProposal[] }) {
                         <p className="text-xs text-dark-500 mt-1">Bởi {p.creatorName}</p>
                       </td>
                       <td className="px-3 py-3.5">
-                        <span
-                          className={`text-xs font-medium px-2 py-1 rounded ${STATUS_BADGE[p.status]}`}
-                        >
-                          {STATUS_LABEL[p.status]}
-                        </span>
+                        <StatusBadge
+                          label={STATUS_LABEL[p.status]}
+                          tone={PROPOSAL_STATUS_META[p.status].tone}
+                        />
                       </td>
                       <td className="px-3 py-3.5 hidden md:table-cell">
                         <div className="flex items-center gap-2 text-xs">
@@ -244,7 +245,7 @@ export function ProposalsAdmin({ proposals }: { proposals: AdminProposal[] }) {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-2">
                           {busy ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-dark-400" />
+                            <Spinner className="w-4 h-4 text-dark-400" />
                           ) : (
                             <>
                               <select
@@ -276,7 +277,7 @@ export function ProposalsAdmin({ proposals }: { proposals: AdminProposal[] }) {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

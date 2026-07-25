@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Wallet,
   TrendingUp,
@@ -9,42 +9,32 @@ import {
   History,
   Plus,
   X,
-  Loader2,
   AlertCircle,
   ArrowDownLeft,
   ArrowUpRight,
 } from 'lucide-react';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { TX_STATUS_META, TX_TYPE_LABELS } from '@/shared/constants/status';
+import { useResource } from '@/shared/hooks/useResource';
+import {
+  formatDateTime,
+  formatPercent,
+  formatPrice,
+  formatTokenAmount,
+  formatUsd,
+} from '@/shared/utils/format';
 import { SourceBadge } from '@/components/dashboard/SourceBadge';
 import type { PortfolioSummary, TransactionRecord } from '@hhd-i/types';
+import { Card } from '@/shared/components/ui/Card';
 
 const TRADABLE_SYMBOLS = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'VNM', 'FPT', 'VIC', 'HPG'];
 
-function formatUsd(value: number, digits = 2): string {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+interface PortfolioData {
+  portfolio: PortfolioSummary | null;
+  transactions: TransactionRecord[];
 }
-
-function formatPrice(price: number): string {
-  if (price >= 1000) return formatUsd(price);
-  if (price >= 1) return `$${price.toFixed(2)}`;
-  return `$${price.toFixed(4)}`;
-}
-
-function formatAmount(amount: number): string {
-  return amount.toLocaleString('en-US', { maximumFractionDigits: 6 });
-}
-
-const TX_LABELS: Record<string, string> = {
-  BUY: 'Mua',
-  SELL: 'Bán',
-  DEPOSIT: 'Nạp tiền',
-  WITHDRAW: 'Rút tiền',
-};
-
-const TX_STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  COMPLETED: { label: 'Hoàn tất', cls: 'text-green-400 bg-green-500/10' },
-  PENDING: { label: 'Đang xử lý', cls: 'text-yellow-400 bg-yellow-500/10' },
-  FAILED: { label: 'Thất bại', cls: 'text-red-400 bg-red-500/10' },
-};
 
 function TradeModal({
   onClose,
@@ -87,7 +77,7 @@ function TradeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-dark-800 border border-dark-600 rounded-xl w-full max-w-sm p-5">
+      <Card className="w-full max-w-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-white">Mua / Bán tài sản</h3>
           <button onClick={onClose} className="p-1 text-dark-400 hover:text-white transition-colors">
@@ -165,44 +155,36 @@ function TradeModal({
             disabled={loading}
             className="w-full bg-brand hover:bg-brand-dark text-black font-semibold rounded-lg py-2.5 text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading && <Spinner />}
             {loading ? 'Đang xử lý...' : type === 'BUY' ? 'Đặt lệnh mua' : 'Đặt lệnh bán'}
           </button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
 
 export default function PortfolioPage() {
-  const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
-  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  const loadData = useCallback(async () => {
-    try {
+  const {
+    data: { portfolio, transactions },
+    loading,
+    refresh: loadData,
+  } = useResource<PortfolioData>(
+    async (previous) => {
       const [pRes, tRes] = await Promise.all([
         fetch('/api/portfolio'),
         fetch('/api/transactions?pageSize=15'),
       ]);
-      if (pRes.ok) setPortfolio(await pRes.json());
-      if (tRes.ok) {
-        const tData = await tRes.json();
-        setTransactions(tData.transactions ?? []);
-      }
-    } catch {
-      // giữ dữ liệu cũ
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 15_000);
-    return () => clearInterval(interval);
-  }, [loadData]);
+      const tData = tRes.ok ? await tRes.json() : null;
+      return {
+        portfolio: pRes.ok ? await pRes.json() : previous.portfolio,
+        transactions: tData ? tData.transactions ?? [] : previous.transactions,
+      };
+    },
+    { initialData: { portfolio: null, transactions: [] }, pollMs: 15_000 }
+  );
 
   const source: 'live' | 'mock' = portfolio?.holdings.some((h) => h.priceSource === 'live')
     ? 'live'
@@ -232,40 +214,40 @@ export default function PortfolioPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Tổng giá trị</p>
           <p className="text-2xl font-bold text-white">
             {portfolio ? formatUsd(portfolio.totalValue) : '...'}
           </p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        </Card>
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Tổng vốn đầu tư</p>
           <p className="text-2xl font-bold text-white">
             {portfolio ? formatUsd(portfolio.totalCost) : '...'}
           </p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        </Card>
+        <Card padded>
           <p className="text-xs text-dark-400 mb-1">Lãi / Lỗ</p>
           <p className={`text-2xl font-bold ${pnlPositive ? 'text-green-400' : 'text-red-400'}`}>
             {portfolio
-              ? `${pnlPositive ? '+' : '-'}${formatUsd(Math.abs(portfolio.pnl))} (${pnlPositive ? '+' : ''}${portfolio.pnlPercent.toFixed(2)}%)`
+              ? `${pnlPositive ? '+' : '-'}${formatUsd(Math.abs(portfolio.pnl))} (${pnlPositive ? '+' : ''}${formatPercent(portfolio.pnlPercent)})`
               : '...'}
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* Holdings table */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-dark-600">
           <PieChart className="w-4 h-4 text-brand" />
           <h2 className="text-base font-semibold text-white">Tài sản nắm giữ</h2>
         </div>
         {loading && !portfolio ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">Đang tải danh mục...</div>
+          <EmptyState>Đang tải danh mục...</EmptyState>
         ) : !portfolio || portfolio.holdings.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">
+          <EmptyState>
             Bạn chưa nắm giữ tài sản nào. Nhấn &quot;Mua / Bán&quot; để bắt đầu đầu tư.
-          </div>
+          </EmptyState>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -305,7 +287,7 @@ export default function PortfolioPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-3.5 text-right text-sm text-white">{formatAmount(h.amount)}</td>
+                      <td className="px-3 py-3.5 text-right text-sm text-white">{formatTokenAmount(h.amount)}</td>
                       <td className="px-3 py-3.5 text-right text-sm text-dark-400 hidden md:table-cell">
                         {formatPrice(h.avgBuyPrice)}
                       </td>
@@ -322,7 +304,7 @@ export default function PortfolioPage() {
                           {positive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                           {positive ? '+' : '-'}
                           {formatUsd(Math.abs(h.pnl))} ({positive ? '+' : ''}
-                          {h.pnlPercent.toFixed(1)}%)
+                          {formatPercent(h.pnlPercent, 1)})
                         </div>
                       </td>
                       <td className="px-5 py-3.5 text-right hidden lg:table-cell">
@@ -334,7 +316,7 @@ export default function PortfolioPage() {
                             />
                           </div>
                           <span className="text-sm text-dark-400 w-12 text-right">
-                            {h.allocation.toFixed(1)}%
+                            {formatPercent(h.allocation, 1)}
                           </span>
                         </div>
                       </td>
@@ -345,21 +327,21 @@ export default function PortfolioPage() {
             </table>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Transaction history */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-dark-600">
           <History className="w-4 h-4 text-brand" />
           <h2 className="text-base font-semibold text-white">Lịch sử giao dịch</h2>
         </div>
         {transactions.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">Chưa có giao dịch nào.</div>
+          <EmptyState>Chưa có giao dịch nào.</EmptyState>
         ) : (
           <div className="divide-y divide-dark-600">
             {transactions.map((tx) => {
               const isIn = tx.type === 'BUY' || tx.type === 'DEPOSIT';
-              const status = TX_STATUS_LABELS[tx.status] ?? TX_STATUS_LABELS.COMPLETED;
+              const status = TX_STATUS_META[tx.status] ?? TX_STATUS_META.COMPLETED;
               return (
                 <div key={tx.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-dark-700/50 transition-colors">
                   <div
@@ -375,27 +357,27 @@ export default function PortfolioPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white">
-                      {TX_LABELS[tx.type] ?? tx.type}
+                      {TX_TYPE_LABELS[tx.type] ?? tx.type}
                       {tx.assetSymbol ? ` ${tx.assetSymbol}` : ''}
                     </p>
                     <p className="text-xs text-dark-500">
-                      {new Date(tx.createdAt).toLocaleString('vi-VN')}
+                      {formatDateTime(tx.createdAt)}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-white">
                       {tx.assetSymbol
-                        ? `${formatAmount(tx.amount)} ${tx.assetSymbol} @ ${formatPrice(tx.price)}`
+                        ? `${formatTokenAmount(tx.amount)} ${tx.assetSymbol} @ ${formatPrice(tx.price)}`
                         : formatUsd(tx.totalValue)}
                     </p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${status.cls}`}>{status.label}</span>
+                    <StatusBadge label={status.label} tone={status.tone} variant="compact" />
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </div>
+      </Card>
 
       {showModal && (
         <TradeModal onClose={() => setShowModal(false)} onSuccess={loadData} />

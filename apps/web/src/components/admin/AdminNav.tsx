@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, ArrowLeftRight, Coins, Landmark, Rocket } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
 
 const ADMIN_NAV = [
   { href: '/admin', icon: LayoutDashboard, label: 'Tổng quan' },
@@ -17,7 +18,7 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center gap-1 bg-dark-800 border border-dark-600 rounded-xl p-1.5 w-fit">
+    <Card className="flex items-center gap-1 p-1.5 w-fit">
       {ADMIN_NAV.map((item) => {
         const isActive =
           item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
@@ -36,6 +37,6 @@ export function AdminNav() {
           </Link>
         );
       })}
-    </div>
+    </Card>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   TrendingUp,
@@ -19,6 +18,11 @@ import { SourceBadge } from '@/components/dashboard/SourceBadge';
 import { useMarketPrices } from '@/hooks/useMarketPrices';
 import { mockRiskScore, mockMarketOverview, mockMarketData } from '@/lib/mockData';
 import type { PortfolioSummary } from '@hhd-i/types';
+import { Card, cardClass } from '@/shared/components/ui/Card';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { useResource } from '@/shared/hooks/useResource';
+import { getRiskColorClasses } from '@/shared/utils/colors';
+import { formatPercent } from '@/shared/utils/format';
 
 const MARKET_SYMBOLS = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
 
@@ -66,20 +70,16 @@ export default function DashboardPage() {
   const riskScore = mockRiskScore;
   const overview = mockMarketOverview;
   const { prices, source, loading } = useMarketPrices(MARKET_SYMBOLS);
-  const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/portfolio')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && data && !data.error) setPortfolio(data);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: portfolio } = useResource<PortfolioSummary | null>(
+    async (previous) => {
+      const res = await fetch('/api/portfolio');
+      if (!res.ok) return previous;
+      const data = await res.json();
+      if (!data || data.error) return previous;
+      return data as PortfolioSummary;
+    },
+    { initialData: null }
+  );
 
   const marketRows = (prices.length > 0 ? prices : []).map((p) => ({
     symbol: p.symbol,
@@ -115,7 +115,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Market Overview Banner */}
-      <div className="grid grid-cols-3 gap-3 bg-dark-800 border border-dark-600 rounded-xl p-4">
+      <Card className="grid grid-cols-3 gap-3 p-4">
         <div className="text-center">
           <p className="text-xs text-dark-400 mb-1">Vốn hóa thị trường</p>
           <p className="text-sm font-bold text-white">
@@ -132,7 +132,7 @@ export default function DashboardPage() {
             {overview.fearGreedIndex} — {overview.fearGreedLabel}
           </p>
         </div>
-      </div>
+      </Card>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -154,7 +154,7 @@ export default function DashboardPage() {
         <StatCard
           icon={btcChange >= 0 ? TrendingUp : TrendingDown}
           label="BTC thay đổi 24h"
-          value={loading && !btc ? '...' : `${btcChange >= 0 ? '+' : ''}${btcChange.toFixed(2)}%`}
+          value={loading && !btc ? '...' : `${btcChange >= 0 ? '+' : ''}${formatPercent(btcChange)}`}
           change={btcChange}
           changeLabel="So với hôm qua"
           valueColor={btcChange >= 0 ? 'text-green-400' : 'text-red-400'}
@@ -164,15 +164,7 @@ export default function DashboardPage() {
           label="Điểm rủi ro"
           value={`${riskScore.score}/100`}
           changeLabel={`Mức ${riskScore.level === 'low' ? 'Thấp' : riskScore.level === 'medium' ? 'Trung bình' : riskScore.level === 'high' ? 'Cao' : 'Cực cao'}`}
-          valueColor={
-            riskScore.score < 30
-              ? 'text-green-400'
-              : riskScore.score < 60
-              ? 'text-yellow-400'
-              : riskScore.score < 80
-              ? 'text-red-400'
-              : 'text-red-600'
-          }
+          valueColor={getRiskColorClasses(riskScore.score)}
         />
         <StatCard
           icon={Activity}
@@ -184,7 +176,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Market Table */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-dark-600">
           <div className="flex items-center gap-2.5">
             <h2 className="text-base font-semibold text-white">Thị trường hàng đầu</h2>
@@ -198,13 +190,11 @@ export default function DashboardPage() {
           </Link>
         </div>
         {loading && marketRows.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-dark-400">
-            Đang tải dữ liệu thị trường...
-          </div>
+          <EmptyState>Đang tải dữ liệu thị trường...</EmptyState>
         ) : (
           <MarketTable coins={marketRows} />
         )}
-      </div>
+      </Card>
 
       {/* Feature Cards */}
       <div>
@@ -214,7 +204,9 @@ export default function DashboardPage() {
             <Link
               key={card.href}
               href={card.href}
-              className="group relative bg-dark-800 border border-dark-600 rounded-xl p-5 hover:border-brand/50 transition-all duration-200 hover:shadow-lg hover:shadow-brand/5"
+              className={cardClass(
+                'group relative p-5 hover:border-brand/50 transition-all duration-200 hover:shadow-lg hover:shadow-brand/5'
+              )}
             >
               <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
               <div className="relative">

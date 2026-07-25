@@ -1,6 +1,7 @@
 'use client';
 
 import { BookOpen, Star, ExternalLink, Tag, Bookmark, TrendingUp } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
 
 const BOOKS = [
   {
@@ -194,9 +195,9 @@ export default function SachPage() {
       {/* All books */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {BOOKS.filter((b) => !b.featured).map((book) => (
-          <div
+          <Card
             key={book.id}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-5 flex flex-col gap-3 hover:border-dark-500 transition-all group"
+            className="p-5 flex flex-col gap-3 hover:border-dark-500 transition-all group"
           >
             <div className="flex items-start gap-3">
               <div className="text-4xl">{book.cover}</div>
@@ -235,7 +236,7 @@ export default function SachPage() {
             >
               <ExternalLink className="w-3 h-3" /> Xem chi tiết
             </a>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

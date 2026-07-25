@@ -1,73 +1,56 @@
 'use client';
 
-import { useState } from 'react';
 import { BarChart2, RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { SentimentData, SignalType } from '@hhd-i/types';
 import { mockSentimentData, mockMarketOverview } from '@/lib/mockData';
-
-function getFearGreedColor(index: number): string {
-  if (index <= 20) return '#8B0000';
-  if (index <= 40) return '#F6465D';
-  if (index <= 60) return '#F0B90B';
-  if (index <= 80) return '#10B981';
-  return '#0ECB81';
-}
-
-function getFearGreedBg(index: number): string {
-  if (index <= 20) return 'bg-red-900/20';
-  if (index <= 40) return 'bg-red-500/10';
-  if (index <= 60) return 'bg-yellow-500/10';
-  if (index <= 80) return 'bg-green-500/10';
-  return 'bg-emerald-500/10';
-}
+import { Card } from '@/shared/components/ui/Card';
+import { Badge } from '@/shared/components/ui/Badge';
+import { useResource } from '@/shared/hooks/useResource';
+import { getFearGreedColor, getFearGreedBgClass } from '@/shared/utils/colors';
+import { formatTime } from '@/shared/utils/format';
 
 function SignalBadge({ type }: { type: SignalType }) {
   if (type === 'bullish') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+      <Badge tone="success" intensity="medium">
         <TrendingUp className="w-3 h-3" /> Tăng
-      </span>
+      </Badge>
     );
   }
   if (type === 'bearish') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
+      <Badge tone="danger" intensity="medium">
         <TrendingDown className="w-3 h-3" /> Giảm
-      </span>
+      </Badge>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-dark-600 text-dark-400">
+    <Badge tone="neutral" intensity="medium">
       <Minus className="w-3 h-3" /> Trung lập
-    </span>
+    </Badge>
   );
 }
 
 export default function SentimentPage() {
-  const [sentimentData, setSentimentData] = useState<SentimentData[]>(mockSentimentData);
-  const [isUpdating, setIsUpdating] = useState(false);
   const overview = mockMarketOverview;
 
-  const handleUpdate = async () => {
-    setIsUpdating(true);
-    try {
+  const {
+    data: sentimentData,
+    refreshing: isUpdating,
+    refresh: handleUpdate,
+  } = useResource<SentimentData[]>(
+    async (previous) => {
       const res = await fetch('/api/ai/sentiment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ coins: ['BTC', 'ETH', 'SOL', 'BNB'] }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setSentimentData(data);
-        }
-      }
-    } catch (err) {
-      console.error('Sentiment update failed:', err);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+      if (!res.ok) return previous;
+      const data = await res.json();
+      return Array.isArray(data) ? (data as SentimentData[]) : previous;
+    },
+    { initialData: mockSentimentData, immediate: false }
+  );
 
   const trendingBullish = sentimentData
     .flatMap((s) => s.signals.filter((sig) => sig.type === 'bullish').map((sig) => ({ ...sig, coin: s.symbol })))
@@ -96,7 +79,7 @@ export default function SentimentPage() {
       </div>
 
       {/* Overall Fear & Greed Index */}
-      <div className={`${getFearGreedBg(overview.fearGreedIndex)} border border-dark-600 rounded-xl p-6`}>
+      <div className={`${getFearGreedBgClass(overview.fearGreedIndex)} border border-dark-600 rounded-xl p-6`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-dark-400 mb-1">Chỉ số Fear &amp; Greed thị trường tổng thể</p>
@@ -150,10 +133,7 @@ export default function SentimentPage() {
       {/* Coin Sentiment Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sentimentData.map((data) => (
-          <div
-            key={data.symbol}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-5"
-          >
+          <Card key={data.symbol} padded>
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2">
@@ -217,20 +197,16 @@ export default function SentimentPage() {
 
             {data.updatedAt && (
               <p className="text-xs text-dark-500 mt-2">
-                Cập nhật:{' '}
-                {new Date(data.updatedAt).toLocaleTimeString('vi-VN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                Cập nhật: {formatTime(data.updatedAt)}
               </p>
             )}
-          </div>
+          </Card>
         ))}
       </div>
 
       {/* Trending Bullish Signals */}
       {trendingBullish.length > 0 && (
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-5">
+        <Card padded>
           <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-green-400" />
             Tín hiệu tăng nổi bật
@@ -247,7 +223,7 @@ export default function SentimentPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus, Trash2, Pencil, ChevronDown, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, ChevronDown, X } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { SALE_ROUND_STATUS_META } from '@/shared/constants/status';
+import { formatUsd } from '@/shared/utils/format';
 
 export interface AdminSaleRound {
   id: string;
@@ -19,27 +25,12 @@ export interface AdminSaleRound {
   purchasedUsd: number;
 }
 
-const STATUS_OPTIONS: { value: AdminSaleRound['status']; label: string }[] = [
-  { value: 'UPCOMING', label: 'Sắp diễn ra' },
-  { value: 'ACTIVE', label: 'Đang mở' },
-  { value: 'CLOSED', label: 'Đã đóng' },
-];
+const STATUS_OPTIONS: { value: AdminSaleRound['status']; label: string }[] = (
+  ['UPCOMING', 'ACTIVE', 'CLOSED'] as const
+).map((value) => ({ value, label: SALE_ROUND_STATUS_META[value].label }));
 
-const STATUS_BADGE: Record<AdminSaleRound['status'], string> = {
-  UPCOMING: 'bg-blue-500/10 text-blue-400',
-  ACTIVE: 'bg-green-500/10 text-green-400',
-  CLOSED: 'bg-dark-700 text-dark-400',
-};
-
-const STATUS_LABEL: Record<AdminSaleRound['status'], string> = {
-  UPCOMING: 'Sắp diễn ra',
-  ACTIVE: 'Đang mở',
-  CLOSED: 'Đã đóng',
-};
-
-function formatUsd(value: number): string {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-}
+/** Vòng bán hiển thị số tiền không ép phần thập phân tối thiểu. */
+const ROUND_USD = { minFrac: 0, maxFrac: 2 } as const;
 
 interface RoundForm {
   name: string;
@@ -283,7 +274,7 @@ export function SaleRoundsAdmin({ rounds }: { rounds: AdminSaleRound[] }) {
   return (
     <div className="space-y-6">
       {/* Form tạo vòng bán (thu gọn) */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <button
           onClick={() => setShowCreate((v) => !v)}
           className="w-full flex items-center justify-between px-5 py-4 text-left"
@@ -303,16 +294,12 @@ export function SaleRoundsAdmin({ rounds }: { rounds: AdminSaleRound[] }) {
               disabled={creating}
               className="flex items-center gap-2 bg-brand text-black text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-60"
             >
-              {creating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
+              {creating ? <Spinner /> : <Plus className="w-4 h-4" />}
               Tạo vòng bán
             </button>
           </form>
         )}
-      </div>
+      </Card>
 
       {error && (
         <div className="bg-dark-800 border border-red-500/30 rounded-xl px-5 py-3">
@@ -323,34 +310,33 @@ export function SaleRoundsAdmin({ rounds }: { rounds: AdminSaleRound[] }) {
       {/* Danh sách vòng bán */}
       <div className="space-y-4">
         {rounds.length === 0 ? (
-          <div className="bg-dark-800 border border-dark-600 rounded-xl px-5 py-10 text-center text-sm text-dark-400">
-            Chưa có vòng bán nào.
-          </div>
+          <Card>
+            <EmptyState>Chưa có vòng bán nào.</EmptyState>
+          </Card>
         ) : (
           rounds.map((r) => {
             const busy = busyId === r.id;
             const isEditing = editId === r.id;
             const pct = r.hardCapUsd > 0 ? Math.min((r.raisedUsd / r.hardCapUsd) * 100, 100) : 0;
             return (
-              <div
+              <Card
                 key={r.id}
-                className="bg-dark-800 border border-dark-600 rounded-xl p-5 space-y-4"
+                className="p-5 space-y-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-semibold text-white">{r.name}</h3>
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded ${STATUS_BADGE[r.status]}`}
-                      >
-                        {STATUS_LABEL[r.status]}
-                      </span>
+                      <StatusBadge
+                        label={SALE_ROUND_STATUS_META[r.status].label}
+                        tone={SALE_ROUND_STATUS_META[r.status].tone}
+                      />
                     </div>
                     <p className="text-xs text-dark-500 mt-0.5">Thứ tự #{r.order}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {busy ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-dark-400" />
+                      <Spinner className="w-4 h-4 text-dark-400" />
                     ) : (
                       <>
                         <select
@@ -405,7 +391,7 @@ export function SaleRoundsAdmin({ rounds }: { rounds: AdminSaleRound[] }) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-xs text-dark-400">Giá</p>
-                    <p className="text-sm font-semibold text-white">{formatUsd(r.priceUsd)}</p>
+                    <p className="text-sm font-semibold text-white">{formatUsd(r.priceUsd, ROUND_USD)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-dark-400">Phân bổ</p>
@@ -427,7 +413,7 @@ export function SaleRoundsAdmin({ rounds }: { rounds: AdminSaleRound[] }) {
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <span className="text-dark-400">Đã gọi vốn</span>
                     <span className="text-white font-medium">
-                      {formatUsd(r.raisedUsd)} / {formatUsd(r.hardCapUsd)}
+                      {formatUsd(r.raisedUsd, ROUND_USD)} / {formatUsd(r.hardCapUsd, ROUND_USD)}
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-dark-600 overflow-hidden">
@@ -450,16 +436,12 @@ export function SaleRoundsAdmin({ rounds }: { rounds: AdminSaleRound[] }) {
                       disabled={busy}
                       className="flex items-center gap-2 bg-brand text-black text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-60"
                     >
-                      {busy ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Pencil className="w-4 h-4" />
-                      )}
+                      {busy ? <Spinner /> : <Pencil className="w-4 h-4" />}
                       Lưu thay đổi
                     </button>
                   </form>
                 )}
-              </div>
+              </Card>
             );
           })
         )}

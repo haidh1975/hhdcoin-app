@@ -1,28 +1,16 @@
 import { prisma } from '@/lib/db';
 import { TransactionFilter } from '@/components/admin/TransactionFilter';
 import type { Prisma } from '@prisma/client';
+import { Card } from '@/shared/components/ui/Card';
+import { EmptyState } from '@/shared/components/ui/EmptyState';
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { TX_STATUS_META, TX_TYPE_LABELS } from '@/shared/constants/status';
+import { formatDateTime, formatTokenAmount, formatUsd } from '@/shared/utils/format';
 
 export const dynamic = 'force-dynamic';
 
-const TX_LABELS: Record<string, string> = {
-  BUY: 'Mua',
-  SELL: 'Bán',
-  DEPOSIT: 'Nạp tiền',
-  WITHDRAW: 'Rút tiền',
-};
-
-const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  COMPLETED: { label: 'Hoàn tất', cls: 'bg-green-500/10 text-green-400' },
-  PENDING: { label: 'Đang xử lý', cls: 'bg-yellow-500/10 text-yellow-400' },
-  FAILED: { label: 'Thất bại', cls: 'bg-red-500/10 text-red-400' },
-};
-
 const VALID_TYPES = ['BUY', 'SELL', 'DEPOSIT', 'WITHDRAW'] as const;
 const VALID_STATUSES = ['PENDING', 'COMPLETED', 'FAILED'] as const;
-
-function formatUsd(value: number): string {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 export default async function AdminTransactionsPage({
   searchParams,
@@ -48,7 +36,7 @@ export default async function AdminTransactionsPage({
   });
 
   return (
-    <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+    <Card className="overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-dark-600">
         <h2 className="text-base font-semibold text-white">
           Tất cả giao dịch ({transactions.length})
@@ -57,9 +45,7 @@ export default async function AdminTransactionsPage({
       </div>
 
       {transactions.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-dark-400">
-          Không có giao dịch nào phù hợp bộ lọc.
-        </div>
+        <EmptyState>Không có giao dịch nào phù hợp bộ lọc.</EmptyState>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -82,7 +68,7 @@ export default async function AdminTransactionsPage({
             </thead>
             <tbody>
               {transactions.map((tx) => {
-                const status = STATUS_LABELS[tx.status] ?? STATUS_LABELS.COMPLETED;
+                const status = TX_STATUS_META[tx.status] ?? TX_STATUS_META.COMPLETED;
                 return (
                   <tr key={tx.id} className="border-b border-dark-600 last:border-0 hover:bg-dark-700/50 transition-colors">
                     <td className="px-5 py-3.5">
@@ -97,12 +83,12 @@ export default async function AdminTransactionsPage({
                             : 'bg-red-500/10 text-red-400'
                         }`}
                       >
-                        {TX_LABELS[tx.type] ?? tx.type}
+                        {TX_TYPE_LABELS[tx.type] ?? tx.type}
                         {tx.asset ? ` ${tx.asset.symbol}` : ''}
                       </span>
                     </td>
                     <td className="px-3 py-3.5 text-right text-sm text-dark-400 hidden md:table-cell">
-                      {tx.amount.toLocaleString('en-US', { maximumFractionDigits: 6 })}
+                      {formatTokenAmount(tx.amount)}
                     </td>
                     <td className="px-3 py-3.5 text-right text-sm text-dark-400 hidden md:table-cell">
                       {formatUsd(tx.price)}
@@ -111,12 +97,10 @@ export default async function AdminTransactionsPage({
                       {formatUsd(tx.totalValue)}
                     </td>
                     <td className="px-3 py-3.5">
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${status.cls}`}>
-                        {status.label}
-                      </span>
+                      <StatusBadge label={status.label} tone={status.tone} />
                     </td>
                     <td className="px-5 py-3.5 text-right text-xs text-dark-400 hidden lg:table-cell">
-                      {tx.createdAt.toLocaleString('vi-VN')}
+                      {formatDateTime(tx.createdAt)}
                     </td>
                   </tr>
                 );
@@ -125,6 +109,6 @@ export default async function AdminTransactionsPage({
           </table>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

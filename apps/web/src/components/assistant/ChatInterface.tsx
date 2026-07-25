@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User } from 'lucide-react';
 import type { ChatMessage } from '@hhd-i/types';
+import { Spinner } from '@/shared/components/ui/Spinner';
 
 interface ChatInterfaceProps {
   apiEndpoint: string;
@@ -204,7 +205,7 @@ export function ChatInterface({
               <Bot className="w-3.5 h-3.5 text-brand" />
             </div>
             <div className="chat-bubble-assistant px-4 py-3 flex items-center gap-2">
-              <Loader2 className="w-3.5 h-3.5 text-brand animate-spin" />
+              <Spinner className="w-3.5 h-3.5 text-brand" />
               <span className="text-xs text-dark-400">AI đang trả lời...</span>
             </div>
           </div>
@@ -231,7 +232,7 @@ export function ChatInterface({
             className="w-10 h-10 rounded-xl bg-brand hover:bg-brand-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-colors"
           >
             {isLoading ? (
-              <Loader2 className="w-4 h-4 text-black animate-spin" />
+              <Spinner className="w-4 h-4 text-black" />
             ) : (
               <Send className="w-4 h-4 text-black" />
             )}

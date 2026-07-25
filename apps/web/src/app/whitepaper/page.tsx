@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { FileText, Target, Lightbulb, Layers, Bot, GraduationCap, Download, ArrowRight } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
 
 const PROBLEMS = [
   {
@@ -53,7 +54,7 @@ export default function WhitepaperPage() {
 
       {/* Vision / Mission */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        <Card className="p-6">
           <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
             <Target className="w-4 h-4 text-brand" /> Tầm nhìn
           </h2>
@@ -61,8 +62,8 @@ export default function WhitepaperPage() {
             Xây dựng hệ sinh thái Web3 kết nối nghiên cứu khoa học, giáo dục và trí tuệ nhân tạo, hướng tới
             20 triệu ví và hơn 50 trường đại học đối tác vào năm 2030.
           </p>
-        </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+        </Card>
+        <Card className="p-6">
           <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
             <Lightbulb className="w-4 h-4 text-brand" /> Sứ mệnh
           </h2>
@@ -70,11 +71,11 @@ export default function WhitepaperPage() {
             Dùng token HHD để minh bạch hóa tài trợ nghiên cứu, xác thực chứng chỉ học thuật và dân chủ hóa
             quyền truy cập các công cụ phân tích vĩ mô bằng AI.
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* Problems → Solutions */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="px-5 py-4 border-b border-dark-600">
           <h2 className="text-base font-semibold text-white">5 vấn đề → giải pháp</h2>
         </div>
@@ -94,10 +95,10 @@ export default function WhitepaperPage() {
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Tokenomics summary */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 flex items-center justify-between flex-wrap gap-4">
+      <Card className="p-6 flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-base font-semibold text-white">Tóm tắt Tokenomics</h2>
           <p className="text-sm text-dark-400 mt-1">
@@ -110,10 +111,10 @@ export default function WhitepaperPage() {
         >
           Xem chi tiết Tokenomics <ArrowRight className="w-4 h-4" />
         </Link>
-      </div>
+      </Card>
 
       {/* Architecture layers */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+      <Card className="p-6">
         <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
           <Layers className="w-4 h-4 text-brand" /> Kiến trúc theo lớp (Layer 0–6)
         </h2>
@@ -128,10 +129,10 @@ export default function WhitepaperPage() {
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* HHDAI 2.0 */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6">
+      <Card className="p-6">
         <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
           <Bot className="w-4 h-4 text-brand" /> Nền tảng HHDAI 2.0
         </h2>
@@ -151,10 +152,10 @@ export default function WhitepaperPage() {
             <p className="text-xs text-dark-400 mt-1">Bảng điều khiển vĩ mô cho hơn 160 quốc gia.</p>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Founder */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 flex items-start gap-4">
+      <Card className="p-6 flex items-start gap-4">
         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0">
           <GraduationCap className="w-7 h-7 text-black" />
         </div>
@@ -168,7 +169,7 @@ export default function WhitepaperPage() {
             <a href="https://t.me/HHDCoin" className="text-brand hover:underline">t.me/HHDCoin</a>
           </p>
         </div>
-      </div>
+      </Card>
 
       {/* Downloads */}
       <div>
