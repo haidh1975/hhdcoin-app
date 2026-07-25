@@ -1,0 +1,43 @@
+# Render Blueprint — deploy backend HHDCoin (Node 20) miễn phí.
+# Cách dùng: Render Dashboard → New → Blueprint → chọn repo này → Apply.
+# Sau đó điền các biến đánh dấu sync:false trong tab Environment.
+services:
+  - type: web
+    name: hhdcoin-api
+    runtime: node
+    plan: free
+    region: singapore # gần Việt Nam nhất
+    branch: main
+    # devDependencies (vite/esbuild) BẮT BUỘC cho bước build
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/bitcoin-price
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      # Sinh tự động, không cần nhập tay
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://hhdcoin.net,https://www.hhdcoin.net
+      # AI: Gemini là nhà cung cấp chính (free tier)
+      - key: AI_PROVIDER_ORDER
+        value: gemini,claude,openai
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest
+      # ── Điền thủ công trong Render Dashboard ──
+      - key: DATABASE_URL # Neon Postgres connection string
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: RESEND_API_KEY # tuỳ chọn — gửi email
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: APP_URL
+        value: https://hhdcoin.net

@@ -1,7 +1,8 @@
-import nodemailer from 'nodemailer';
+﻿import nodemailer from 'nodemailer';
+import { env } from './config/env';
 import { log } from './vite';
 
-// ─── Config ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface EmailConfig {
   host: string;
@@ -13,19 +14,19 @@ interface EmailConfig {
 }
 
 function buildConfig(): EmailConfig | null {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM } = process.env;
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM } = env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
   return {
     host: SMTP_HOST,
-    port: parseInt(SMTP_PORT ?? '587', 10),
-    secure: (SMTP_PORT ?? '587') === '465',
+    port: parseInt(SMTP_PORT, 10),
+    secure: SMTP_PORT === '465',
     user: SMTP_USER,
     pass: SMTP_PASS,
     from: EMAIL_FROM ?? `HHDcoin <${SMTP_USER}>`,
   };
 }
 
-// ─── Transporter (lazy-init) ─────────────────────────────────────────────────
+// â”€â”€â”€ Transporter (lazy-init) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let _transporter: nodemailer.Transporter | null = null;
 
@@ -33,7 +34,7 @@ function getTransporter(): nodemailer.Transporter | null {
   if (_transporter) return _transporter;
   const cfg = buildConfig();
   if (!cfg) {
-    log('[Email] SMTP chưa cấu hình — email bị bỏ qua');
+    log('[Email] SMTP chÆ°a cáº¥u hÃ¬nh â€” email bá»‹ bá» qua');
     return null;
   }
   _transporter = nodemailer.createTransport({
@@ -41,7 +42,7 @@ function getTransporter(): nodemailer.Transporter | null {
     port: cfg.port,
     secure: cfg.secure,
     auth: { user: cfg.user, pass: cfg.pass },
-    // Timeout ngắn để không treo endpoint khi cổng SMTP bị chặn (vd Railway chặn 587/465)
+    // Timeout ngáº¯n Ä‘á»ƒ khÃ´ng treo endpoint khi cá»•ng SMTP bá»‹ cháº·n (vd Railway cháº·n 587/465)
     connectionTimeout: 10_000,
     greetingTimeout: 10_000,
     socketTimeout: 10_000,
@@ -49,8 +50,8 @@ function getTransporter(): nodemailer.Transporter | null {
   return _transporter;
 }
 
-// ─── Resend HTTP API ─────────────────────────────────────────────────────────
-// Ưu tiên Resend qua HTTPS (443) — nhiều nền tảng (Railway) CHẶN cổng SMTP outbound.
+// â”€â”€â”€ Resend HTTP API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Æ¯u tiÃªn Resend qua HTTPS (443) â€” nhiá»u ná»n táº£ng (Railway) CHáº¶N cá»•ng SMTP outbound.
 
 async function sendViaResend(opts: {
   to: string;
@@ -58,8 +59,8 @@ async function sendViaResend(opts: {
   html: string;
   text?: string;
 }): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY!;
-  const from = process.env.EMAIL_FROM ?? process.env.RESEND_FROM ?? 'HHDcoin <onboarding@resend.dev>';
+  const apiKey = env.RESEND_API_KEY!;
+  const from = env.EMAIL_FROM ?? env.RESEND_FROM ?? 'HHDcoin <onboarding@resend.dev>';
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -73,7 +74,7 @@ async function sendViaResend(opts: {
       }),
     });
     if (res.ok) {
-      log(`[Email][Resend] Sent "${opts.subject}" → ${opts.to}`);
+      log(`[Email][Resend] Sent "${opts.subject}" â†’ ${opts.to}`);
       return true;
     }
     log(`[Email][Resend] Failed (${res.status}): ${await res.text()}`);
@@ -84,7 +85,7 @@ async function sendViaResend(opts: {
   }
 }
 
-// ─── Core send ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Core send â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function sendMail(opts: {
   to: string;
@@ -92,8 +93,8 @@ async function sendMail(opts: {
   html: string;
   text?: string;
 }): Promise<boolean> {
-  // Ưu tiên Resend (HTTP) — hoạt động trên Railway; SMTP fallback cho host cho phép SMTP.
-  if (process.env.RESEND_API_KEY) return sendViaResend(opts);
+  // Æ¯u tiÃªn Resend (HTTP) â€” hoáº¡t Ä‘á»™ng trÃªn Railway; SMTP fallback cho host cho phÃ©p SMTP.
+  if (env.RESEND_API_KEY) return sendViaResend(opts);
 
   const transporter = getTransporter();
   if (!transporter) return false;
@@ -107,15 +108,15 @@ async function sendMail(opts: {
       html: opts.html,
       text: opts.text ?? opts.html.replace(/<[^>]+>/g, ''),
     });
-    log(`[Email] Sent "${opts.subject}" → ${opts.to}`);
+    log(`[Email] Sent "${opts.subject}" â†’ ${opts.to}`);
     return true;
   } catch (err: any) {
-    log(`[Email] Failed to send "${opts.subject}" → ${opts.to}: ${err.message}`);
+    log(`[Email] Failed to send "${opts.subject}" â†’ ${opts.to}: ${err.message}`);
     return false;
   }
 }
 
-// ─── Shared layout ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Shared layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function wrapLayout(content: string, title: string): string {
   return `<!DOCTYPE html>
@@ -151,33 +152,33 @@ function wrapLayout(content: string, title: string): string {
 <body>
 <div class="wrapper">
   <div class="header">
-    <h1>🪙 HHDcoin</h1>
+    <h1>ðŸª™ HHDcoin</h1>
     <p>Bitcoin Investment Platform</p>
   </div>
   <div class="body">${content}</div>
   <div class="footer">
-    © ${new Date().getFullYear()} HHDcoin · <a href="mailto:support@hhdcoin.com">support@hhdcoin.com</a><br/>
-    Bạn nhận email này vì đã đăng ký tài khoản tại HHDcoin.
+    Â© ${new Date().getFullYear()} HHDcoin Â· <a href="mailto:support@hhdcoin.com">support@hhdcoin.com</a><br/>
+    Báº¡n nháº­n email nÃ y vÃ¬ Ä‘Ã£ Ä‘Äƒng kÃ½ tÃ i khoáº£n táº¡i HHDcoin.
   </div>
 </div>
 </body>
 </html>`;
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/** Gửi email chào mừng sau khi đăng ký */
+/** Gá»­i email chÃ o má»«ng sau khi Ä‘Äƒng kÃ½ */
 export async function sendWelcomeEmail(opts: {
   to: string;
   fullName: string;
   username: string;
 }): Promise<boolean> {
   const content = `
-    <h2>Chào mừng, ${opts.fullName}! 🎉</h2>
-    <p>Tài khoản HHDcoin của bạn đã được tạo thành công.</p>
+    <h2>ChÃ o má»«ng, ${opts.fullName}! ðŸŽ‰</h2>
+    <p>TÃ i khoáº£n HHDcoin cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c táº¡o thÃ nh cÃ´ng.</p>
     <div class="info-box">
       <div class="info-row">
-        <span class="info-label">Tên đăng nhập</span>
+        <span class="info-label">TÃªn Ä‘Äƒng nháº­p</span>
         <span class="info-value">${opts.username}</span>
       </div>
       <div class="info-row">
@@ -185,22 +186,22 @@ export async function sendWelcomeEmail(opts: {
         <span class="info-value">${opts.to}</span>
       </div>
     </div>
-    <p>Bắt đầu hành trình đầu tư Bitcoin ngay hôm nay — xem các gói đầu tư phù hợp với bạn.</p>
-    <a class="btn" href="${process.env.APP_URL ?? 'http://localhost:5000'}/investment-packages">
-      Xem gói đầu tư
+    <p>Báº¯t Ä‘áº§u hÃ nh trÃ¬nh Ä‘áº§u tÆ° Bitcoin ngay hÃ´m nay â€” xem cÃ¡c gÃ³i Ä‘áº§u tÆ° phÃ¹ há»£p vá»›i báº¡n.</p>
+    <a class="btn" href="${env.APP_URL ?? 'http://localhost:5000'}/investment-packages">
+      Xem gÃ³i Ä‘áº§u tÆ°
     </a>
     <p style="margin-top:24px;font-size:13px;color:#78716c;">
-      Nếu bạn không đăng ký tài khoản này, hãy bỏ qua email này.
+      Náº¿u báº¡n khÃ´ng Ä‘Äƒng kÃ½ tÃ i khoáº£n nÃ y, hÃ£y bá» qua email nÃ y.
     </p>`;
 
   return sendMail({
     to: opts.to,
-    subject: '🎉 Chào mừng bạn đến với HHDcoin!',
-    html: wrapLayout(content, 'Chào mừng đến HHDcoin'),
+    subject: 'ðŸŽ‰ ChÃ o má»«ng báº¡n Ä‘áº¿n vá»›i HHDcoin!',
+    html: wrapLayout(content, 'ChÃ o má»«ng Ä‘áº¿n HHDcoin'),
   });
 }
 
-/** Gửi email xác nhận thanh toán thành công */
+/** Gá»­i email xÃ¡c nháº­n thanh toÃ¡n thÃ nh cÃ´ng */
 export async function sendPaymentConfirmationEmail(opts: {
   to: string;
   fullName: string;
@@ -211,43 +212,43 @@ export async function sendPaymentConfirmationEmail(opts: {
   paymentDate: Date;
 }): Promise<boolean> {
   const amountStr = opts.currency === 'VND'
-    ? opts.amount.toLocaleString('vi-VN') + ' ₫'
+    ? opts.amount.toLocaleString('vi-VN') + ' â‚«'
     : '$' + opts.amount.toLocaleString('en-US');
 
   const content = `
-    <h2>Thanh toán thành công ✅</h2>
-    <p>Giao dịch đầu tư của bạn đã được xác nhận. Cảm ơn, <strong>${opts.fullName}</strong>!</p>
+    <h2>Thanh toÃ¡n thÃ nh cÃ´ng âœ…</h2>
+    <p>Giao dá»‹ch Ä‘áº§u tÆ° cá»§a báº¡n Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c nháº­n. Cáº£m Æ¡n, <strong>${opts.fullName}</strong>!</p>
     <div class="info-box">
       <div class="info-row">
-        <span class="info-label">Gói đầu tư</span>
+        <span class="info-label">GÃ³i Ä‘áº§u tÆ°</span>
         <span class="info-value">${opts.packageName}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Số tiền</span>
+        <span class="info-label">Sá»‘ tiá»n</span>
         <span class="info-value">${amountStr}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Mã giao dịch</span>
+        <span class="info-label">MÃ£ giao dá»‹ch</span>
         <span class="info-value">${opts.transactionId}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Thời gian</span>
+        <span class="info-label">Thá»i gian</span>
         <span class="info-value">${opts.paymentDate.toLocaleString('vi-VN')}</span>
       </div>
     </div>
-    <p>Theo dõi hiệu suất đầu tư của bạn trong bảng điều khiển.</p>
-    <a class="btn" href="${process.env.APP_URL ?? 'http://localhost:5000'}/account-management">
-      Xem đầu tư của tôi
+    <p>Theo dÃµi hiá»‡u suáº¥t Ä‘áº§u tÆ° cá»§a báº¡n trong báº£ng Ä‘iá»u khiá»ƒn.</p>
+    <a class="btn" href="${env.APP_URL ?? 'http://localhost:5000'}/account-management">
+      Xem Ä‘áº§u tÆ° cá»§a tÃ´i
     </a>`;
 
   return sendMail({
     to: opts.to,
-    subject: `✅ Xác nhận đầu tư — ${opts.packageName}`,
-    html: wrapLayout(content, 'Xác nhận thanh toán'),
+    subject: `âœ… XÃ¡c nháº­n Ä‘áº§u tÆ° â€” ${opts.packageName}`,
+    html: wrapLayout(content, 'XÃ¡c nháº­n thanh toÃ¡n'),
   });
 }
 
-/** Gửi email xác nhận đã nhận form liên hệ */
+/** Gá»­i email xÃ¡c nháº­n Ä‘Ã£ nháº­n form liÃªn há»‡ */
 export async function sendContactConfirmationEmail(opts: {
   to: string;
   name: string;
@@ -255,31 +256,31 @@ export async function sendContactConfirmationEmail(opts: {
   message: string;
 }): Promise<boolean> {
   const content = `
-    <h2>Chúng tôi đã nhận được yêu cầu của bạn 📩</h2>
-    <p>Xin chào <strong>${opts.name}</strong>,</p>
-    <p>Cảm ơn bạn đã liên hệ với HHDcoin. Đội ngũ hỗ trợ sẽ phản hồi trong vòng <strong>24 giờ làm việc</strong>.</p>
+    <h2>ChÃºng tÃ´i Ä‘Ã£ nháº­n Ä‘Æ°á»£c yÃªu cáº§u cá»§a báº¡n ðŸ“©</h2>
+    <p>Xin chÃ o <strong>${opts.name}</strong>,</p>
+    <p>Cáº£m Æ¡n báº¡n Ä‘Ã£ liÃªn há»‡ vá»›i HHDcoin. Äá»™i ngÅ© há»— trá»£ sáº½ pháº£n há»“i trong vÃ²ng <strong>24 giá» lÃ m viá»‡c</strong>.</p>
     <div class="info-box">
       <div class="info-row">
-        <span class="info-label">Chủ đề</span>
+        <span class="info-label">Chá»§ Ä‘á»</span>
         <span class="info-value">${opts.subject}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Nội dung</span>
-        <span class="info-value">${opts.message.substring(0, 120)}${opts.message.length > 120 ? '…' : ''}</span>
+        <span class="info-label">Ná»™i dung</span>
+        <span class="info-value">${opts.message.substring(0, 120)}${opts.message.length > 120 ? 'â€¦' : ''}</span>
       </div>
     </div>
     <p style="font-size:13px;color:#78716c;">
-      Trong lúc chờ đợi, hãy khám phá <a href="${process.env.APP_URL ?? 'http://localhost:5000'}/analysis" style="color:#f97316;">trang phân tích thị trường</a> của chúng tôi.
+      Trong lÃºc chá» Ä‘á»£i, hÃ£y khÃ¡m phÃ¡ <a href="${env.APP_URL ?? 'http://localhost:5000'}/analysis" style="color:#f97316;">trang phÃ¢n tÃ­ch thá»‹ trÆ°á»ng</a> cá»§a chÃºng tÃ´i.
     </p>`;
 
   return sendMail({
     to: opts.to,
-    subject: `📩 Đã nhận: ${opts.subject}`,
-    html: wrapLayout(content, 'Xác nhận liên hệ'),
+    subject: `ðŸ“© ÄÃ£ nháº­n: ${opts.subject}`,
+    html: wrapLayout(content, 'XÃ¡c nháº­n liÃªn há»‡'),
   });
 }
 
-/** Gửi email thông báo P&L hàng tuần */
+/** Gá»­i email thÃ´ng bÃ¡o P&L hÃ ng tuáº§n */
 export async function sendWeeklyPnlEmail(opts: {
   to: string;
   fullName: string;
@@ -289,51 +290,51 @@ export async function sendWeeklyPnlEmail(opts: {
   profitLossPercent: number;
 }): Promise<boolean> {
   const isProfit = opts.profitLoss >= 0;
-  const emoji = isProfit ? '📈' : '📉';
+  const emoji = isProfit ? 'ðŸ“ˆ' : 'ðŸ“‰';
   const sign = isProfit ? '+' : '';
 
   const content = `
-    <h2>${emoji} Báo cáo đầu tư tuần này</h2>
-    <p>Xin chào <strong>${opts.fullName}</strong>, đây là tổng kết hiệu suất đầu tư của bạn:</p>
+    <h2>${emoji} BÃ¡o cÃ¡o Ä‘áº§u tÆ° tuáº§n nÃ y</h2>
+    <p>Xin chÃ o <strong>${opts.fullName}</strong>, Ä‘Ã¢y lÃ  tá»•ng káº¿t hiá»‡u suáº¥t Ä‘áº§u tÆ° cá»§a báº¡n:</p>
     <div class="info-box">
       <div class="info-row">
-        <span class="info-label">Tổng đầu tư</span>
-        <span class="info-value">${opts.totalInvested.toLocaleString('vi-VN')} ₫</span>
+        <span class="info-label">Tá»•ng Ä‘áº§u tÆ°</span>
+        <span class="info-value">${opts.totalInvested.toLocaleString('vi-VN')} â‚«</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Giá trị hiện tại</span>
-        <span class="info-value">${opts.currentValue.toLocaleString('vi-VN')} ₫</span>
+        <span class="info-label">GiÃ¡ trá»‹ hiá»‡n táº¡i</span>
+        <span class="info-value">${opts.currentValue.toLocaleString('vi-VN')} â‚«</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Lãi / Lỗ</span>
+        <span class="info-label">LÃ£i / Lá»—</span>
         <span class="info-value" style="color:${isProfit ? '#16a34a' : '#dc2626'}">
-          ${sign}${opts.profitLoss.toLocaleString('vi-VN')} ₫ (${sign}${opts.profitLossPercent.toFixed(2)}%)
+          ${sign}${opts.profitLoss.toLocaleString('vi-VN')} â‚« (${sign}${opts.profitLossPercent.toFixed(2)}%)
         </span>
       </div>
     </div>
-    <a class="btn" href="${process.env.APP_URL ?? 'http://localhost:5000'}/account-management">
-      Xem chi tiết đầu tư
+    <a class="btn" href="${env.APP_URL ?? 'http://localhost:5000'}/account-management">
+      Xem chi tiáº¿t Ä‘áº§u tÆ°
     </a>`;
 
   return sendMail({
     to: opts.to,
-    subject: `${emoji} Báo cáo tuần — ${sign}${opts.profitLossPercent.toFixed(2)}%`,
-    html: wrapLayout(content, 'Báo cáo đầu tư tuần'),
+    subject: `${emoji} BÃ¡o cÃ¡o tuáº§n â€” ${sign}${opts.profitLossPercent.toFixed(2)}%`,
+    html: wrapLayout(content, 'BÃ¡o cÃ¡o Ä‘áº§u tÆ° tuáº§n'),
   });
 }
 
-/** Kiểm tra kết nối email (Resend hoặc SMTP) */
+/** Kiá»ƒm tra káº¿t ná»‘i email (Resend hoáº·c SMTP) */
 export async function verifyEmailConnection(): Promise<boolean> {
-  // Resend dùng HTTP API — coi như sẵn sàng nếu có key (không cần verify TCP).
-  if (process.env.RESEND_API_KEY) {
-    log('[Email] Dùng Resend HTTP API ✓');
+  // Resend dÃ¹ng HTTP API â€” coi nhÆ° sáºµn sÃ ng náº¿u cÃ³ key (khÃ´ng cáº§n verify TCP).
+  if (env.RESEND_API_KEY) {
+    log('[Email] DÃ¹ng Resend HTTP API âœ“');
     return true;
   }
   const transporter = getTransporter();
   if (!transporter) return false;
   try {
     await transporter.verify();
-    log('[Email] SMTP connection verified ✓');
+    log('[Email] SMTP connection verified âœ“');
     return true;
   } catch (err: any) {
     log(`[Email] SMTP verify failed: ${err.message}`);

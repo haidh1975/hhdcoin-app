@@ -1,103 +1,145 @@
-import { log } from "./vite";
+import { env } from "./config/env";
+import { logger } from "./core/logger";
+import { fetchWithTimeout } from "./core/http-client";
 
-// Router AI đa nhà cung cấp: thử Gemini → Claude → OpenAI theo thứ tự, dùng cái nào chạy được.
-// Gemini ưu tiên vì free tier hào phóng (dự phòng chính khi OpenAI/Anthropic hết credit).
+// Router AI đa nhà cung cấp: thử Gemini → Claude → OpenAI theo AI_PROVIDER_ORDER,
+// dùng nhà cung cấp đầu tiên trả lời được. Gemini ưu tiên (free tier — AI chính).
 
-export interface AiMessage { role: "user" | "assistant"; content: string }
-export interface AiResult { text: string; provider: string }
+export interface AiMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+export interface AiResult {
+  text: string;
+  provider: string;
+}
 
-const PROVIDER_ORDER = (process.env.AI_PROVIDER_ORDER ?? "gemini,claude,openai")
-  .split(",").map((s) => s.trim().toLowerCase());
+const AI_TIMEOUT_MS = 25_000;
+const PROVIDER_ORDER = env.AI_PROVIDER_ORDER.split(",").map((s) => s.trim().toLowerCase());
 
 async function tryGemini(system: string, messages: AiMessage[], maxTokens: number): Promise<AiResult | null> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return null;
-  const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+  if (!env.GEMINI_API_KEY) return null;
   try {
     const contents = messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    const res = await fetchWithTimeout(
+      `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent`,
       {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        // Key trong header — không nằm trong URL để tránh lộ qua log/proxy
+        headers: { "x-goog-api-key": env.GEMINI_API_KEY, "content-type": "application/json" },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: system }] },
           contents,
           generationConfig: { maxOutputTokens: maxTokens, temperature: 0.6 },
         }),
       },
+      AI_TIMEOUT_MS,
     );
-    if (!res.ok) { log(`[AI:gemini] ${res.status}: ${(await res.text()).slice(0, 140)}`); return null; }
+    if (!res.ok) {
+      logger.warn(`Gemini ${res.status}: ${(await res.text()).slice(0, 140)}`, "ai");
+      return null;
+    }
     const data: any = await res.json();
     const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("").trim();
     return text ? { text, provider: "gemini" } : null;
-  } catch (e: any) { log(`[AI:gemini] err ${e.message}`); return null; }
+  } catch (e: any) {
+    logger.warn(`Gemini error: ${e.message}`, "ai");
+    return null;
+  }
 }
 
 async function tryClaude(system: string, messages: AiMessage[], maxTokens: number): Promise<AiResult | null> {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  const model = process.env.ANTHROPIC_CHAT_MODEL ?? "claude-haiku-4-5-20251001";
+  if (!env.ANTHROPIC_API_KEY) return null;
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model, max_tokens: maxTokens, system, messages }),
-    });
-    if (!res.ok) { log(`[AI:claude] ${res.status}: ${(await res.text()).slice(0, 140)}`); return null; }
+    const res = await fetchWithTimeout(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ model: env.ANTHROPIC_CHAT_MODEL, max_tokens: maxTokens, system, messages }),
+      },
+      AI_TIMEOUT_MS,
+    );
+    if (!res.ok) {
+      logger.warn(`Claude ${res.status}: ${(await res.text()).slice(0, 140)}`, "ai");
+      return null;
+    }
     const data: any = await res.json();
     const text = data?.content?.[0]?.text?.trim();
     return text ? { text, provider: "claude" } : null;
-  } catch (e: any) { log(`[AI:claude] err ${e.message}`); return null; }
+  } catch (e: any) {
+    logger.warn(`Claude error: ${e.message}`, "ai");
+    return null;
+  }
 }
 
 async function tryOpenAI(system: string, messages: AiMessage[], maxTokens: number): Promise<AiResult | null> {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4o-mini";
+  if (!env.OPENAI_API_KEY) return null;
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        messages: [{ role: "system", content: system }, ...messages],
-      }),
-    });
-    if (!res.ok) { log(`[AI:openai] ${res.status}: ${(await res.text()).slice(0, 140)}`); return null; }
+    const res = await fetchWithTimeout(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          model: env.OPENAI_CHAT_MODEL,
+          max_tokens: maxTokens,
+          messages: [{ role: "system", content: system }, ...messages],
+        }),
+      },
+      AI_TIMEOUT_MS,
+    );
+    if (!res.ok) {
+      logger.warn(`OpenAI ${res.status}: ${(await res.text()).slice(0, 140)}`, "ai");
+      return null;
+    }
     const data: any = await res.json();
     const text = data?.choices?.[0]?.message?.content?.trim();
     return text ? { text, provider: "openai" } : null;
-  } catch (e: any) { log(`[AI:openai] err ${e.message}`); return null; }
+  } catch (e: any) {
+    logger.warn(`OpenAI error: ${e.message}`, "ai");
+    return null;
+  }
 }
 
 const PROVIDERS: Record<string, (s: string, m: AiMessage[], t: number) => Promise<AiResult | null>> = {
-  gemini: tryGemini, claude: tryClaude, openai: tryOpenAI,
+  gemini: tryGemini,
+  claude: tryClaude,
+  openai: tryOpenAI,
 };
 
-/** Thử lần lượt các nhà cung cấp; trả về kết quả đầu tiên thành công, hoặc null nếu tất cả thất bại. */
+/** Thử lần lượt các nhà cung cấp; trả kết quả đầu tiên thành công, null nếu tất cả thất bại. */
 export async function generateChat(system: string, messages: AiMessage[], maxTokens = 600): Promise<AiResult | null> {
   for (const name of PROVIDER_ORDER) {
     const fn = PROVIDERS[name];
     if (!fn) continue;
-    const r = await fn(system, messages, maxTokens);
-    if (r) { log(`[AI] dùng nhà cung cấp: ${r.provider}`); return r; }
+    const result = await fn(system, messages, maxTokens);
+    if (result) {
+      logger.info(`dùng nhà cung cấp: ${result.provider}`, "ai");
+      return result;
+    }
   }
   return null;
 }
 
-/** Trợ giúp 1 lượt (prompt đơn) — cho Research Assistant & phân tích. */
+/** Sinh 1 lượt (prompt đơn) — cho Research Assistant & phân tích. */
 export async function generateOnce(system: string, prompt: string, maxTokens = 800): Promise<AiResult | null> {
   return generateChat(system, [{ role: "user", content: prompt }], maxTokens);
 }
 
+/** Danh sách nhà cung cấp đã cấu hình key (theo thứ tự ưu tiên). */
 export function aiProvidersConfigured(): string[] {
-  return PROVIDER_ORDER.filter((n) =>
-    (n === "gemini" && process.env.GEMINI_API_KEY) ||
-    (n === "claude" && process.env.ANTHROPIC_API_KEY) ||
-    (n === "openai" && process.env.OPENAI_API_KEY));
+  return PROVIDER_ORDER.filter(
+    (n) =>
+      (n === "gemini" && env.GEMINI_API_KEY) ||
+      (n === "claude" && env.ANTHROPIC_API_KEY) ||
+      (n === "openai" && env.OPENAI_API_KEY),
+  );
 }

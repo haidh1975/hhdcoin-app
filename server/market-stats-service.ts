@@ -1,4 +1,6 @@
-import { log } from "./vite";
+import { logger } from "./core/logger";
+import { fetchJson } from "./core/http-client";
+import { TtlCache } from "./core/cache";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export interface Mover { symbol: string; name: string; price: number; change24h: number; image?: string }
@@ -15,9 +17,7 @@ export interface MarketStats {
   source: "live" | "cache" | "mock";
 }
 
-let cache: MarketStats | null = null;
-let cacheAt = 0;
-const TTL = 90_000; // 90s
+const cache = new TtlCache<MarketStats>(90_000); // 90s
 
 const FG_LABEL_VI: Record<string, string> = {
   "Extreme Fear": "Sợ hãi tột độ",
@@ -26,16 +26,6 @@ const FG_LABEL_VI: Record<string, string> = {
   "Greed": "Tham lam",
   "Extreme Greed": "Tham lam tột độ",
 };
-
-async function fetchJson(url: string, ms = 8000): Promise<any> {
-  const ctrl = new AbortController();
-  const to = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { accept: "application/json" } });
-    if (!res.ok) throw new Error(`${res.status}`);
-    return await res.json();
-  } finally { clearTimeout(to); }
-}
 
 // Tín hiệu AI dựa trên quy tắc (Fear&Greed + xu hướng) — không cần credit AI
 function computeSignal(fg: number, mcapChange: number): { action: string; confidence: number; reason: string } {
@@ -66,12 +56,13 @@ function mock(): MarketStats {
 }
 
 export async function getMarketStats(): Promise<MarketStats> {
-  if (cache && Date.now() - cacheAt < TTL) return { ...cache, source: "cache" };
+  const cached = cache.fresh;
+  if (cached) return { ...cached, source: "cache" };
   try {
     const [fg, global, markets] = await Promise.all([
-      fetchJson("https://api.alternative.me/fng/?limit=1").catch(() => null),
-      fetchJson("https://api.coingecko.com/api/v3/global").catch(() => null),
-      fetchJson("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&price_change_percentage=24h").catch(() => null),
+      fetchJson<any>("https://api.alternative.me/fng/?limit=1").catch(() => null),
+      fetchJson<any>("https://api.coingecko.com/api/v3/global").catch(() => null),
+      fetchJson<any>("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&price_change_percentage=24h").catch(() => null),
     ]);
 
     const fgVal = fg?.data?.[0] ? parseInt(fg.data[0].value, 10) : 50;
@@ -99,10 +90,11 @@ export async function getMarketStats(): Promise<MarketStats> {
       aiSignal: computeSignal(fgVal, mcapChange),
       updatedAt: new Date().toISOString(), source: "live",
     };
-    cache = stats; cacheAt = Date.now();
+    cache.set(stats);
     return stats;
   } catch (err: any) {
-    log(`[MarketStats] error: ${err.message}`);
-    return cache ? { ...cache, source: "cache" } : mock();
+    logger.error("MarketStats", err, "market");
+    const stale = cache.any;
+    return stale ? { ...stale, source: "cache" } : mock();
   }
 }
